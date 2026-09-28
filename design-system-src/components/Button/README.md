@@ -10,9 +10,10 @@ Para cualquier acción. Cuando la acción tarda (guardar, enviar, pagar), dale `
 
 - `children`: el texto, un verbo corto en mayúscula inicial («Save», «Get started»).
 - `status`: `"idle"` (por defecto), `"loading"` o `"success"`. `useButtonStatus(accion)` lo lleva solo: `run()` pasa a cargando, espera la acción, muestra el check 1,1 s y vuelve.
-- `variant`: `"solid"` (por defecto, sobre `solid`), `"surface"` o `"accent"`. Un solo `accent` por pantalla.
+- `variant`: `"solid"` (por defecto, sobre `solid`), `"surface"`, `"accent"` (matcha, con texto en tinta) o `"danger"` (para acciones destructivas, como el «Delete» de una confirmación). Un solo `accent` por pantalla.
 - `size`: `"sm"` (36 px), `"md"` (44 px) o `"lg"` (56 px).
 - `icon`: un icono detrás del texto, p. ej. `<ArrowRightIcon />`.
+- `iconOnly`: el contenido es solo un icono y el botón es un círculo de su alto; ponle `aria-label` (p. ej. el «…» de un menú).
 - `loadingLabel`, `successLabel`: lo que anuncia un lector de pantalla («Loading», «Done» por defecto).
 
 ## Reglas

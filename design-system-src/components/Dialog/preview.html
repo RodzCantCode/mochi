@@ -1,0 +1,34 @@
+<!-- @dsCard group="Superpuestos" height=400 subtitle="crece desde el botón y vuelve a él" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Dialog</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: flex-end; justify-content: center; gap: 12px; padding: 24px 24px 40px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useRef = React.useRef, useEffect = React.useEffect;
+  function Demo() {
+    var o = useState(false), ref = useRef(null);
+    useEffect(function () { var t = setTimeout(function () { o[1](true); }, 500); return function () { clearTimeout(t); }; }, []);
+    var close = function () { o[1](false); };
+    return h(React.Fragment, null,
+      h(M.Button, { ref: ref, icon: h(M.TrashIcon, { size: 18 }), onClick: function () { o[1](true); } }, "Delete project"),
+      h(M.Dialog, {
+        open: o[0], onOpenChange: o[1], origin: ref, role: "alertdialog", presentation: "center", width: 400,
+        title: "Delete “Night Drive”?",
+        description: "The project and its 24 files will be removed for everyone. This can’t be undone.",
+        actions: h(React.Fragment, null,
+          h(M.Button, { variant: "surface", onClick: close }, "Cancel"),
+          h(M.Button, { variant: "danger", onClick: close }, "Delete"))
+      }));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

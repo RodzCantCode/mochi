@@ -15,6 +15,6 @@ Para ajustes que se aplican al momento (notificaciones, modo compacto). Si el ca
 
 ## Reglas
 
-- Apagado: pista `solid`; encendido: pista `accent`. La bolita es `thumb` con `shadow-thumb`.
+- Apagado: pista `solid`; encendido: pista `accent-strong` (el matcha profundo, que se ve sobre el lienzo claro). La bolita es `thumb` con `shadow-thumb`.
 - Cada borde de la bolita va en su muelle: el que va delante en `lead`, el de detrás en `trail`. Al pulsar se alarga un 22 % hacia donde va a ir.
 - Se maneja con espacio o Enter; anuncia `role="switch"` y su estado.

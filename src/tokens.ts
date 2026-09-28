@@ -19,9 +19,13 @@ export const colors = {
     "thumb": "#FFFFFF",
     "on-thumb": "#0D0D0E",
     "on-thumb-muted": "rgba(13,13,14,0.58)",
-    "accent": "#1F6BFF",
-    "on-accent": "#FFFFFF",
-    "focus-ring": "#1F6BFF",
+    "accent": "#A9C98B",
+    "on-accent": "#0D0D0E",
+    "accent-strong": "#56803A",
+    "danger": "#D9534B",
+    "on-danger": "#0D0D0E",
+    "danger-strong": "#B8392F",
+    "focus-ring": "#56803A",
     "scrim": "rgba(234,231,226,0.55)"
   },
   "dark": {
@@ -43,9 +47,13 @@ export const colors = {
     "thumb": "#FFFFFF",
     "on-thumb": "#0D0D0E",
     "on-thumb-muted": "rgba(13,13,14,0.58)",
-    "accent": "#1F6BFF",
-    "on-accent": "#FFFFFF",
-    "focus-ring": "#6F9DFF",
+    "accent": "#A9C98B",
+    "on-accent": "#0D0D0E",
+    "accent-strong": "#8FB36B",
+    "danger": "#EE8079",
+    "on-danger": "#0D0D0E",
+    "danger-strong": "#F08C84",
+    "focus-ring": "#A9C98B",
     "scrim": "rgba(15,15,14,0.6)"
   }
 } as const;

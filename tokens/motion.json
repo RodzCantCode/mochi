@@ -10,7 +10,7 @@
     "fadeOut": { "response": 0.13, "damping": 1, "usage": "Salida de contenido: más rápida que la entrada para que no se solapen." },
     "draw":    { "response": 0.62, "damping": 1, "usage": "Trazos que se dibujan: la línea de la gráfica, el check." },
     "back":    { "response": 0.34, "damping": 0.84, "usage": "Vuelta del estirón elástico al soltar." },
-    "color":   { "response": 0.30, "damping": 1, "usage": "Cambios de color dentro del mismo tono (negro a azul)." }
+    "color":   { "response": 0.30, "damping": 1, "usage": "Cambios de color dentro del mismo tono (negro a verde)." }
   },
   "swap": {
     "enterDelay": 0.06,

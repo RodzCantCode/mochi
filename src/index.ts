@@ -7,11 +7,14 @@ export { Button, Spinner, CheckMark, useButtonStatus, type ButtonProps, type But
 export { Switch, type SwitchProps } from "./components/Switch.js";
 export { SegmentedControl, type SegmentedControlProps, type SegmentedOption } from "./components/SegmentedControl.js";
 export { Slider, type SliderProps } from "./components/Slider.js";
+export { TextField, type TextFieldProps } from "./components/TextField.js";
 export { MediaPlayer, PlayPauseIcon, Scrubber, type MediaPlayerProps, type ScrubberProps } from "./components/MediaPlayer.js";
 export { LineChart, nearestIndex, type LineChartProps, type ChartPoint } from "./components/LineChart.js";
 export { ChartCard, type ChartCardProps } from "./components/ChartCard.js";
 export { CommandPalette, CommandPaletteTrigger, Kbd, useCommandK, type Command, type CommandPaletteProps } from "./components/CommandPalette.js";
 export { matchCommand, type Searchable } from "./components/commandFilter.js";
 export { Toaster, toast, type ToastOptions } from "./components/Toast.js";
+export { Dialog, type DialogProps } from "./components/Dialog.js";
+export { Menu, ContextMenu, type MenuProps, type ContextMenuProps, type MenuEntry, type MenuItem, type MenuSeparator, type MenuPlacement } from "./components/Menu.js";
 export { formatTime } from "./internal/format.js";
 export * as tokens from "./tokens.js";

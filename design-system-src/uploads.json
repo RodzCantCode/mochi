@@ -84,6 +84,46 @@
   "size": 268,
   "type": "image/svg+xml"
  },
+ "more.svg": {
+  "blob": "720db07880a858c746859e4ffdf4165b",
+  "size": 347,
+  "type": "image/svg+xml"
+ },
+ "alert.svg": {
+  "blob": "c96e5d661227308f221508b831a00d84",
+  "size": 277,
+  "type": "image/svg+xml"
+ },
+ "eye.svg": {
+  "blob": "6a4ba9ed0233365b812811000b2006f7",
+  "size": 326,
+  "type": "image/svg+xml"
+ },
+ "eye-off.svg": {
+  "blob": "2ae2543367430d0b6dac0a0e03d9e44a",
+  "size": 400,
+  "type": "image/svg+xml"
+ },
+ "trash.svg": {
+  "blob": "589979658059515da44c6f305792b7c7",
+  "size": 300,
+  "type": "image/svg+xml"
+ },
+ "copy.svg": {
+  "blob": "a853c9d7f83d732521ba51ce16d426bc",
+  "size": 334,
+  "type": "image/svg+xml"
+ },
+ "pencil.svg": {
+  "blob": "3a1472ae365189de1ef9042a70e7f9a7",
+  "size": 286,
+  "type": "image/svg+xml"
+ },
+ "share.svg": {
+  "blob": "2d1e31fe8984ae89e018acb1951d9311",
+  "size": 347,
+  "type": "image/svg+xml"
+ },
  "_createdOnFiles": {
   "v": 1,
   "at": "2026-09-25T15:37:16Z"

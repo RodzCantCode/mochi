@@ -1,18 +1,21 @@
 # Mochi
 
-Componentes de interfaz para React con una idea central: **una sola forma que se transforma**. Cambia de tamaño, esquinas y color con muelles suaves (con un rebote que nunca llega al 1 %) y cambia su contenido con un desenfoque corto. Negro, blanco y un azul de acento, con tema claro y oscuro.
+Componentes de interfaz para React con una idea central: **una sola forma que se transforma**. Cambia de tamaño, esquinas y color con muelles suaves (con un rebote que nunca llega al 1 %) y cambia su contenido con un desenfoque corto. Negro, blanco y un verde matcha de acento (más un rojo solo para errores), con tema claro y oscuro.
 
 Funciona en **Next.js** y **Astro** (como isla de React). Solo depende de React ≥ 18.2.
 
 | Componente | Qué hace |
 | --- | --- |
-| `Button` | Normal → cargando (se encoge a círculo) → hecho (el check se dibuja). `useButtonStatus` lo gestiona solo. |
+| `Button` | Normal → cargando (se encoge a círculo) → hecho (el check se dibuja). `useButtonStatus` lo gestiona solo. `variant="danger"` para acciones destructivas; `iconOnly` para un botón redondo con solo un icono. |
+| `Menu`, `ContextMenu` | El botón «…» se transforma en el menú; también con clic derecho o pulsación larga. Se coloca solo para no salirse de la ventana. |
 | `Switch` | Interruptor cuya bolita se estira al cambiar: cada borde va en su propio muelle. |
 | `SegmentedControl` | Pestañas con indicador líquido; las etiquetas cambian de color justo por donde pasa. |
 | `Slider` | Manipulación directa; al pasarte del límite se estira y al soltar vuelve con su velocidad. |
+| `TextField` | La etiqueta sube al escribir; anillo de foco y de error, mensaje que entra con desenfoque, check de «correcto» y botón para ver la contraseña. |
 | `MediaPlayer` | Island compacta que se abre en reproductor: play/pausa que se transforma y barra arrastrable (`Scrubber`). |
 | `ChartCard`, `LineChart` | La línea se dibuja sola; tooltip con puntero o flechas; la cifra cuenta hasta su valor. |
 | `CommandPalette` | Paleta ⌘K: filtra al escribir, el resaltado se desliza, Enter ejecuta, Esc cierra. `useCommandK`, `Kbd` y `CommandPaletteTrigger` incluidos. |
+| `Dialog` | Ventana que crece desde el botón que la abre y vuelve a él; en pantallas estrechas, hoja que sube desde abajo y se cierra arrastrándola. |
 | `Toaster`, `toast()` | Aviso en píldora; si llega otro, la píldora se transforma en el nuevo. |
 | `MorphBox`, `Swap` | Las piezas base, por si quieres construir tus propios estados. |
 
@@ -99,7 +102,7 @@ function Save() {
 }
 ```
 
-El banco de pruebas (`playground/main.tsx`) tiene un ejemplo conectado de cada componente.
+El sitio de pruebas (`npm run dev`, ver «Desarrollo») tiene una página por componente con ejemplos conectados; su código está en `playground/demos.tsx`.
 
 ## Temas
 
@@ -110,6 +113,8 @@ Pon `data-theme` en `<html>` (o en cualquier contenedor):
 - `data-theme="system"`: sigue la preferencia del sistema operativo.
 
 Todos los colores son variables `--mochi-*`. Para ajustar uno en un proyecto concreto basta con redefinirla (por ejemplo `--mochi-accent`) en tu CSS, sin tocar la librería.
+
+El acento es un matcha pastel (`accent`) que siempre lleva texto oscuro encima o va sobre las formas negras; donde el verde va solo sobre el fondo claro (interruptor encendido, check de «correcto») se usa el matcha profundo (`accent-strong`). El rojo (`danger` para bordes e iconos, `danger-strong` para texto) es solo para errores y acciones destructivas. Las reglas completas están en la guía del sistema de diseño (`design-system-src/README.md`) y la página «Colores» del sitio de pruebas los enseña en los dos temas.
 
 ## Valores del sistema (tokens)
 
@@ -146,9 +151,9 @@ Para sincronizarlo después de cambiar la librería: `npm run design-system` y p
 
 ```bash
 npm install
-npm run dev        # banco de pruebas en http://localhost:5178
-npm test           # compila y pasa las pruebas unitarias (muelles, contrastes, filtro, SSR)
-npm run test:e2e   # pruebas de interacción con Playwright; capturas en test/out/
+npm run dev        # sitio de pruebas en http://localhost:5178: una página por componente y la de colores
+npm test           # compila y pasa las pruebas unitarias (muelles, contrastes, filtro, colocación del menú, SSR)
+npm run test:e2e   # pruebas de interacción con Playwright (compilado y en modo desarrollo); capturas en test/out/
 npm run typecheck
 npm run design-system  # regenera y comprueba el sistema de diseño
 ```
@@ -157,6 +162,6 @@ La carpeta `reel/` es el prototipo del vídeo con el que nació el sistema (una 
 
 ## Pendiente
 
-- **Distribución para despliegues**: publicar el repositorio en GitHub (privado) e instalarlo con `npm install github:<usuario>/mochi`, o publicarlo en un registro de npm. Es una decisión abierta.
+- **Distribución para despliegues**: el repositorio existe en GitHub (`RodzCantCode/mochi`, público) pero todavía no se ha subido nada. Una vez subido, se instala con `npm install github:RodzCantCode/mochi`. Falta decidir si se queda público y subirlo.
 - **App móvil**: cuando se elija la tecnología, los valores (`mochi-ui/tokens`) sirven tal cual; los componentes habrá que rehacerlos para esa plataforma.
-- **Colores de estado** (error, aviso, éxito): el sistema aún no los tiene; el brief original era blanco, negro y un acento.
+- **Colores de estado**: hay rojo de error (`danger`, `danger-strong`) y «correcto» usa el matcha profundo (`accent-strong`). No hay color de aviso (ámbar); se añadirá si algún componente lo necesita.

@@ -42,7 +42,8 @@ for (const card of cards) {
   for (const theme of themes) {
     const inject = `<style>${tokensCss}</style><style>${bundleCss}</style>` +
       `<script src="${REACT}"></script><script src="${REACT_DOM}"></script><script>${bundleJs}</script>`;
-    const html = src.replace(/<html([^>]*)>/, `<html$1 data-theme="${theme}">`).replace(/<head>/, `<head>${inject}`);
+    // con función: el bundle minificado puede contener «$&», que un texto de reemplazo interpretaría
+    const html = src.replace(/<html([^>]*)>/, (_, a) => `<html${a} data-theme="${theme}">`).replace(/<head>/, () => `<head>${inject}`);
     const file = resolve(OUT, `${card}-${theme}.html`);
     writeFileSync(file, html);
     const page = await browser.newPage({ viewport: { width: card === "Cover" ? 960 : 720, height: Math.max(height, 120) } });

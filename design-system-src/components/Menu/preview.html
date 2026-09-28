@@ -1,0 +1,44 @@
+<!-- @dsCard group="Acciones" height=360 subtitle="el «…» se transforma en el menú" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Menu</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: flex-start; justify-content: center; padding: 28px 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+  .card { display: flex; align-items: center; gap: 14px; width: 100%; max-width: 340px; padding: 12px; border-radius: 22px; background: var(--mochi-surface); box-shadow: var(--mochi-shadow-surface); }
+  .art { width: 48px; height: 48px; flex: none; border-radius: 14px; background: linear-gradient(135deg, var(--mochi-accent), var(--mochi-accent-strong)); }
+  .txt { flex: 1; display: flex; flex-direction: column; }
+  .txt b { font-weight: 600; }
+  .txt span { font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); }
+  .card .mochi-morph[data-tone="surface"] { background: var(--mochi-canvas); box-shadow: none; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  function Demo() {
+    var o = useState(false);
+    useEffect(function () { var t = setTimeout(function () { o[1](true); }, 500); return function () { clearTimeout(t); }; }, []);
+    var say = function (t) { return function () { M.toast(t); }; };
+    var items = [
+      { id: "rename", label: "Rename", icon: h(M.PencilIcon, { size: 18 }), shortcut: ["mod", "E"], onSelect: say("Rename") },
+      { id: "duplicate", label: "Duplicate", icon: h(M.CopyIcon, { size: 18 }), shortcut: ["mod", "D"], onSelect: say("Project duplicated") },
+      { id: "share", label: "Share…", icon: h(M.ShareIcon, { size: 18 }), onSelect: say("Link copied") },
+      { type: "separator" },
+      { id: "delete", label: "Delete", icon: h(M.TrashIcon, { size: 18 }), destructive: true, onSelect: say("Project deleted") },
+    ];
+    return h(React.Fragment, null,
+      h("div", { className: "card" },
+        h("span", { className: "art" }),
+        h("span", { className: "txt" }, h("b", null, "Night Drive"), h("span", null, "Edited 2 hours ago")),
+        h(M.Menu, { items: items, placement: "bottom-end", open: o[0], onOpenChange: o[1] },
+          h(M.Button, { variant: "surface", size: "sm", iconOnly: true, "aria-label": "Project actions" }, h(M.MoreIcon, { size: 20 })))),
+      h(M.Toaster, null));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

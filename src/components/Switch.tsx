@@ -37,7 +37,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function Switch
   // estilos de partida para el primer pintado (también en SSR); luego los escriben los muelles
   const [initial] = useState(() => ({
     knob: { top: inset, height: k, borderRadius: k / 2, width: right - left, transform: `translateX(${left}px)` },
-    track: { background: on ? "var(--mochi-accent)" : "var(--mochi-solid)" },
+    track: { background: on ? "var(--mochi-accent-strong)" : "var(--mochi-solid)" },
   }));
   const knob = useRef<HTMLSpanElement>(null);
   const track = useRef<HTMLSpanElement>(null);
@@ -56,7 +56,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function Switch
       }
       if (track.current) {
         const pc = Math.min(100, Math.max(0, v.p * 100));
-        track.current.style.background = `color-mix(in srgb, var(--mochi-accent) ${pc.toFixed(2)}%, var(--mochi-solid))`;
+        track.current.style.background = `color-mix(in srgb, var(--mochi-accent-strong) ${pc.toFixed(2)}%, var(--mochi-solid))`;
       }
     },
   );

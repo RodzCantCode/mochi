@@ -15,11 +15,12 @@ import {
 import { useSprings, now } from "../motion/useSprings.js";
 import { springs } from "../tokens.js";
 import { useElementSize } from "../internal/useElementSize.js";
+import { useIsoLayoutEffect } from "../internal/useIsoLayoutEffect.js";
 import { mergeRefs } from "../internal/refs.js";
 import { cx } from "../internal/cx.js";
 import { Swap } from "./Swap.js";
 
-export type Tone = "solid" | "surface" | "accent";
+export type Tone = "solid" | "surface" | "accent" | "danger";
 
 export interface MorphBoxProps extends Omit<HTMLAttributes<HTMLElement>, "children"> {
   /** Elemento que se renderiza (por defecto `div`; `button` para acciones). */
@@ -47,6 +48,7 @@ const TONE_COLOR: Record<Tone, string> = {
   solid: "var(--mochi-on-solid)",
   surface: "var(--mochi-on-surface)",
   accent: "var(--mochi-on-accent)",
+  danger: "var(--mochi-on-danger)",
 };
 
 export const MorphBox = forwardRef<HTMLElement, MorphBoxProps>(function MorphBox(props, ref) {
@@ -123,7 +125,11 @@ export const MorphBox = forwardRef<HTMLElement, MorphBoxProps>(function MorphBox
     },
     { immediate: firstMeasure },
   );
-  if (measured) everMeasured.current = true;
+  // se apunta cuando ya se ha pintado: en desarrollo React renderiza dos veces seguidas y, si se
+  // apuntara al renderizar, la segunda pasada animaría la primera medida desde ancho 0
+  useIsoLayoutEffect(() => {
+    if (measured) everMeasured.current = true;
+  });
 
   const press = (on: boolean) => pressScale && setPressed(on);
 

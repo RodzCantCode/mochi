@@ -62,12 +62,13 @@ export function SegmentedControl({
   }, [options.length]);
 
   const cell = geo?.cells[index] ?? [0, 0];
+  // se anima al cambiar de pestaña; si solo cambia la geometría (ancho, fuente), se recoloca al
+  // instante. Se compara con lo último que llegó a pintarse: en desarrollo React renderiza dos
+  // veces seguidas y, si esto se apuntara al renderizar, la segunda vería el cambio como hecho.
   const everMeasured = useRef(false);
-  // se anima al cambiar de pestaña; si solo cambia la geometría (ancho, fuente), se recoloca al instante
-  const lastIndex = useRef(index);
+  const paintedIndex = useRef(index);
   const first = !!geo && !everMeasured.current;
-  const relayout = everMeasured.current && lastIndex.current === index;
-  lastIndex.current = index;
+  const relayout = everMeasured.current && paintedIndex.current === index;
   useSprings(
     { l: cell[0], r: cell[1] },
     (key, from, to) => ((key === "r") === to > from ? springs.lead : springs.trail),
@@ -86,7 +87,10 @@ export function SegmentedControl({
     },
     { immediate: first || relayout },
   );
-  if (geo) everMeasured.current = true;
+  useIsoLayoutEffect(() => {
+    paintedIndex.current = index;
+    if (geo) everMeasured.current = true;
+  });
 
   const select = (i: number) => {
     const o = options[i];

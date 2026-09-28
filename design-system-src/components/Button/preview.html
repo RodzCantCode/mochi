@@ -1,4 +1,4 @@
-<!-- @dsCard group="Acciones" height=140 subtitle="solid, surface y accent; pulsa el primero: cargando → hecho" -->
+<!-- @dsCard group="Acciones" height=140 subtitle="solid, surface, accent y danger; pulsa el primero: cargando → hecho" -->
 <!doctype html>
 <html>
 <head>
@@ -18,7 +18,8 @@
     return h(React.Fragment, null,
       h(M.Button, { size: "lg", icon: h(M.ArrowRightIcon, { size: 20 }), status: a.status, onClick: a.run }, "Get started"),
       h(M.Button, { variant: "surface" }, "Save"),
-      h(M.Button, { variant: "accent", size: "sm" }, "Upgrade"));
+      h(M.Button, { variant: "accent", size: "sm" }, "Upgrade"),
+      h(M.Button, { variant: "danger", size: "sm" }, "Delete"));
   }
   ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
 </script>

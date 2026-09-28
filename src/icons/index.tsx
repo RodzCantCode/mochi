@@ -52,6 +52,14 @@ export const CheckCircleIcon = make("CheckCircleIcon", <><circle cx="12" cy="12"
 export const CommandIcon = make("CommandIcon", <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />);
 export const EnterIcon = make("EnterIcon", <><path d="M9 10.5 5 14.5l4 4" /><path d="M19 5v6.5a3 3 0 0 1-3 3H5.5" /></>);
 export const CloseIcon = make("CloseIcon", <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />);
+export const MoreIcon = make("MoreIcon", <g fill="currentColor"><circle cx="5.5" cy="12" r="1.1" /><circle cx="12" cy="12" r="1.1" /><circle cx="18.5" cy="12" r="1.1" /></g>);
+export const AlertIcon = make("AlertIcon", <><circle cx="12" cy="12" r="9" /><path d="M12 7.8v5M12 16.2v.01" /></>);
+export const EyeIcon = make("EyeIcon", <><path d="M2.8 12c2.1-4 5.2-6 9.2-6s7.1 2 9.2 6c-2.1 4-5.2 6-9.2 6s-7.1-2-9.2-6z" /><circle cx="12" cy="12" r="3" /></>);
+export const EyeOffIcon = make("EyeOffIcon", <><path d="M9.9 6.3A9.3 9.3 0 0 1 12 6c4 0 7.1 2 9.2 6a15 15 0 0 1-2.4 3.3M6.4 7.9A13 13 0 0 0 2.8 12c2.1 4 5.2 6 9.2 6 1.7 0 3.2-.4 4.6-1.1" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M4 4l16 16" /></>);
+export const TrashIcon = make("TrashIcon", <><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l.9 12.5h9.2l.9-12.5" /><path d="M10 11v5M14 11v5" /></>);
+export const CopyIcon = make("CopyIcon", <><rect x="8.5" y="8.5" width="11" height="11" rx="2.5" /><path d="M15.5 5.5a2 2 0 0 0-2-2h-7a3 3 0 0 0-3 3v7a2 2 0 0 0 2 2" /></>);
+export const PencilIcon = make("PencilIcon", <><path d="M15 5.5l3.5 3.5L9 18.5l-4.5 1 1-4.5z" /><path d="M13 7.5l3.5 3.5" /></>);
+export const ShareIcon = make("ShareIcon", <><path d="M12 3.8v11M8 7.5l4-3.7 4 3.7" /><path d="M8.5 10.5H7a2 2 0 0 0-2 2v5.5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5.5a2 2 0 0 0-2-2h-1.5" /></>);
 
 export const PlayIcon = make("PlayIcon", <path d="M7 5.2v13.6a.6.6 0 0 0 .9.5l11-6.8a.6.6 0 0 0 0-1l-11-6.8a.6.6 0 0 0-.9.5z" />, true);
 export const PauseIcon = make("PauseIcon", <><path d="M6.5 5h3.5v14H6.5z" /><path d="M14 5h3.5v14H14z" /></>, true);

@@ -73,6 +73,11 @@
   color: var(--mochi-on-accent);
   box-shadow: var(--mochi-shadow-surface);
 }
+.mochi-morph[data-tone="danger"] {
+  background: var(--mochi-danger);
+  color: var(--mochi-on-danger);
+  box-shadow: var(--mochi-shadow-surface);
+}
 .mochi-morph__reveal {
   position: absolute;
   display: none;
@@ -82,6 +87,7 @@
 .mochi-morph__reveal[data-tone="solid"] { background: var(--mochi-solid); }
 .mochi-morph__reveal[data-tone="surface"] { background: var(--mochi-surface); }
 .mochi-morph__reveal[data-tone="accent"] { background: var(--mochi-accent); }
+.mochi-morph__reveal[data-tone="danger"] { background: var(--mochi-danger); }
 .mochi-morph__content {
   position: relative;
   z-index: 1;
@@ -276,6 +282,133 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
   outline-offset: 3px;
 }
 .mochi-slider[aria-disabled="true"] { opacity: 0.45; cursor: default; }
+
+/* ---------------------------------------------------------------- campo de texto */
+
+.mochi-field {
+  width: 100%;
+  min-width: 200px;
+  font-family: var(--mochi-font-sans);
+  letter-spacing: -0.01em;
+}
+.mochi-field__box {
+  position: relative;
+  border-radius: 9999px;
+  background: var(--mochi-surface);
+  color: var(--mochi-on-surface);
+  box-shadow: var(--mochi-shadow-surface);
+}
+.mochi-field__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding-top: 25px;
+  padding-bottom: 9px;
+  border: 0;
+  border-radius: inherit;
+  outline: 0;
+  background: transparent;
+  color: var(--mochi-on-surface);
+  font: var(--mochi-text-body-lg);
+  letter-spacing: inherit;
+  text-overflow: ellipsis;
+  -webkit-tap-highlight-color: transparent;
+}
+.mochi-field__input::placeholder { color: var(--mochi-on-surface-muted); opacity: 0; transition: opacity 120ms linear; }
+.mochi-field[data-focused] .mochi-field__input::placeholder { opacity: 1; }
+.mochi-field__input::-ms-reveal { display: none; }
+/* autorrelleno: sin el fondo amarillo del navegador, y la animación avisa al componente */
+.mochi-field__input:-webkit-autofill {
+  animation: mochi-autofill 1ms;
+  -webkit-text-fill-color: var(--mochi-on-surface);
+  caret-color: var(--mochi-on-surface);
+  transition: background-color 600000s 0s;
+}
+.mochi-field__input:not(:-webkit-autofill) { animation: mochi-autofill-out 1ms; }
+@keyframes mochi-autofill { from { opacity: 1; } to { opacity: 1; } }
+@keyframes mochi-autofill-out { from { opacity: 1; } to { opacity: 1; } }
+.mochi-field__label {
+  position: absolute;
+  top: 17px;
+  max-width: calc(100% - 44px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--mochi-text-body-lg);
+  color: var(--mochi-on-surface-muted);
+  transform-origin: 0 0;
+  pointer-events: none;
+  transition: color var(--mochi-duration-color) var(--mochi-ease-color);
+}
+.mochi-field[data-invalid] .mochi-field__label { color: var(--mochi-danger-strong); }
+.mochi-field__icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  display: flex;
+  transform: translateY(-50%);
+  color: var(--mochi-on-surface-muted);
+  pointer-events: none;
+}
+.mochi-field__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px var(--mochi-surface-border);
+  pointer-events: none;
+  transition: box-shadow var(--mochi-duration-snappy) var(--mochi-ease-snappy);
+}
+.mochi-field[data-focused] .mochi-field__ring { box-shadow: inset 0 0 0 2px var(--mochi-focus-ring); }
+.mochi-field[data-invalid] .mochi-field__ring { box-shadow: inset 0 0 0 1.5px var(--mochi-danger); }
+.mochi-field[data-invalid][data-focused] .mochi-field__ring { box-shadow: inset 0 0 0 2px var(--mochi-danger); }
+.mochi-field__trail {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  transform: translateY(-50%);
+  color: var(--mochi-accent-strong);
+  pointer-events: none;
+}
+.mochi-field__reveal {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--mochi-on-surface-muted);
+  cursor: pointer;
+  transition: background-color 120ms linear, color 120ms linear;
+  -webkit-tap-highlight-color: transparent;
+}
+.mochi-field__reveal:hover { background: var(--mochi-surface-border); color: var(--mochi-on-surface); }
+.mochi-field__reveal:focus-visible {
+  outline: 2px solid var(--mochi-focus-ring);
+  outline-offset: -2px;
+}
+.mochi-field[data-disabled] .mochi-field__box { opacity: 0.45; }
+.mochi-field[data-disabled] .mochi-field__input { cursor: default; }
+.mochi-field__msg { overflow: hidden; }
+.mochi-field__msg .mochi-swap { display: grid; width: 100%; place-items: start; }
+.mochi-field__msg .mochi-swap__layer { width: 100%; justify-content: flex-start; transform-origin: 0 50%; }
+.mochi-field__msgtext {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 22px 0;
+  font: var(--mochi-text-label);
+  color: var(--mochi-on-canvas-muted);
+}
+.mochi-field__msgtext[data-kind="error"] { color: var(--mochi-danger-strong); }
+.mochi-field__msgtext svg { flex: none; color: var(--mochi-danger); }
 
 /* ---------------------------------------------------------------- island y reproductor */
 
@@ -662,6 +795,170 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
   border: 1px solid var(--mochi-surface-border-strong);
   border-radius: 9999px;
 }
+
+/* ---------------------------------------------------------------- diálogo y hoja */
+
+.mochi-dialog-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  font-family: var(--mochi-font-sans);
+  letter-spacing: -0.01em;
+}
+.mochi-dialog-root[data-state="closed"] { pointer-events: none; }
+.mochi-dialog-scrim { position: absolute; inset: 0; background: var(--mochi-scrim); }
+.mochi-dialog,
+.mochi-dialog__shadow {
+  position: fixed;
+  left: 0;
+  top: 0;
+  will-change: transform, width, height;
+}
+.mochi-dialog__shadow { box-shadow: var(--mochi-shadow-overlay); pointer-events: none; }
+.mochi-dialog {
+  overflow: hidden;
+  background: var(--mochi-surface);
+  color: var(--mochi-on-surface);
+  box-shadow: inset 0 0 0 1px var(--mochi-surface-border);
+  outline: 0;
+}
+.mochi-dialog__reveal {
+  position: absolute;
+  z-index: 0;
+  display: none;
+  background: var(--mochi-surface);
+  pointer-events: none;
+}
+.mochi-dialog__ghost { position: absolute; z-index: 1; left: 0; top: 0; pointer-events: none; }
+.mochi-dialog__content {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 26px 26px 24px;
+}
+.mochi-dialog-root[data-presentation="sheet"] .mochi-dialog__content {
+  padding: 10px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+}
+.mochi-dialog__grab { touch-action: none; user-select: none; }
+.mochi-dialog-root[data-presentation="center"] .mochi-dialog__grab { touch-action: auto; user-select: auto; }
+.mochi-dialog__handle {
+  display: block;
+  width: 36px;
+  height: 5px;
+  margin: 0 auto 16px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--mochi-on-surface) 18%, transparent);
+}
+.mochi-dialog__title { margin: 0; font: 620 20px/26px var(--mochi-font-sans); letter-spacing: -0.02em; }
+.mochi-dialog__desc { margin: 8px 0 0; font: var(--mochi-text-body); color: var(--mochi-on-surface-muted); }
+.mochi-dialog__body { margin-top: 20px; }
+.mochi-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+/* dentro de la ventana, lo que sería superficie blanca va en el tono del lienzo */
+.mochi-dialog__body .mochi-field__box { background: var(--mochi-canvas); box-shadow: none; }
+.mochi-dialog .mochi-morph[data-tone="surface"],
+.mochi-dialog .mochi-morph__reveal[data-tone="surface"] { background: var(--mochi-canvas); box-shadow: none; }
+
+/* ---------------------------------------------------------------- menú */
+
+.mochi-menu-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  font-family: var(--mochi-font-sans);
+  letter-spacing: -0.01em;
+}
+.mochi-menu-root[data-state="closed"] { pointer-events: none; }
+.mochi-menu-catcher { position: absolute; inset: 0; }
+.mochi-menu,
+.mochi-menu__shadow {
+  position: fixed;
+  left: 0;
+  top: 0;
+  will-change: transform, width, height;
+}
+.mochi-menu__shadow { box-shadow: var(--mochi-shadow-overlay); pointer-events: none; }
+.mochi-menu {
+  overflow: hidden;
+  background: var(--mochi-surface);
+  color: var(--mochi-on-surface);
+  box-shadow: inset 0 0 0 1px var(--mochi-surface-border);
+  outline: 0;
+}
+.mochi-menu__reveal {
+  position: absolute;
+  z-index: 0;
+  display: none;
+  background: var(--mochi-surface);
+  pointer-events: none;
+}
+.mochi-menu__ghost { position: absolute; z-index: 1; left: 0; top: 0; pointer-events: none; }
+.mochi-menu__content {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: max-content;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.mochi-menu__list { position: relative; }
+.mochi-menu__highlight {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 0;
+  height: 40px;
+  border-radius: var(--mochi-radius-md);
+  background: var(--mochi-accent);
+  opacity: 0;
+  transition: background-color var(--mochi-duration-color) var(--mochi-ease-color);
+}
+.mochi-menu__highlight[data-destructive] { background: var(--mochi-danger); }
+.mochi-menu__item {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  font: 510 15px/20px var(--mochi-font-sans);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.mochi-menu__item[data-destructive] { color: var(--mochi-danger-strong); }
+.mochi-menu__item[data-disabled] { opacity: 0.4; cursor: default; }
+.mochi-menu__icon { display: grid; place-items: center; width: 18px; height: 18px; flex: none; color: var(--mochi-on-surface-muted); }
+.mochi-menu__item[data-destructive] .mochi-menu__icon { color: var(--mochi-danger); }
+.mochi-menu__label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.mochi-menu__sc { display: flex; margin-left: 20px; color: var(--mochi-on-surface-muted); }
+.mochi-menu__sep {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  margin-top: 4px;
+  background: var(--mochi-surface-border);
+}
+.mochi-menu__hi { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.mochi-menu__hi .mochi-menu__item,
+.mochi-menu__hi .mochi-menu__icon,
+.mochi-menu__hi .mochi-menu__sc { color: var(--mochi-on-accent); }
+.mochi-menu__sizer { height: 0; overflow: hidden; visibility: hidden; }
+.mochi-menu__sizer .mochi-menu__item { position: static; }
+[data-mochi-context] { -webkit-touch-callout: none; }
 
 /* ---------------------------------------------------------------- avisos */
 

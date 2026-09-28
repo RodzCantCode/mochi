@@ -1,0 +1,28 @@
+<!-- @dsCard group="Controles" height=330 subtitle="la etiqueta sube; error, correcto y contraseña" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>TextField</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+  .col { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 360px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState;
+  function Demo() {
+    var e = useState("ada@"), p = useState("");
+    var ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e[0]);
+    return h("div", { className: "col" },
+      h(M.TextField, { label: "Email", type: "email", value: e[0], onValueChange: e[1], error: ok ? undefined : "Enter a valid email address", valid: ok }),
+      h(M.TextField, { label: "Password", type: "password", value: p[0], onValueChange: p[1], description: "At least 8 characters", valid: p[0].length >= 8 }),
+      h(M.TextField, { label: "Search", icon: h(M.SearchIcon, { size: 20 }), placeholder: "Projects, people…" }));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

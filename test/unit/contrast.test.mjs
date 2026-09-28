@@ -27,15 +27,20 @@ function ratio(fgName, bgName, theme, base = "canvas") {
   return (a + 0.05) / (b + 0.05);
 }
 
-// [texto, fondo, mínimo]: 4.5 para texto normal, 3 para gráficos, iconos y bordes de foco
+// [texto, fondo, mínimo]: 4.5 para texto normal, 3 para gráficos, iconos y bordes de foco.
+// `accent` es un pastel: va sobre `solid` o lleva texto encima, nunca solo sobre el lienzo claro;
+// para eso está `accent-strong`.
 const PAIRS = [
   ["on-canvas", "canvas", 4.5], ["on-canvas-muted", "canvas", 4.5],
   ["on-solid", "solid", 4.5], ["on-solid-muted", "solid", 4.5],
   ["on-surface", "surface", 4.5], ["on-surface-muted", "surface", 4.5],
   ["on-thumb", "thumb", 4.5], ["on-thumb-muted", "thumb", 4.5],
-  ["on-accent", "accent", 4.5], ["on-fill", "fill", 4.5],
+  ["on-accent", "accent", 4.5], ["on-fill", "fill", 4.5], ["on-danger", "danger", 4.5],
   ["accent", "solid", 3], ["fill", "surface", 3], ["thumb", "solid", 3],
-  ["focus-ring", "canvas", 3], ["accent", "canvas", 3],
+  ["accent-strong", "canvas", 3], ["accent-strong", "surface", 3],
+  ["danger", "canvas", 3], ["danger", "surface", 3],
+  ["danger-strong", "canvas", 4.5], ["danger-strong", "surface", 4.5],
+  ["focus-ring", "canvas", 3], ["focus-ring", "surface", 3],
 ];
 
 for (const theme of Object.keys(colors)) {

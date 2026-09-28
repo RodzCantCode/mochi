@@ -9,10 +9,13 @@ export type ButtonStatus = "idle" | "loading" | "success";
 
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
   status?: ButtonStatus;
-  variant?: "solid" | "surface" | "accent";
+  /** `danger` para acciones destructivas (borrar, salir sin guardar). */
+  variant?: "solid" | "surface" | "accent" | "danger";
   size?: "sm" | "md" | "lg";
   /** Icono tras el texto (p. ej. <ArrowRightIcon />). */
   icon?: ReactNode;
+  /** Solo un icono como contenido: el botón es un círculo. Ponle `aria-label`. */
+  iconOnly?: boolean;
   children: ReactNode;
   /** Lo que oye un lector de pantalla mientras carga. */
   loadingLabel?: string;
@@ -32,6 +35,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     variant = "solid",
     size = "md",
     icon,
+    iconOnly,
     children,
     loadingLabel = "Loading",
     successLabel = "Done",
@@ -55,8 +59,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         radius="pill"
         contentKey={status}
         height={h}
-        width={busy ? h : undefined}
-        padding={busy ? "0" : `0 ${px}px`}
+        width={busy || iconOnly ? h : undefined}
+        padding={busy || iconOnly ? "0" : `0 ${px}px`}
         pressScale={busy ? undefined : 0.965}
         className={cx("mochi-button", className)}
         data-size={size}
@@ -71,7 +75,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
           }
           onClick?.(e);
         }}
-        accessory={<span className="mochi-sr">{children}</span>}
+        accessory={iconOnly ? undefined : <span className="mochi-sr">{children}</span>}
         {...rest}
       >
         {status === "idle" ? (

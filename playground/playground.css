@@ -1,4 +1,4 @@
-/* Banco de pruebas: la página alrededor de los componentes (no forma parte del paquete). */
+/* Sitio de pruebas: la página alrededor de los componentes (no forma parte del paquete). */
 @font-face {
   font-family: "Geist";
   src: url("../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2") format("woff2");
@@ -14,20 +14,144 @@ body {
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
 }
-.page { max-width: 1120px; margin: 0 auto; padding: 40px 24px 120px; }
-.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 40px; }
-.brand h1 { margin: 0; font: 640 28px/32px var(--mochi-font-sans); letter-spacing: -0.03em; }
-.brand p { margin: 4px 0 0; color: var(--mochi-on-canvas-muted); }
-.theme { width: 280px; }
+a { color: inherit; }
+
+/* ---------------------------------------------------------------- estructura */
+
+.site { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100vh; }
+.main { min-width: 0; max-width: 1080px; padding: 28px 40px 120px; }
+.bar { display: flex; justify-content: flex-end; margin-bottom: 28px; }
+.theme { width: 240px; }
+
+.nav {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 28px 16px 40px;
+  border-right: 1px solid color-mix(in srgb, var(--mochi-on-canvas) 8%, transparent);
+}
+.nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  margin: 0 8px 20px;
+  font: 640 20px/24px var(--mochi-font-sans);
+  letter-spacing: -0.03em;
+  text-decoration: none;
+}
+.nav__logo { width: 22px; height: 22px; border-radius: 50%; background: var(--mochi-accent); box-shadow: inset 0 0 0 5px var(--mochi-solid); }
+.nav__list { display: flex; flex-direction: column; gap: 18px; }
+.nav__group { display: flex; flex-direction: column; gap: 2px; }
+.nav__title { padding: 0 12px 6px; font: var(--mochi-text-caption); letter-spacing: 0.02em; text-transform: uppercase; color: var(--mochi-on-canvas-muted); }
+.nav a:not(.nav__brand) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  font: 500 14px/18px var(--mochi-font-sans);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 120ms linear, color 120ms linear;
+}
+.nav a:not(.nav__brand):hover { background: color-mix(in srgb, var(--mochi-on-canvas) 6%, transparent); }
+.nav a[aria-current="page"] { background: var(--mochi-solid); color: var(--mochi-on-solid); }
+.nav a:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 2px; }
+.nav__new {
+  padding: 1px 7px 2px;
+  border-radius: 9999px;
+  box-shadow: inset 0 0 0 1px currentColor;
+  font: 520 10px/14px var(--mochi-font-sans);
+  opacity: 0.7;
+}
+
+/* ---------------------------------------------------------------- cabecera de página */
+
+.head { margin-bottom: 32px; }
+.head h1 { margin: 0; font: var(--mochi-text-display); letter-spacing: -0.025em; }
+.head p { max-width: 62ch; margin: 10px 0 0; color: var(--mochi-on-canvas-muted); }
+.import {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 7px 14px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--mochi-on-canvas) 6%, transparent);
+  font: 450 13px/18px var(--mochi-font-mono);
+  letter-spacing: 0;
+}
+
+/* ---------------------------------------------------------------- tarjetas y escenarios */
+
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.sections { display: flex; flex-direction: column; gap: 16px; }
 .spec { display: flex; flex-direction: column; gap: 14px; min-height: 220px; padding: 18px; border-radius: 28px; background: color-mix(in srgb, var(--mochi-on-canvas) 4%, transparent); }
+.sections .spec { min-height: 280px; padding: 22px; }
 .spec.wide { grid-column: span 2; }
-.spec h2 { margin: 0; font: var(--mochi-text-label); color: var(--mochi-on-canvas-muted); }
+.spec h2 { display: flex; align-items: center; gap: 8px; margin: 0; font: var(--mochi-text-label); color: var(--mochi-on-canvas-muted); }
+.spec h2 a { text-decoration: none; }
+.spec h2 a:hover { color: var(--mochi-on-canvas); text-decoration: underline; text-underline-offset: 3px; }
+.spec__hint { max-width: 70ch; margin: -6px 0 0; font: var(--mochi-text-label); color: var(--mochi-on-canvas-muted); }
 .stage { flex: 1; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
 .stage.col { flex-direction: column; }
+.stage.form { align-items: stretch; width: 100%; max-width: 380px; margin: 0 auto; gap: 12px; }
+.stage.form > button { align-self: center; margin-top: 6px; }
 .row { display: flex; align-items: center; gap: 12px; }
 .row label { color: var(--mochi-on-canvas); }
 .hint { font: var(--mochi-text-label); color: var(--mochi-on-canvas-muted); }
 .slider-wrap { width: 100%; max-width: 320px; }
 .card-wrap { width: 100%; max-width: 440px; }
-@media (max-width: 720px) { .spec.wide { grid-column: auto; } }
+
+.project-card { display: flex; align-items: center; gap: 14px; width: 100%; max-width: 360px; padding: 12px 12px 12px 12px; border-radius: 22px; background: var(--mochi-surface); box-shadow: var(--mochi-shadow-surface); }
+.project-card__art { width: 48px; height: 48px; flex: none; border-radius: 14px; background: linear-gradient(135deg, var(--mochi-accent), var(--mochi-accent-strong)); }
+.project-card__text { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.project-card__text b { font: var(--mochi-text-body); font-weight: 600; }
+.project-card__text span { font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); }
+.project-card .mochi-morph[data-tone="surface"] { background: var(--mochi-canvas); box-shadow: none; }
+.ctx-area { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; max-width: 420px; height: 180px; border-radius: 28px; border: 1.5px dashed color-mix(in srgb, var(--mochi-on-canvas) 22%, transparent); color: var(--mochi-on-canvas); text-align: center; user-select: none; }
+.ctx-area:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 3px; }
+.stage.edges { justify-content: space-between; align-content: space-between; min-height: 200px; }
+.sheet-rows { display: flex; flex-direction: column; }
+.sheet-row { display: flex; align-items: center; justify-content: space-between; min-height: 52px; font: var(--mochi-text-body-lg); }
+.sheet-row + .sheet-row { border-top: 1px solid var(--mochi-surface-border); }
+
+/* ---------------------------------------------------------------- colores */
+
+.colors { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+.colors__theme { padding: 22px; border-radius: 28px; background: var(--mochi-canvas); color: var(--mochi-on-canvas); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mochi-on-canvas) 10%, transparent); }
+.colors__theme h2 { margin: 0 0 18px; font: var(--mochi-text-title); }
+.colors__group { margin-bottom: 20px; }
+.colors__group h3 { margin: 0 0 10px; font: var(--mochi-text-label); color: var(--mochi-on-canvas-muted); }
+.colors__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+.swatch { display: grid; grid-template-columns: 36px 1fr; column-gap: 10px; align-items: center; }
+.swatch__chip { grid-row: span 2; width: 36px; height: 36px; border-radius: 12px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mochi-on-canvas) 12%, transparent); }
+.swatch__name { font: 540 13px/16px var(--mochi-font-sans); }
+.swatch__value { font: 450 11px/14px var(--mochi-font-mono); color: var(--mochi-on-canvas-muted); }
+.colors__sample { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 8px; }
+.sample { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 16px; border-radius: 9999px; font: var(--mochi-text-label); }
+.sample--accent { background: var(--mochi-accent); color: var(--mochi-on-accent); }
+.sample--danger { background: var(--mochi-danger); color: var(--mochi-on-danger); }
+.sample--solid { background: var(--mochi-solid); color: var(--mochi-on-solid); }
+.sample__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--mochi-accent); }
+.sample__text { font: var(--mochi-text-label); color: var(--mochi-danger-strong); }
+
+/* ---------------------------------------------------------------- pantallas estrechas */
+
+@media (max-width: 860px) {
+  .site { grid-template-columns: minmax(0, 1fr); }
+  .nav { position: static; height: auto; padding: 16px 16px 8px; border-right: 0; }
+  .nav__brand { margin: 0 0 10px; }
+  .nav__list { flex-direction: row; gap: 4px; overflow-x: auto; margin: 0 -16px; padding: 0 16px 8px; scrollbar-width: none; }
+  .nav__group { flex-direction: row; gap: 4px; }
+  .nav__title { display: none; }
+  .main { padding: 12px 16px 96px; }
+  .bar { justify-content: stretch; margin-bottom: 20px; }
+  .theme { width: 100%; }
+  .spec.wide { grid-column: auto; }
+  .grid { grid-template-columns: minmax(0, 1fr); }
+}
