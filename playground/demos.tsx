@@ -20,6 +20,9 @@ import {
   Button,
   ChartCard,
   Checkbox,
+  Drawer,
+  Popover,
+  ReorderList,
   Progress,
   ProgressRing,
   RadioGroup,
@@ -1013,6 +1016,214 @@ export function SkeletonSwapDemo() {
       <Button variant="surface" size="sm" onClick={load} disabled={loading}>
         Reload
       </Button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------------------
+// Panel flotante
+
+/** Filtros: el botón se transforma en el panel; «Apply» lo cierra. */
+export function PopoverDemo() {
+  const [types, setTypes] = useState(["photos", "videos"]);
+  const [applied, setApplied] = useState(["photos", "videos"]);
+  const toggle = (id: string, on: boolean) => setTypes(t => (on ? [...t, id] : t.filter(x => x !== id)));
+  return (
+    <div className="stage col">
+      <div className="row">
+        <Popover
+          label="Filters"
+          title="Show"
+          onOpenChange={o => o && setTypes(applied)}
+          content={({ close }) => (
+            <div className="popover-form">
+              {MEDIA.map(m => (
+                <Checkbox key={m.id} label={m.label} checked={types.includes(m.id)} onCheckedChange={on => toggle(m.id, on)} />
+              ))}
+              <div className="popover-form__actions">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setApplied(types);
+                    close();
+                  }}
+                >
+                  Apply
+                </Button>
+              </div>
+            </div>
+          )}
+        >
+          <Button variant="surface" icon={<SlidersIcon size={18} />}>
+            Filters
+          </Button>
+        </Popover>
+        <Popover
+          label="Ada Lovelace"
+          placement="bottom-end"
+          content={({ close }) => (
+            <div className="person">
+              <span className="profile__avatar" aria-hidden="true">
+                AL
+              </span>
+              <div className="profile__who">
+                <b>Ada Lovelace</b>
+                <span className="profile__sub">Analytical Engines · London</span>
+              </div>
+              <Button
+                size="sm"
+                variant="surface"
+                onClick={() => {
+                  close();
+                  toast("Message sent");
+                }}
+              >
+                Message
+              </Button>
+            </div>
+          )}
+        >
+          <button type="button" className="avatar-button" aria-label="Ada Lovelace">
+            AL
+          </button>
+        </Popover>
+      </div>
+      <span className="hint">Mostrando: {applied.map(a => MEDIA.find(m => m.id === a)?.label).join(", ") || "nada"}</span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------------------
+// Panel lateral
+
+const NAV = ["Home", "Projects", "Files", "Team", "Settings"];
+
+/** Navegación desde la izquierda. */
+export function DrawerNavDemo() {
+  const [open, setOpen] = useState(false);
+  const [page, setPage] = useState("Projects");
+  return (
+    <div className="stage col">
+      <Button variant="surface" onClick={() => setOpen(true)}>
+        Open menu
+      </Button>
+      <span className="hint">Página: {page}</span>
+      <Drawer open={open} onOpenChange={setOpen} side="left" width={320} title="Mochi">
+        <nav className="drawer-nav" aria-label="Main">
+          {NAV.map(n => (
+            <button
+              key={n}
+              type="button"
+              className="drawer-nav__link"
+              aria-current={n === page ? "page" : undefined}
+              onClick={() => {
+                setPage(n);
+                setOpen(false);
+              }}
+            >
+              {n}
+            </button>
+          ))}
+        </nav>
+      </Drawer>
+    </div>
+  );
+}
+
+/** Detalles desde la derecha, con acciones fijas abajo. */
+export function DrawerDetailsDemo() {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("Night Drive");
+  const [draft, setDraft] = useState(name);
+  const [notes, setNotes] = useState(true);
+  return (
+    <div className="stage col">
+      <Button
+        onClick={() => {
+          setDraft(name);
+          setOpen(true);
+        }}
+      >
+        Edit details
+      </Button>
+      <span className="hint">Nombre: {name}</span>
+      <Drawer
+        open={open}
+        onOpenChange={setOpen}
+        title="Project details"
+        description="Changes are shared with everyone on the project."
+        actions={
+          <>
+            <Button variant="surface" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setName(draft.trim() || name);
+                setOpen(false);
+                toast("Details saved");
+              }}
+            >
+              Save
+            </Button>
+          </>
+        }
+      >
+        <div className="setting-form">
+          <TextField label="Name" value={draft} onValueChange={setDraft} />
+          <TextField label="Artist" defaultValue="Soft Machines" />
+          <label className="setting-row">
+            <span>Show notes to the team</span>
+            <Switch size="sm" checked={notes} onCheckedChange={setNotes} aria-label="Show notes to the team" />
+          </label>
+          {ACTIVITY.map(a => (
+            <p key={a} className="drawer-note">
+              {a}
+            </p>
+          ))}
+        </div>
+      </Drawer>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------------------
+// Lista que se reordena
+
+const TRACKS = [
+  { id: "t1", title: "Night Drive", time: "3:12" },
+  { id: "t2", title: "Glass Harbour", time: "4:05" },
+  { id: "t3", title: "Paper Moons", time: "2:48" },
+  { id: "t4", title: "Afterglow", time: "3:37" },
+  { id: "t5", title: "Soft Machines", time: "5:01" },
+];
+
+export function ReorderDemo() {
+  const [tracks, setTracks] = useState(TRACKS);
+  return (
+    <div className="stage col form">
+      <ReorderList
+        aria-label="Playlist"
+        items={tracks}
+        getKey={t => t.id}
+        getLabel={t => t.title}
+        onReorder={setTracks}
+        renderItem={(t, { handle }) => (
+          <div className="track">
+            {handle}
+            <span className="track__title">{t.title}</span>
+            <span className="track__time">{t.time}</span>
+          </div>
+        )}
+      />
+      <div className="row">
+        <Button variant="surface" size="sm" onClick={() => setTracks(t => [...t].sort((a, b) => a.title.localeCompare(b.title)))}>
+          Sort A–Z
+        </Button>
+        <Button variant="surface" size="sm" onClick={() => setTracks(TRACKS)}>
+          Reset
+        </Button>
+      </div>
     </div>
   );
 }

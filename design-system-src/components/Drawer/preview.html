@@ -1,0 +1,34 @@
+<!-- @dsCard group="Superpuestos" height=420 subtitle="entra desde el borde; arrástralo para cerrarlo" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Drawer</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: flex-start; padding: 24px 40px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+  .f { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; }
+  .r { display: flex; align-items: center; justify-content: space-between; min-height: 44px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  function Demo() {
+    var o = useState(false), s = useState(true);
+    useEffect(function () { var id = setTimeout(function () { o[1](true); }, 500); return function () { clearTimeout(id); }; }, []);
+    var close = function () { o[1](false); };
+    return h(React.Fragment, null,
+      h(M.Button, { onClick: function () { o[1](true); } }, "Edit details"),
+      h(M.Drawer, {
+        open: o[0], onOpenChange: o[1], width: 360, title: "Project details", description: "Changes are shared with everyone.",
+        actions: h(React.Fragment, null, h(M.Button, { variant: "surface", onClick: close }, "Cancel"), h(M.Button, { onClick: close }, "Save"))
+      }, h("div", { className: "f" },
+        h(M.TextField, { label: "Name", defaultValue: "Night Drive" }),
+        h("label", { className: "r" }, h("span", null, "Show notes to the team"), h(M.Switch, { size: "sm", checked: s[0], onCheckedChange: s[1], "aria-label": "Show notes to the team" })))));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

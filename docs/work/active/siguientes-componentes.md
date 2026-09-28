@@ -4,8 +4,9 @@
 > y componentes nuevos hechos y probados: campo de texto, diálogo y hoja, menú, selector y
 > tooltip, acordeón, pestañas con contenido y piezas de movimiento, y casilla y botón de opción,
 > barra y anillo de progreso y esqueleto de carga, con las correcciones de tres revisiones
-> independientes; todo subido a GitHub. Siguen panel flotante, panel lateral y
-> lista que se reordena. Lo pendiente de la librería en general está en el
+> independientes, y panel flotante, panel lateral y lista que se reordena, hechos y probados;
+> todo subido a GitHub. Sigue la pasada final de repaso y pulido (ver
+> «Próximos pasos»). Lo pendiente de la librería en general está en el
 > [README](../../../README.md#pendiente); aquí solo lo de esta tarea.
 
 ## Objetivo
@@ -52,7 +53,7 @@ interacción en verde y su ficha publicada en el sistema de diseño.
     esa parte visible en Chromium y por el usuario en su iPhone.
   - El resto de componentes le funcionó bien en el iPhone.
 - **Git:** todo subido a GitHub (`RodzCantCode/mochi`, **público**, rama `main`), incluidos
-  casilla, radio, progreso y esqueleto. El usuario va a publicar el sitio de pruebas en Vercel para
+  casilla, radio, progreso y esqueleto, y los paneles y la lista. El usuario va a publicar el sitio de pruebas en Vercel para
   probarlo en su iPhone (compilación y carpeta, en el README, apartado «Desarrollo»).
 - **Acordeón, pestañas y movimiento (hechos y subidos):** `Collapsible`, `Accordion` y
   `AccordionItem` (contenido cerrado con `hidden="until-found"`, puesto a mano porque React no
@@ -77,6 +78,11 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   `ProgressRing`; `Skeleton` y `SkeletonSwap` (Swap + AutoHeight). Cada uno con su página en el
   sitio de pruebas, casos límite en páginas ocultas y su ficha (`Checkbox`, `Progress`,
   `Skeleton`) en `design-system-src/components/`. Cómo se comportan está en esas fichas.
+- **Panel flotante, panel lateral y lista que se reordena (hechos y subidos):** `Popover`,
+  `Drawer` y `ReorderList`, con el icono nuevo `GripIcon`. Cada uno con su página en el sitio de
+  pruebas y su ficha (`Popover`, `Drawer`, `ReorderList`) en `design-system-src/components/`;
+  cómo se comportan está en esas fichas. Sin revisión independiente todavía: va en la pasada
+  final.
 - **Tercera revisión independiente** (dos revisores con contexto limpio: comportamiento con
   React 18.2, 18.3 y 19, y accesibilidad, estilos y documentación): 18 fallos distintos con caso
   reproducible (dos los encontraron los dos), todos corregidos salvo el contraste del filo (ver
@@ -100,13 +106,16 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   - Radix, medido el 2026-09-28 con `@radix-ui/react-dialog` 1.1.23: diálogo 13,2 kB, tooltip
     18,4 kB, popover 23,0 kB, menú desplegable 28,9 kB, selector 29,5 kB; React 67,4 kB.
   - Mochi entera: 15,8 kB antes de la primera tanda, 32,7 kB antes de la casilla, el progreso
-    y el esqueleto, 37,2 kB ahora (medido el 2026-09-29 con el mismo método).
+    y el esqueleto, 37,5 kB antes de los paneles y la lista, 42,4 kB ahora (medido el
+    2026-09-29 con el mismo método).
   - Coste de cada pieza nueva sobre Button + CommandPalette: TextField +1,2 kB, Dialog +3,6 kB,
     Menu y ContextMenu +4,6 kB. Diálogo y menú comparten `src/internal/overlay.ts`. Sobre
     Button + Menu: Select +1,2 kB (comparte la lista del menú) y Tooltip +1,5 kB. Sobre Button +
     SegmentedControl: Presence y AutoHeight +1,5 kB, Accordion +2,9 kB, Tabs +0,8 kB. Sobre
     Button + Switch: Checkbox +3,2 kB o RadioGroup +3,3 kB (comparten el mensaje y AutoHeight),
-    Progress y ProgressRing +1,7 kB, Skeleton y SkeletonSwap +0,7 kB.
+    Progress y ProgressRing +1,7 kB, Skeleton y SkeletonSwap +0,7 kB, ReorderList +4,0 kB.
+    Sobre Button + Dialog: Popover +1,9 kB (en móvil usa la hoja del diálogo) y Drawer +2,5 kB
+    (usa las piezas del diálogo). Radix Popover pesa 23,0 kB.
 - `accent` es pastel y no pasa 3:1 sobre el lienzo claro. Por eso la prueba de contraste exige
   3:1 a `accent-strong`, y `accent` solo va sobre `solid` o con texto encima.
 - Receta de un componente nuevo (la que siguieron los 12 actuales): valores de `tokens/` →
@@ -135,6 +144,15 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   a la misma velocidad.
 - Alto contraste (`forced-colors`): solo lo tienen los tres componentes nuevos; lo que falta
   del resto está en el [README](../../../README.md#pendiente).
+- `Popover` sigue al menú: un fondo invisible recoge el toque de fuera (sin que atraviese) y la
+  página no se desplaza mientras está abierto; no es modal para el foco (Tab puede salir y
+  entonces se cierra). En pantallas de menos de 640 px es la hoja de `Dialog`.
+- `Drawer` es un componente propio sobre las piezas del diálogo (`src/internal/overlay.ts`), no
+  una variante de `Dialog`: no crece desde el botón y su arrastre es horizontal.
+- `ReorderList` se arrastra solo por el asa (el usuario lo aprobó así el 2026-09-29, también en
+  escritorio). Cada fila anima cualquier cambio de su sitio en la lista partiendo de donde se
+  veía (mide su posición tras cada render), así que también se animan los órdenes que llegan de
+  fuera y las filas que se deslizan cuando se añade o quita otra.
 - Personalizar por proyecto se hace redefiniendo variables `--mochi-*` en el CSS del proyecto
   (en `:root`, en el contenedor de una página o en un componente con `className`). Probado en el
   navegador el 2026-09-28: el cambio solo afecta a lo que queda dentro.
@@ -166,10 +184,15 @@ interacción en verde y su ficha publicada en el sistema de diseño.
 
 El 2026-09-29, tras el último cambio de código:
 - `npm run typecheck`: sin errores.
-- `npm test`: 75/75 (además de lo anterior: renderizado en servidor de casilla, radio,
-  progreso y esqueleto, con sus roles, estados y valores de formulario).
-- `npm run test:e2e`: 163/163 en Chromium. De los tres nuevos: el negro que crece desde el
-  centro, el check dibujado y transformado en raya, etiqueta pulsable, Espacio sí y Enter no,
+- `npm test`: 80/80 (además de lo anterior: renderizado en servidor de casilla, radio,
+  progreso, esqueleto, paneles y lista, con sus roles, estados y valores de formulario).
+- `npm run test:e2e`: 194/194 en Chromium. De los paneles y la lista: el botón que se
+  transforma en el panel flotante, el foco que entra, Tab que sale y lo cierra, Esc, el toque
+  fuera sin atravesar, «Apply», la hoja en móvil; el panel lateral que entra desde su borde,
+  foco retenido, arrastre que vuelve o cierra, fondo, X y Esc, y su ancho en móvil; la fila
+  que sigue al puntero, las demás que le hacen hueco, el estirón al pasarse, el teclado con sus
+  avisos, Esc, el orden que llega de fuera animado y la pasada en modo desarrollo. De casilla,
+  radio, progreso y esqueleto: el negro que crece desde el centro, el check dibujado y transformado en raya, etiqueta pulsable, Espacio sí y Enter no,
   un solo Tab y flechas en el grupo, errores y foco al enviar, valores del formulario (también
   desactivados, `fieldset` desactivado, valor `""` y reinicio), la barra indeterminada que
   cruza a velocidad constante y se encoge y estira en los bordes, el anillo que gira a ritmo
@@ -177,12 +200,16 @@ El 2026-09-29, tras el último cambio de código:
   `max` 0, la cifra que cuenta desde 0 y por enteros, el esqueleto que se funde y adapta la
   altura, lo que sale al volver a cargar, «reducir movimiento», alto contraste y la pasada en
   modo desarrollo. Sin errores de consola.
-- `npm run design-system`: 42/42 vistas previas sin errores con React 18.3 (desde jsDelivr),
-  marcando una casilla y eligiendo un radio; las de progreso y esqueleto cambian solas en bucle.
-- Los casos de los dos revisores, repetidos tras los arreglos con React 18.2, con y sin
+- `npm run design-system`: 48/48 vistas previas sin errores con React 18.3 (desde jsDelivr),
+  marcando una casilla y eligiendo un radio; las de progreso, esqueleto y lista cambian solas en
+  bucle, y las de los paneles se abren solas. Es lo único que ha probado React 18 en los
+  paneles y la lista.
+- Los casos de los dos revisores de casilla, radio, progreso y esqueleto, repetidos tras los
+  arreglos con React 18.2, con y sin
   StrictMode, en la aplicación de pruebas fuera del repositorio (`/tmp/claude-501/mochi-repro`,
   temporal): todos dan ya el resultado esperado; marcar 300 casillas, 0 recálculos de la página.
-- Capturas revisadas a ojo en claro y oscuro, en escritorio y con colores forzados.
+- Capturas revisadas a ojo en claro y oscuro, en escritorio y con colores forzados; los paneles
+  también a 390 px y la lista a mitad de arrastre.
 
 Sin comprobar: Safari (y el brillo del esqueleto en iOS), Firefox, pantallas táctiles reales,
 lectores de pantalla reales, alto contraste real de Windows (solo emulado en Chromium), la
@@ -196,20 +223,21 @@ Esperan decisión del usuario:
 - **Filo de la casilla y el radio sin marcar.** El planteamiento pedía `surface-border-strong`,
   y así está, pero no llega a 3:1 (WCAG 1.4.11): 1,4:1 en claro y 1,8:1 en oscuro. Propuesta:
   un filo de `on-surface` al 45–50 % (con `color-mix` o un token nuevo).
-- Publicar el sistema de diseño con las tres fichas nuevas (está generado en
-  `design-system/project/`, sin publicar).
+- Publicar el sistema de diseño con las seis fichas nuevas (está generado en
+  `design-system/project/`, sin publicar). Hay un icono nuevo, `GripIcon`: al publicar hay que
+  subirlo y apuntar su id en `design-system-src/uploads.json`.
 
 ## Próximos pasos
 
-1. Decidir el filo de la casilla y el radio, y publicar el sistema de diseño (ver «Bloqueos»).
-2. Los siguientes: panel flotante, panel lateral y lista que se reordena (sin planteamiento
-   todavía).
-3. Al terminarlos, una revisión independiente con contexto limpio, probando también React 18
-   (las tres anteriores encontraron 13, 18 y 18 fallos reales).
-4. Tras cada componente: `npm test`, `npm run test:e2e`, `npm run design-system` y publicar el
-   sistema de diseño en su dirección.
-5. Integrar Mochi en `phsport-app` desde una sesión en esa carpeta.
-6. Al cerrar la tarea: retirar este traspaso y mover lo permanente (la receta, la política de
+1. Que el usuario pruebe en su iPhone el panel lateral (arrastre) y la lista (asa en táctil).
+2. Pasada final de repaso y pulido (acordada con el usuario el 2026-09-29): una revisión
+   independiente con contexto limpio de los componentes sin revisar (panel flotante, panel
+   lateral, lista), probando también React 18 (las tres anteriores encontraron 13, 18 y 18
+   fallos reales); el filo de la casilla y el radio; las dos tareas sueltas (botón que se queda
+   hundido con Espacio y Tab; alto contraste del resto); la versión 0.2.0; y publicar el sistema
+   de diseño (con `GripIcon`).
+3. Integrar Mochi en `phsport-app` desde una sesión en esa carpeta.
+4. Al cerrar la tarea: retirar este traspaso y mover lo permanente (la receta, la política de
    Radix) a documentación estable.
 
 ## Cosas que conviene saber

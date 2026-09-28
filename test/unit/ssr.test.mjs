@@ -43,6 +43,9 @@ const cases = {
   "ProgressRing indeterminado": h(M.ProgressRing, { size: "sm", "aria-label": "Loading" }),
   Skeleton: h(M.Skeleton, { lines: 3 }),
   SkeletonSwap: h(M.SkeletonSwap, { loading: true, skeleton: h(M.Skeleton, { shape: "circle" }) }, "Content"),
+  Popover: h(M.Popover, { label: "Filters", content: "Inside" }, h(M.Button, null, "Filters")),
+  Drawer: h(M.Drawer, { open: true, onOpenChange() {}, title: "Menu" }, "Links"),
+  ReorderList: h(M.ReorderList, { items: ["a", "b"], getKey: x => x, getLabel: x => x, onReorder() {}, renderItem: (x, { handle }) => h("div", null, handle, x) }),
 };
 
 for (const [name, el] of Object.entries(cases)) {
@@ -126,4 +129,19 @@ test("SSR: el esqueleto marca el contenedor como ocupado y lo dice", () => {
   assert.match(html, /aria-busy="true"/);
   assert.match(html, />Loading</);
   assert.doesNotMatch(html, /Content/);
+});
+
+test("SSR: el botón del panel flotante anuncia que abre un diálogo; el panel no se pinta cerrado", () => {
+  const html = renderToString(h(M.Popover, { label: "Filters", content: "Inside" }, h(M.Button, null, "Filters")));
+  assert.match(html, /aria-haspopup="dialog"/);
+  assert.match(html, /aria-expanded="false"/);
+  assert.doesNotMatch(html, /Inside/);
+});
+
+test("SSR: la lista que se reordena lleva sus filas y un asa con nombre en cada una", () => {
+  const html = renderToString(h(M.ReorderList, { "aria-label": "Tracks", items: ["Alpha", "Beta"], getKey: x => x, getLabel: x => x, onReorder() {}, renderItem: (x, { handle }) => h("div", null, handle, x) }));
+  assert.match(html, /<ul[^>]*aria-label="Tracks"/);
+  assert.equal(html.match(/<li/g)?.length, 2);
+  assert.match(html, /aria-label="Reorder Alpha"/);
+  assert.match(html, /aria-label="Reorder Beta"/);
 });

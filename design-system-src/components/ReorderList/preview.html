@@ -1,0 +1,43 @@
+<!-- @dsCard group="Contenido" height=380 subtitle="arrastra por los seis puntos" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ReorderList</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: flex-start; justify-content: center; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+  .w { width: 100%; max-width: 380px; }
+  .t { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding: 8px 18px 8px 8px; border-radius: 9999px; background: var(--mochi-surface); box-shadow: var(--mochi-shadow-surface); color: var(--mochi-on-surface); }
+  .n { flex: 1; }
+  .d { font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  var TRACKS = [["Night Drive", "3:12"], ["Glass Harbour", "4:05"], ["Paper Moons", "2:48"], ["Afterglow", "3:37"], ["Soft Machines", "5:01"]];
+  function Demo() {
+    var s = useState(TRACKS);
+    // en bucle, la última sube a la primera (la primera vez, enseguida): el cambio de orden desde
+    // fuera también se anima
+    useEffect(function () {
+      var id, first = true;
+      var step = function () {
+        s[1](function (a) { return [a[a.length - 1]].concat(a.slice(0, -1)); });
+        id = setTimeout(step, 2400);
+      };
+      id = setTimeout(step, first ? 700 : 2400);
+      return function () { clearTimeout(id); };
+    }, []);
+    return h("div", { className: "w" }, h(M.ReorderList, {
+      "aria-label": "Playlist", items: s[0], onReorder: s[1],
+      getKey: function (t) { return t[0]; }, getLabel: function (t) { return t[0]; },
+      renderItem: function (t, api) { return h("div", { className: "t" }, api.handle, h("span", { className: "n" }, t[0]), h("span", { className: "d" }, t[1])); }
+    }));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

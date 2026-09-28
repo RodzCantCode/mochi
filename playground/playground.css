@@ -158,6 +158,21 @@ a { color: inherit; }
 .profile__avatar { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--mochi-solid); color: var(--mochi-on-solid); font: var(--mochi-text-label); font-weight: 600; }
 .profile p { margin: 0; color: var(--mochi-on-surface-muted); }
 
+.popover-form { display: flex; flex-direction: column; gap: 12px; }
+.popover-form__actions { display: flex; justify-content: flex-end; margin-top: 4px; }
+.person { display: flex; align-items: center; gap: 14px; }
+.avatar-button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--mochi-solid); color: var(--mochi-on-solid); font: var(--mochi-text-label); font-weight: 600; cursor: pointer; }
+.avatar-button:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 3px; }
+.drawer-nav { display: flex; flex-direction: column; gap: 2px; margin: 0 -12px; }
+.drawer-nav__link { display: flex; align-items: center; height: 44px; padding: 0 12px; border: 0; border-radius: var(--mochi-radius-sm); background: transparent; color: var(--mochi-on-surface); font: var(--mochi-text-body-lg); text-align: left; cursor: pointer; }
+.drawer-nav__link:hover { background: var(--mochi-surface-border); }
+.drawer-nav__link[aria-current="page"] { background: var(--mochi-fill); color: var(--mochi-on-fill); }
+.drawer-nav__link:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: -2px; }
+.drawer-note { margin: 0; padding: 12px 0; border-top: 1px solid var(--mochi-surface-border); color: var(--mochi-on-surface-muted); }
+.track { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding: 8px 18px 8px 8px; border-radius: 9999px; background: var(--mochi-surface); box-shadow: var(--mochi-shadow-surface); color: var(--mochi-on-surface); }
+.track__title { flex: 1; min-width: 0; font: var(--mochi-text-body); }
+.track__time { font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); font-variant-numeric: tabular-nums; }
+
 /* ---------------------------------------------------------------- colores */
 
 .colors { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }

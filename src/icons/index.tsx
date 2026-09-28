@@ -60,6 +60,7 @@ export const EyeOffIcon = make("EyeOffIcon", <><path d="M9.9 6.3A9.3 9.3 0 0 1 1
 export const TrashIcon = make("TrashIcon", <><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l.9 12.5h9.2l.9-12.5" /><path d="M10 11v5M14 11v5" /></>);
 export const CopyIcon = make("CopyIcon", <><rect x="8.5" y="8.5" width="11" height="11" rx="2.5" /><path d="M15.5 5.5a2 2 0 0 0-2-2h-7a3 3 0 0 0-3 3v7a2 2 0 0 0 2 2" /></>);
 export const PencilIcon = make("PencilIcon", <><path d="M15 5.5l3.5 3.5L9 18.5l-4.5 1 1-4.5z" /><path d="M13 7.5l3.5 3.5" /></>);
+export const GripIcon = make("GripIcon", <g fill="currentColor" stroke="none"><circle cx="9" cy="6.5" r="1.4" /><circle cx="15" cy="6.5" r="1.4" /><circle cx="9" cy="12" r="1.4" /><circle cx="15" cy="12" r="1.4" /><circle cx="9" cy="17.5" r="1.4" /><circle cx="15" cy="17.5" r="1.4" /></g>);
 export const ShareIcon = make("ShareIcon", <><path d="M12 3.8v11M8 7.5l4-3.7 4 3.7" /><path d="M8.5 10.5H7a2 2 0 0 0-2 2v5.5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5.5a2 2 0 0 0-2-2h-1.5" /></>);
 
 export const PlayIcon = make("PlayIcon", <path d="M7 5.2v13.6a.6.6 0 0 0 .9.5l11-6.8a.6.6 0 0 0 0-1l-11-6.8a.6.6 0 0 0-.9.5z" />, true);

@@ -1,0 +1,38 @@
+<!-- @dsCard group="Superpuestos" height=330 subtitle="el botón se transforma en el panel" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Popover</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: flex-start; justify-content: center; padding: 28px 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+  .f { display: flex; flex-direction: column; gap: 12px; }
+  .a { display: flex; justify-content: flex-end; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  var TYPES = ["Photos", "Videos", "Documents"];
+  function Demo() {
+    var o = useState(false), t = useState(["Photos", "Videos"]);
+    useEffect(function () { var id = setTimeout(function () { o[1](true); }, 500); return function () { clearTimeout(id); }; }, []);
+    return h(M.Popover, {
+      label: "Filters", title: "Show", open: o[0], onOpenChange: o[1],
+      content: function (api) {
+        return h("div", { className: "f" },
+          TYPES.map(function (x) {
+            return h(M.Checkbox, { key: x, label: x, checked: t[0].indexOf(x) >= 0, onCheckedChange: function (on) {
+              t[1](function (a) { return on ? a.concat(x) : a.filter(function (y) { return y !== x; }); });
+            } });
+          }),
+          h("div", { className: "a" }, h(M.Button, { size: "sm", onClick: api.close }, "Apply")));
+      }
+    }, h(M.Button, { variant: "surface", icon: h(M.SlidersIcon, { size: 18 }) }, "Filters"));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

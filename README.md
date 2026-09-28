@@ -18,10 +18,13 @@ Funciona en **Next.js** y **Astro** (como isla de React). Solo depende de React 
 | `ChartCard`, `LineChart` | La línea se dibuja sola; tooltip con puntero o flechas; la cifra cuenta hasta su valor. |
 | `CommandPalette` | Paleta ⌘K: filtra al escribir, el resaltado se desliza, Enter ejecuta, Esc cierra. `useCommandK`, `Kbd` y `CommandPaletteTrigger` incluidos. |
 | `Dialog` | Ventana que crece desde el botón que la abre y vuelve a él; en pantallas estrechas, hoja que sube desde abajo y se cierra arrastrándola. |
+| `Popover` | Panel flotante con contenido libre: el botón se transforma en el panel y vuelve a él. Tab puede salir de él; en pantallas estrechas es una hoja desde abajo. |
+| `Drawer` | Panel lateral de toda la altura que entra desde un borde; se cierra arrastrándolo hacia su borde, con Esc, con la X o tocando fuera. |
 | `Tooltip` | Etiqueta que sale del elemento al pasar el ratón o al enfocarlo; al pasar a otro elemento, viaja hasta él. No aparece en táctil. |
 | `Toaster`, `toast()` | Aviso en píldora; si llega otro, la píldora se transforma en el nuevo. |
 | `Accordion`, `Collapsible` | Secciones que se abren con muelle; abrir una puede cerrar la otra en el mismo movimiento. La búsqueda del navegador abre la sección donde encuentra el texto. |
 | `Tabs` | Pestañas con su contenido: el panel entra en el sentido del indicador y la altura se adapta. |
+| `ReorderList` | Lista que se reordena arrastrando por el asa: la fila sigue al dedo, las demás se apartan y al soltar se asienta. También con teclado, y cualquier cambio de orden se anima. |
 | `Progress`, `ProgressRing` | Barra y anillo de progreso: el valor avanza con un muelle; sin valor, un tramo cruza la barra sin parar, saliendo estirado y encogiéndose al final. Al terminar, el anillo se transforma en un check. |
 | `Skeleton`, `SkeletonSwap` | Huecos con la forma de lo que va a llegar y un brillo que los recorre; al llegar el contenido, se funden en él y la altura se adapta. |
 | `Presence`, `PresenceGroup`, `AutoHeight` | Aparecer y desaparecer con muelle (también en listas) y alturas que siguen a su contenido, para tus propias pantallas. |

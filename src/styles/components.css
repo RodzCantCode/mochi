@@ -1338,6 +1338,170 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
 .mochi-menu__sizer .mochi-menu__item { position: static; }
 [data-mochi-context] { -webkit-touch-callout: none; }
 
+/* ---------------------------------------------------------------- panel flotante */
+
+.mochi-popover-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  font-family: var(--mochi-font-sans);
+  letter-spacing: -0.01em;
+}
+.mochi-popover-root[data-state="closed"] { pointer-events: none; }
+.mochi-popover-catcher { position: absolute; inset: 0; }
+.mochi-popover,
+.mochi-popover__shadow {
+  position: fixed;
+  left: 0;
+  top: 0;
+  will-change: transform, width, height;
+}
+.mochi-popover__shadow { box-shadow: var(--mochi-shadow-overlay); pointer-events: none; }
+.mochi-popover {
+  overflow: hidden;
+  background: var(--mochi-surface);
+  color: var(--mochi-on-surface);
+  box-shadow: inset 0 0 0 1px var(--mochi-surface-border);
+  outline: 0;
+}
+.mochi-popover__reveal {
+  position: absolute;
+  z-index: 0;
+  display: none;
+  background: var(--mochi-surface);
+  pointer-events: none;
+}
+.mochi-popover__ghost { position: absolute; z-index: 1; left: 0; top: 0; pointer-events: none; }
+.mochi-popover__content {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: max-content;
+  min-width: 240px;
+  max-width: 360px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 20px 20px;
+  font: var(--mochi-text-body);
+}
+.mochi-popover__title { margin: 0 0 14px; font: 600 16px/22px var(--mochi-font-sans); letter-spacing: -0.015em; }
+/* dentro del panel, lo que sería superficie blanca va en el tono del lienzo (como en el diálogo) */
+.mochi-popover .mochi-field__box,
+.mochi-popover .mochi-morph[data-tone="surface"],
+.mochi-popover .mochi-morph__reveal[data-tone="surface"] { background: var(--mochi-canvas); box-shadow: none; }
+
+/* ---------------------------------------------------------------- panel lateral */
+
+.mochi-drawer-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  font-family: var(--mochi-font-sans);
+  letter-spacing: -0.01em;
+}
+.mochi-drawer-root[data-state="closed"] { pointer-events: none; }
+.mochi-drawer-scrim { position: absolute; inset: 0; background: var(--mochi-scrim); }
+.mochi-drawer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  border-radius: var(--mochi-radius-xl);
+  background: var(--mochi-surface);
+  color: var(--mochi-on-surface);
+  box-shadow: inset 0 0 0 1px var(--mochi-surface-border), var(--mochi-shadow-overlay);
+  outline: 0;
+  will-change: transform;
+  /* en vertical se desplaza el contenido; en horizontal, se arrastra el panel */
+  touch-action: pan-y;
+}
+.mochi-drawer[data-dragging] { user-select: none; }
+.mochi-drawer__content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 22px 0 0;
+}
+.mochi-drawer__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 0 16px 0 24px;
+}
+.mochi-drawer__title { flex: 1; min-width: 0; margin: 6px 0 0; font: 620 20px/26px var(--mochi-font-sans); letter-spacing: -0.02em; }
+.mochi-drawer__close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--mochi-on-surface-muted);
+  cursor: pointer;
+  transition: background-color 120ms linear, color 120ms linear;
+  -webkit-tap-highlight-color: transparent;
+}
+.mochi-drawer__close:hover { background: var(--mochi-surface-border); color: var(--mochi-on-surface); }
+.mochi-drawer__close:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: -2px; }
+.mochi-drawer__desc { margin: 8px 0 0; padding: 0 24px; font: var(--mochi-text-body); color: var(--mochi-on-surface-muted); }
+.mochi-drawer__body {
+  flex: 1;
+  min-height: 0;
+  margin-top: 16px;
+  padding: 4px 24px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.mochi-drawer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px calc(20px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--mochi-surface-border);
+}
+/* dentro del panel, lo que sería superficie blanca va en el tono del lienzo (como en el diálogo) */
+.mochi-drawer .mochi-field__box,
+.mochi-drawer .mochi-morph[data-tone="surface"],
+.mochi-drawer .mochi-morph__reveal[data-tone="surface"] { background: var(--mochi-canvas); box-shadow: none; }
+
+/* ---------------------------------------------------------------- lista que se reordena */
+
+.mochi-reorder { position: relative; margin: 0; padding: 0; list-style: none; }
+.mochi-reorder[data-dragging] { user-select: none; -webkit-user-select: none; }
+.mochi-reorder__item { position: relative; transform-origin: 50% 50%; }
+/* la que se mueve va por encima y levantada; la sombra sigue la forma de la fila */
+.mochi-reorder__item[data-dragging] {
+  z-index: 2;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.22));
+}
+.mochi-reorder__item { transition: filter var(--mochi-duration-snappy) var(--mochi-ease-snappy); }
+.mochi-reorder__handle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--mochi-radius-sm);
+  background: transparent;
+  color: var(--mochi-on-surface-muted);
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.mochi-reorder__handle:hover { background: var(--mochi-surface-border); color: var(--mochi-on-surface); }
+.mochi-reorder[data-dragging] .mochi-reorder__handle { cursor: grabbing; }
+.mochi-reorder__handle:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: -2px; }
+
 /* ---------------------------------------------------------------- avisos */
 
 .mochi-toaster {

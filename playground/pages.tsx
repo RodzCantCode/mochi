@@ -7,6 +7,10 @@ import {
   ChartDemo,
   CheckboxDemo,
   ChoiceFormDemo,
+  DrawerDetailsDemo,
+  DrawerNavDemo,
+  PopoverDemo,
+  ReorderDemo,
   ProgressStatesDemo,
   RadioDemo,
   SkeletonShapesDemo,
@@ -196,6 +200,31 @@ export const PAGES: Page[] = [
     ],
   },
   {
+    id: "popover",
+    name: "Popover",
+    group: "Superposiciones",
+    isNew: true,
+    summary: "Panel flotante con contenido libre: el botón se transforma en el panel y vuelve a él al cerrar. No tapa la página; en el móvil sale como una hoja desde abajo.",
+    imports: "Popover",
+    overview: () => <PopoverDemo />,
+    sections: [
+      { title: "Filtros y ficha", hint: "Ábrelo y sal con Tab: se cierra y el foco sigue por la página. Esc o un toque fuera también lo cierran.", render: () => <PopoverDemo /> },
+    ],
+  },
+  {
+    id: "drawer",
+    name: "Drawer",
+    group: "Superposiciones",
+    isNew: true,
+    summary: "Panel lateral de toda la altura que entra desde un borde. Se cierra arrastrándolo hacia su borde, con Esc, con la X o tocando fuera.",
+    imports: "Drawer",
+    overview: () => <DrawerDetailsDemo />,
+    sections: [
+      { title: "Navegación", hint: "Desde la izquierda. Arrástralo hacia la izquierda: si lo sueltas pronto vuelve, si lo lanzas se cierra.", render: () => <DrawerNavDemo /> },
+      { title: "Detalles", hint: "Desde la derecha, con las acciones fijas abajo aunque el contenido se desplace.", render: () => <DrawerDetailsDemo /> },
+    ],
+  },
+  {
     id: "tooltip",
     name: "Tooltip",
     group: "Superposiciones",
@@ -292,6 +321,18 @@ export const PAGES: Page[] = [
     sections: [
       { title: "Formas", hint: "Línea, círculo y bloque. Con «reducir movimiento» el brillo se detiene.", render: () => <SkeletonShapesDemo /> },
       { title: "Cambio a contenido", hint: "Pulsa «Reload»: el contenido vuelve a esqueleto y, al llegar, se funde y la tarjeta cambia de alto.", render: () => <SkeletonSwapDemo /> },
+    ],
+  },
+  {
+    id: "reorder",
+    name: "Reorder list",
+    group: "Contenido",
+    isNew: true,
+    summary: "Lista que se reordena arrastrando por el asa: la fila sigue al dedo, las demás se apartan y al soltar se asienta en su hueco. También con teclado.",
+    imports: "ReorderList",
+    overview: () => <ReorderDemo />,
+    sections: [
+      { title: "Lista", hint: "Arrastra por los seis puntos, o enfoca uno y usa Espacio y las flechas. «Sort A–Z» reordena desde fuera: también se anima.", render: () => <ReorderDemo /> },
     ],
   },
   {
