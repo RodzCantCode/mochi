@@ -31,7 +31,7 @@ npm install ../mochi --install-links
 
 `--install-links` copia el paquete ya compilado en vez de enlazar la carpeta. Sin él, el proyecto cargaría el React de Mochi además del suyo y los componentes fallarían. Para recoger cambios de Mochi, vuelve a ejecutar el mismo comando.
 
-Para desplegar en Vercel u otro servidor hará falta que el paquete esté en un sitio accesible (un repositorio de GitHub o un registro de npm): ver «Pendiente» al final.
+Para un proyecto que se despliega (Vercel u otro servidor), la carpeta local no sirve: el paquete está en GitHub y se instala con `npm install github:RodzCantCode/mochi` (sin probar todavía; ver «Pendiente» al final).
 
 Importa los estilos **una vez** y pon la fuente Geist.
 
@@ -158,10 +158,12 @@ npm run typecheck
 npm run design-system  # regenera y comprueba el sistema de diseño
 ```
 
+Para publicar el sitio de pruebas (por ejemplo en Vercel, para verlo en el móvil), la orden de compilación es `npx vite build` y la carpeta que se sirve, `playground-dist`. La compilación por defecto (`npm run build`) solo compila la librería.
+
 La carpeta `reel/` es el prototipo del vídeo con el que nació el sistema (una animación de 14 s a 120 BPM); no forma parte del paquete.
 
 ## Pendiente
 
-- **Distribución para despliegues**: el repositorio existe en GitHub (`RodzCantCode/mochi`, público) pero todavía no se ha subido nada. Una vez subido, se instala con `npm install github:RodzCantCode/mochi`. Falta decidir si se queda público y subirlo.
+- **Distribución para despliegues**: el código está en GitHub (`RodzCantCode/mochi`, público, rama `main`). Falta probar en un proyecto real la instalación con `npm install github:RodzCantCode/mochi`: al instalarse desde Git, npm debe compilarlo (`prepare`). Otra opción es un registro de npm.
 - **App móvil**: cuando se elija la tecnología, los valores (`mochi-ui/tokens`) sirven tal cual; los componentes habrá que rehacerlos para esa plataforma.
 - **Colores de estado**: hay rojo de error (`danger`, `danger-strong`) y «correcto» usa el matcha profundo (`accent-strong`). No hay color de aviso (ámbar); se añadirá si algún componente lo necesita.

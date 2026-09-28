@@ -2,7 +2,7 @@
 
 > **Actualizado:** 2026-09-28. Traspaso temporal: acento cambiado a matcha, rojo de error añadido
 > y tres componentes nuevos (campo de texto, diálogo y hoja, menú) hechos, probados, publicados
-> en el sistema de diseño y con commit local. Lo pendiente de la librería en general está en el
+> en el sistema de diseño y subidos a GitHub. Lo pendiente de la librería en general está en el
 > [README](../../../README.md#pendiente); aquí solo lo de esta tarea.
 
 ## Objetivo
@@ -37,9 +37,9 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   - Arreglados dos fallos que solo se veían en modo desarrollo: el indicador de
     SegmentedControl saltaba sin estirarse y los botones (MorphBox) crecían desde ancho 0 al
     cargar la página.
-- **Git:** dos commits locales: el estado anterior (0.1.0 en azul) y esta tanda. El repositorio
-  de GitHub (`RodzCantCode/mochi`) existe, es **público** y está vacío: todavía no se ha subido
-  nada.
+- **Git:** subido a GitHub (`RodzCantCode/mochi`, **público**, rama `main`): el estado anterior
+  (0.1.0 en azul) y esta tanda. El usuario va a publicar el sitio de pruebas en Vercel para
+  probarlo en su iPhone (compilación y carpeta, en el README, apartado «Desarrollo»).
 - **Siguientes candidatos:** tooltip (web y escritorio) y selector de opciones (en móvil suele
   ser mejor el nativo).
 
@@ -112,13 +112,13 @@ nuevos.
 ## Bloqueos
 
 Ninguno técnico. Esperan decisión del usuario:
-- Si subir los commits a GitHub (el repositorio es público).
 - Si subir la versión a 0.2.0 antes de subirlo.
 - Qué componente sigue: tooltip o selector.
 
 ## Próximos pasos
 
-1. Si el usuario lo pide: subir los commits a GitHub.
+1. Recoger lo que el usuario vea en el iPhone (Safari real y táctil real: pulsación larga,
+   arrastre de la hoja, teclado sobre los campos).
 2. Siguiente componente con la receta de arriba (propuesta: tooltip, que reutiliza la
    colocación del menú).
 3. Tras cada componente: `npm test`, `npm run test:e2e`, `npm run design-system` y publicar el
