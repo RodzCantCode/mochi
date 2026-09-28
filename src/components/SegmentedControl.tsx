@@ -13,6 +13,8 @@ export interface SegmentedOption {
   label: ReactNode;
   /** Id del panel que controla la pestaña, si lo hay. */
   controls?: string;
+  /** Id de la pestaña (para que su panel la nombre con aria-labelledby). */
+  id?: string;
   disabled?: boolean;
 }
 
@@ -107,8 +109,11 @@ export function SegmentedControl({
         next = (next + move + options.length) % options.length;
         if (!options[next]?.disabled) break;
       }
-    } else if (e.key === "Home") next = 0;
-    else if (e.key === "End") next = last;
+    } else if (e.key === "Home" || e.key === "End") {
+      // la primera (o la última) que se puede elegir
+      const enabled = options.map((o, i) => (o.disabled ? -1 : i)).filter(i => i >= 0);
+      next = (e.key === "Home" ? enabled[0] : enabled[enabled.length - 1]) ?? -1;
+    }
     if (next < 0) return;
     e.preventDefault();
     select(next);
@@ -133,7 +138,7 @@ export function SegmentedControl({
           }}
           type="button"
           role="tab"
-          id={`${baseId}-${i}`}
+          id={o.id ?? `${baseId}-${i}`}
           aria-selected={i === index}
           aria-controls={o.controls}
           tabIndex={i === index ? 0 : -1}

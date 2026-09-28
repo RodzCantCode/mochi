@@ -1,0 +1,35 @@
+<!-- @dsCard group="Base" height=260 subtitle="añade y quita filas: se abren y se cierran" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Motion</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: flex-start; justify-content: center; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+  .w { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
+  ul { margin: 0; padding: 0; list-style: none; }
+  .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 10px 10px 10px 18px; border-radius: 9999px; background: var(--mochi-surface); box-shadow: var(--mochi-shadow-surface); }
+  .x { border: 0; background: none; color: var(--mochi-on-surface-muted); cursor: pointer; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useRef = React.useRef;
+  function Demo() {
+    var t = useState([{ id: 1, text: "Mix the second track" }, { id: 2, text: "Send stems to Grace" }]), n = useRef(3);
+    var names = ["Pick a cover photo", "Book the studio", "Write the credits"];
+    return h("div", { className: "w" },
+      h("div", null, h(M.Button, { size: "sm", variant: "surface", icon: h(M.PlusIcon, { size: 16 }), onClick: function () {
+        var id = n.current++; t[1](t[0].concat([{ id: id, text: names[id % names.length] }]));
+      } }, "Add task")),
+      h(M.PresenceGroup, { as: "ul", itemAs: "li" }, t[0].map(function (x) {
+        return h("div", { key: x.id, className: "row" }, x.text,
+          h("button", { className: "x", "aria-label": "Remove " + x.text, onClick: function () { t[1](t[0].filter(function (y) { return y.id !== x.id; })); } }, h(M.CloseIcon, { size: 16 })));
+      })));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

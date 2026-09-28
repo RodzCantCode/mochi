@@ -36,7 +36,7 @@ Mochi es un sistema de interfaz con una idea: **una sola forma que se transforma
 
 ## Forma, espacio y sombra
 
-- Por defecto, las formas son píldoras (`radius-full`): botones, interruptor, pestañas, slider, campos de texto y selectores, toast, island. Las tarjetas y los diálogos usan `radius-xl`, la paleta, los menús y las listas de los selectores `radius-lg`, la carátula y el resaltado del menú `radius-md`, las filas de la paleta y el tooltip `radius-sm`, las teclas `radius-xs`.
+- Por defecto, las formas son píldoras (`radius-full`): botones, interruptor, pestañas, slider, campos de texto y selectores, toast, island. Las tarjetas y los diálogos usan `radius-xl`; la paleta, los menús, las listas de los selectores y los acordeones, `radius-lg`; la carátula y el resaltado del menú, `radius-md`; las filas de la paleta y el tooltip, `radius-sm`, y las teclas, `radius-xs`.
 - Los rellenos siguen la escala de espaciado: `space-1` es el margen de las bolitas e indicadores dentro de su pista, `space-5` el relleno de tarjetas.
 - `shadow-surface` levanta `solid` y `surface` del lienzo; `shadow-thumb`, bolitas e indicadores; `shadow-pop`, el tooltip; `shadow-overlay`, la paleta, los menús y los diálogos sobre `scrim`.
 
@@ -59,6 +59,8 @@ No hay valores de movimiento en la tabla de tokens: viven en el código (`mochi-
 
 - Lo que se desplaza (indicador de pestañas, bolita del interruptor) mueve sus dos bordes con muelles distintos: el de delante en `lead` y el de detrás en `trail`.
 - En los arrastres manda el puntero: mientras está pulsado, el valor sale de su posición. Al pasar de un límite, la forma se estira con resistencia creciente; al soltar vuelve con `back` y la velocidad que llevaba.
+- Lo que aparece en línea (un aviso, una fila nueva, una sección que se abre) abre primero su hueco con `morph` y el contenido entra 60 ms después; al irse, el contenido sale con `fadeOut` y el hueco se cierra. Lo de alrededor se desliza, nunca salta.
+- Lo que cambia de sitio en un sentido (pestañas) se desplaza en ese sentido: el contenido nuevo llega desde donde va el indicador.
 - Todo se puede interrumpir a mitad sin saltos.
 - Con «reducir movimiento» activado, los muelles saltan al destino.
 

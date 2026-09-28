@@ -303,11 +303,11 @@ try {
   check("tooltip: espera un poco y aparece al pasar el ratón", early === 0 && (await tipEl.textContent()) === "Duplicate" && (await dup.getAttribute("aria-describedby"))?.includes(tipId), `a los 200 ms: ${early}`);
   await page.getByRole("button", { name: "Share" }).first().hover();
   await sleep(120);
-  check("tooltip: al pasar al siguiente viaja y cambia el texto sin esperar", (await page.locator(".mochi-tooltip").count()) === 1 && /Share/.test((await page.locator('.mochi-tooltip [aria-hidden="true"]').count()) ? await page.locator(".mochi-tooltip .mochi-swap__layer:not([data-leaving])").textContent() : ""));
+  check("tooltip: al pasar al siguiente viaja y cambia el texto sin esperar", (await page.locator(".mochi-tooltip").count()) === 1 && /Share/.test((await page.locator(".mochi-tooltip").count()) ? await page.locator(".mochi-tooltip .mochi-tooltip__layer:not([data-leaving])").textContent() : ""));
   await page.screenshot({ path: `${OUT}/tooltip.png` });
   await page.mouse.move(5, 5);
   await sleep(600);
-  check("tooltip: al salir el ratón se va", (await page.locator('.mochi-tooltip[data-state="open"]').count()) === 0);
+  check("tooltip: al salir el ratón se va, y fuera del árbol de accesibilidad", (await page.locator('.mochi-tooltip[data-state="open"]').count()) === 0 && (await page.locator(".mochi-tooltip").getAttribute("aria-hidden")) === "true");
   await page.getByRole("button", { name: "Rename" }).first().focus();
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Tab");
@@ -346,10 +346,157 @@ try {
   await sleep(600);
   await page.getByRole("option", { name: "Japan" }).click();
   await sleep(700);
+  check("selector: al elegir con el ratón el foco sigue en el campo", (await page.evaluate(() => document.activeElement?.getAttribute("role"))) === "combobox");
   check("selector: un clic en una opción la elige", /Japan/.test((await country.textContent()) ?? "") && (await page.locator('select[aria-hidden="true"]').nth(1).inputValue()) === "japan");
   await page.screenshot({ path: `${OUT}/select.png` });
+  await sizeBox.focus();
+  await page.keyboard.press("Enter");
+  await sleep(500);
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press(" ");
+  await sleep(600);
+  await page.keyboard.press("Enter");
+  await sleep(500);
+  check("selector: tras elegir con espacio, Enter lo vuelve a abrir", (await sizeBox.getAttribute("aria-expanded")) === "true");
+  await page.keyboard.press("Escape");
+  await sleep(500);
+
+  // --- acordeón
+  await page.goto(URL_ + "#/accordion");
+  await sleep(500);
+  const faq = page.locator(".demo-accordion").first();
+  const regionOf = async trigger => page.locator(`[id="${await trigger.getAttribute("aria-controls")}"]`);
+  const ship = faq.getByRole("button", { name: "How long does shipping take?" });
+  const ret = faq.getByRole("button", { name: "Can I return an item?" });
+  const shipRegion = await regionOf(ship);
+  const retRegion = await regionOf(ret);
+  const hOf = loc => loc.evaluate(e => e.getBoundingClientRect().height);
+  const shipOpenH = await hOf(shipRegion);
+  await ret.click();
+  await sleep(90);
+  const midRet = await hOf(retRegion), midShip = await hOf(shipRegion);
+  await sleep(900);
+  const endRet = await hOf(retRegion);
+  check("acordeón: abrir una la despliega con muelle", midRet > 4 && midRet < endRet - 4, `a los 90 ms ${midRet.toFixed(0)} de ${endRet.toFixed(0)}`);
+  check("acordeón: y la que estaba abierta se recoge a la vez", midShip < shipOpenH - 4 && midShip > 1, `a los 90 ms ${midShip.toFixed(0)} de ${shipOpenH.toFixed(0)}`);
+  check("acordeón: la cerrada queda oculta, pero la búsqueda del navegador la encuentra", (await shipRegion.getAttribute("hidden")) === "until-found" && (await ship.getAttribute("aria-expanded")) === "false" && (await ret.getAttribute("aria-expanded")) === "true");
+  await page.screenshot({ path: `${OUT}/accordion.png` });
+  await ship.focus();
+  await page.keyboard.press("ArrowDown");
+  const f1 = await focusedName(page);
+  await page.keyboard.press("End");
+  const f2 = await focusedName(page);
+  await page.keyboard.press("Home");
+  const f3 = await focusedName(page);
+  check("acordeón: flechas, Inicio y Fin entre cabeceras", f1 === "Can I return an item?" && f2 === "Do you offer gift wrapping?" && f3 === "How long does shipping take?", `${f1} · ${f2} · ${f3}`);
+  const settings = page.locator(".demo-accordion").nth(1);
+  const team = settings.getByRole("button", { name: "Team" });
+  await team.click();
+  await sleep(700);
+  await settings.getByRole("textbox", { name: "Invite by email" }).fill("ada@example.com");
+  await team.click();
+  await sleep(900);
+  await team.click();
+  await sleep(700);
+  check("acordeón: lo escrito dentro se conserva al cerrar y abrir", (await settings.getByRole("textbox", { name: "Invite by email" }).inputValue()) === "ada@example.com");
+  check("acordeón: una sección desactivada no se abre", (await settings.getByRole("button", { name: "Billing" }).isDisabled()) === true);
+  const adv = page.getByRole("button", { name: "Advanced options" });
+  const advRegion = page.locator(`[id="${await adv.getAttribute("aria-controls")}"]`);
+  await advRegion.evaluate(e => e.dispatchEvent(new Event("beforematch")));
+  await sleep(800);
+  check("desplegable: si la búsqueda encuentra algo dentro, se abre", (await adv.getAttribute("aria-expanded")) === "true" && (await advRegion.getAttribute("hidden")) === null);
+
+  // --- pestañas con contenido
+  await page.goto(URL_ + "#/tabs");
+  await sleep(500);
+  const tabsCard = page.locator(".tabs-card").first();
+  const panelsH = () => tabsCard.locator(".mochi-autoheight").evaluate(e => e.getBoundingClientRect().height);
+  const h0 = await panelsH();
+  await tabsCard.getByRole("tab", { name: "Activity" }).click();
+  await sleep(70);
+  const layerX = () =>
+    tabsCard.evaluate(c =>
+      [...c.querySelectorAll(".mochi-swap__layer")].map(l => ({ leaving: l.hasAttribute("data-leaving"), x: new DOMMatrix(getComputedStyle(l).transform).m41 })),
+    );
+  const right = await layerX();
+  const hMid = await panelsH();
+  await sleep(900);
+  const h1 = await panelsH();
+  check("pestañas: el panel en reposo no lleva transform (lo fijo de dentro sigue a la ventana)", (await tabsCard.locator(".mochi-swap__layer:not([data-leaving])").evaluate(e => getComputedStyle(e).transform)) === "none");
+  check("pestañas: hacia la derecha, el panel viejo sale por la izquierda y el nuevo entra por la derecha", right.some(l => l.leaving && l.x < -0.5) && right.some(l => !l.leaving && l.x > 0.5), JSON.stringify(right));
+  check("pestañas: la altura se adapta con muelle", hMid > h0 + 2 && hMid < h1 - 2, `${h0.toFixed(0)} → ${hMid.toFixed(0)} → ${h1.toFixed(0)}`);
+  const panel = tabsCard.getByRole("tabpanel");
+  check("pestañas: el panel se llama como su pestaña", (await page.locator(`[id="${await panel.getAttribute("aria-labelledby")}"]`).textContent()) === "Activity");
+  await tabsCard.getByRole("tab", { name: "Overview" }).click();
+  await sleep(70);
+  const left = await layerX();
+  check("pestañas: hacia la izquierda, al revés", left.some(l => l.leaving && l.x > 0.5) && left.some(l => !l.leaving && l.x < -0.5), JSON.stringify(left));
+  await sleep(700);
+
+  // --- piezas de movimiento
+  await page.goto(URL_ + "#/motion");
+  await sleep(500);
+  const after = page.getByText("Export the project any time from the menu.");
+  const y0 = (await box(after)).y;
+  await page.getByRole("button", { name: "Show notice" }).click();
+  await sleep(100);
+  const yMid = (await box(after)).y;
+  await sleep(900);
+  const y1 = (await box(after)).y;
+  check("Presence: el aviso abre su hueco y lo de debajo se desliza", yMid > y0 + 2 && yMid < y1 - 2, `${y0.toFixed(0)} → ${yMid.toFixed(0)} → ${y1.toFixed(0)}`);
+  await page.getByRole("button", { name: "Hide notice" }).click();
+  await sleep(1000);
+  check("Presence: al quitarlo se va, se desmonta y el hueco se cierra", (await page.getByText("You are offline.").count()) === 0 && Math.abs((await box(after)).y - y0) < 1);
+  const nextTask = page.getByText("Pick a cover photo");
+  const ty0 = (await box(nextTask)).y;
+  await page.getByRole("button", { name: "Remove Send stems to Grace" }).click();
+  await sleep(110);
+  const tyMid = (await box(nextTask)).y;
+  await sleep(900);
+  const ty1 = (await box(nextTask)).y;
+  check("PresenceGroup: al quitar una fila, las de debajo suben sin saltar", tyMid < ty0 - 2 && tyMid > ty1 + 2 && (await page.getByText("Send stems to Grace").count()) === 0, `${ty0.toFixed(0)} → ${tyMid.toFixed(0)} → ${ty1.toFixed(0)}`);
+  await page.getByRole("textbox", { name: "New task" }).fill("Book the studio");
+  await page.keyboard.press("Enter");
+  await sleep(90);
+  const newH = await page.locator(".task-list > li").last().evaluate(e => e.getBoundingClientRect().height);
+  await sleep(900);
+  const newH1 = await page.locator(".task-list > li").last().evaluate(e => e.getBoundingClientRect().height);
+  check("PresenceGroup: la fila nueva abre su hueco", newH < newH1 - 2 && (await page.getByText("Book the studio").count()) === 1, `${newH.toFixed(0)} → ${newH1.toFixed(0)}`);
+  // los dos clics seguidos sin esperar a que se quede quieto (Playwright esperaría a que acabe)
+  await page.evaluate(() => {
+    const btn = n => document.querySelector(`[aria-label="Remove ${n}"]`);
+    btn("Mix the second track")?.click();
+    setTimeout(() => btn("Pick a cover photo")?.click(), 40);
+  });
+  await sleep(120);
+  const orderMid = await page.locator(".task-list > li").allTextContents();
+  const idx = t => orderMid.findIndex(x => x.includes(t));
+  check("PresenceGroup: al quitar dos seguidas, las que salen no cambian de orden", idx("Mix") >= 0 && idx("Mix") < idx("Pick") && idx("Pick") < idx("Book"), JSON.stringify(orderMid));
+  await sleep(900);
+  const card = page.locator(".autoheight-card .mochi-autoheight");
+  const ah0 = await hOf(card);
+  await page.getByRole("button", { name: "Read more" }).click();
+  await sleep(90);
+  const ahMid = await hOf(card);
+  await sleep(900);
+  const ah1 = await hOf(card);
+  check("AutoHeight: la tarjeta crece con su texto", ahMid > ah0 + 2 && ahMid < ah1 - 2 && (await card.evaluate(e => e.style.height)) === "", `${ah0.toFixed(0)} → ${ahMid.toFixed(0)} → ${ah1.toFixed(0)}`);
 
   // --- casos límite de las superposiciones
+  await page.goto(URL_ + "#/_cases/menu-tooltip");
+  await sleep(500);
+  for (const [id, label] of [["mt1", "menú fuera"], ["mt2", "tooltip fuera"]]) {
+    await page.mouse.move(5, 5);
+    await sleep(400);
+    await page.hover(`#${id}`);
+    await sleep(800);
+    const tipShown = (await page.locator('.mochi-tooltip[data-state="open"]').count()) === 1;
+    await page.click(`#${id}`);
+    await sleep(600);
+    check(`menú y tooltip juntos (${label}): sale el tooltip y se abre el menú`, tipShown && (await page.locator(`#${id}`).getAttribute("aria-expanded")) === "true" && (await page.getByRole("menu").count()) === 1);
+    await page.keyboard.press("Escape");
+    await sleep(700);
+  }
   await page.goto(URL_ + "#/_cases/nested");
   await sleep(400);
   await page.click("#open-a");
@@ -539,6 +686,22 @@ try {
   const dMid = await box(dseg.locator(".mochi-seg__indicator"));
   check("desarrollo: el indicador de pestañas también se estira", dMid.width > dRest.width * 1.15, `ancho ${dMid.width.toFixed(1)} vs ${dRest.width.toFixed(1)}`);
   const widths = await dev.evaluate(() => window.__widths);
+  await dev.goto(DEV_URL + "#/accordion");
+  await sleep(500);
+  const dret = dev.getByRole("button", { name: "Can I return an item?" }).first();
+  const dRegion = dev.locator(`[id="${await dret.getAttribute("aria-controls")}"]`);
+  await dret.click();
+  await sleep(90);
+  const dMidH = await dRegion.evaluate(e => e.getBoundingClientRect().height);
+  await sleep(900);
+  const dEndH = await dRegion.evaluate(e => e.getBoundingClientRect().height);
+  check("desarrollo: el acordeón también se despliega con muelle", dMidH > 4 && dMidH < dEndH - 4, `${dMidH.toFixed(0)} de ${dEndH.toFixed(0)}`);
+  await dev.goto(DEV_URL + "#/tabs");
+  await sleep(500);
+  await dev.getByRole("tab", { name: "Activity" }).first().click();
+  await sleep(70);
+  const dLayers = await dev.locator(".tabs-card .mochi-swap__layer").count();
+  check("desarrollo: las pestañas también cambian de panel animando", dLayers === 2, `${dLayers} capas`);
   check("desarrollo: los botones salen con su tamaño, sin crecer desde 0", widths.length > 0 && Math.min(...widths) > 100, `mínimo ${Math.min(...widths).toFixed(0)} px`);
   await dev.context().close();
 

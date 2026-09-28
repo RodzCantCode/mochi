@@ -126,6 +126,10 @@ export function Select({
       }
     }
   };
+  // si Chrome no suelta ese clic, el aviso no puede quedarse puesto para el siguiente
+  const onKeyUp = (e: KeyboardEvent<HTMLElement>) => {
+    if (e.key === " " && skipClick.current) setTimeout(() => (skipClick.current = false), 0);
+  };
   const onClick = (e: MouseEvent<HTMLElement>) => {
     if (skipClick.current && e.detail === 0) {
       skipClick.current = false;
@@ -153,6 +157,7 @@ export function Select({
     tabIndex: native ? -1 : 0,
     disabled,
     onKeyDown,
+    onKeyUp,
     onClick,
   };
 

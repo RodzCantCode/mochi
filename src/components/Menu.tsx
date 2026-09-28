@@ -7,19 +7,20 @@
 import {
   Children,
   cloneElement,
+  forwardRef,
   isValidElement,
   useEffect,
   useId,
   useRef,
   useState,
-  version,
+  type HTMLAttributes,
   type KeyboardEvent,
   type MouseEvent,
   type PointerEvent,
   type ReactElement,
   type ReactNode,
-  type Ref,
 } from "react";
+import { mergeProps, refOf } from "../internal/slot.js";
 import { useControllable } from "../internal/useControllable.js";
 import { mergeRefs } from "../internal/refs.js";
 import { ListPopup, enabledOf, useListKeys, type PopupEntry } from "../internal/listPopup.js";
@@ -82,7 +83,7 @@ function useMenuList(items: MenuEntry[], close: () => void) {
 // ---------------------------------------------------------------------------------------
 // Menú con botón
 
-export interface MenuProps {
+export interface MenuProps extends Omit<HTMLAttributes<HTMLElement>, "children"> {
   items: MenuEntry[];
   /** El botón que lo abre. Recibe ref, onClick, onKeyDown y los atributos ARIA. */
   children: ReactElement;
@@ -94,10 +95,11 @@ export interface MenuProps {
   minWidth?: number;
 }
 
-const childRef = (el: ReactElement): Ref<unknown> | undefined =>
-  Number.parseInt(version, 10) >= 19 ? (el.props as { ref?: Ref<unknown> }).ref : (el as unknown as { ref?: Ref<unknown> }).ref;
-
-export function Menu({ items, children, placement = "bottom-start", open: openProp, onOpenChange, label, minWidth = 200 }: MenuProps) {
+/** Los atributos que recibe (p. ej. de un Tooltip que lo envuelve) pasan a su botón. */
+export const Menu = forwardRef<HTMLElement, MenuProps>(function Menu(
+  { items, children, placement = "bottom-start", open: openProp, onOpenChange, label, minWidth = 200, ...outer },
+  ref,
+) {
   const [open, setOpen] = useControllable(openProp, false, onOpenChange);
   const trigger = useRef<HTMLElement | null>(null);
   const menuId = useId();
@@ -105,7 +107,7 @@ export function Menu({ items, children, placement = "bottom-start", open: openPr
   const list = useMenuList(items, () => setOpen(false));
   const child = Children.only(children);
   if (!isValidElement(child)) return null;
-  const props = child.props as Record<string, unknown> & {
+  const props = mergeProps(child.props as Record<string, unknown>, outer as Record<string, unknown>) as Record<string, unknown> & {
     onClick?: (e: MouseEvent<HTMLElement>) => void;
     onKeyDown?: (e: KeyboardEvent<HTMLElement>) => void;
   };
@@ -115,7 +117,8 @@ export function Menu({ items, children, placement = "bottom-start", open: openPr
     setOpen(true);
   };
   const triggerEl = cloneElement(child as ReactElement<Record<string, unknown>>, {
-    ref: mergeRefs(childRef(child), (el: unknown) => {
+    ...props,
+    ref: mergeRefs(refOf(child), ref, (el: unknown) => {
       trigger.current = el as HTMLElement | null;
     }),
     id: triggerId,
@@ -155,13 +158,14 @@ export function Menu({ items, children, placement = "bottom-start", open: openPr
         minWidth={minWidth}
         role="menu"
         label={label}
-        labelledBy={label ? undefined : triggerId}
+        // el id real del botón: si el hijo es otro envoltorio (un Tooltip), el botón conserva el suyo
+        labelledBy={label ? undefined : trigger.current?.id || triggerId}
         takeFocus
         onKeyDown={list.onKeyDown}
       />
     </>
   );
-}
+});
 
 // ---------------------------------------------------------------------------------------
 // Menú contextual

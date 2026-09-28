@@ -19,6 +19,9 @@ Funciona en **Next.js** y **Astro** (como isla de React). Solo depende de React 
 | `Dialog` | Ventana que crece desde el botón que la abre y vuelve a él; en pantallas estrechas, hoja que sube desde abajo y se cierra arrastrándola. |
 | `Tooltip` | Etiqueta que sale del elemento al pasar el ratón o al enfocarlo; al pasar a otro elemento, viaja hasta él. No aparece en táctil. |
 | `Toaster`, `toast()` | Aviso en píldora; si llega otro, la píldora se transforma en el nuevo. |
+| `Accordion`, `Collapsible` | Secciones que se abren con muelle; abrir una puede cerrar la otra en el mismo movimiento. La búsqueda del navegador abre la sección donde encuentra el texto. |
+| `Tabs` | Pestañas con su contenido: el panel entra en el sentido del indicador y la altura se adapta. |
+| `Presence`, `PresenceGroup`, `AutoHeight` | Aparecer y desaparecer con muelle (también en listas) y alturas que siguen a su contenido, para tus propias pantallas. |
 | `MorphBox`, `Swap` | Las piezas base, por si quieres construir tus propios estados. |
 
 Todos se manejan con teclado y lector de pantalla, y respetan «reducir movimiento» del sistema.

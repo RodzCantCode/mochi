@@ -26,6 +26,13 @@ const cases = {
   Select: h(M.Select, { label: "Size", defaultValue: "m", options: [{ value: "s", label: "Small" }, { value: "m", label: "Medium" }] }),
   "Select compacto": h(M.Select, { label: "Sort", size: "sm", placeholder: "Sort by", options: [{ value: "a", label: "A" }] }),
   Tooltip: h(M.Tooltip, { content: "Copy" }, h(M.Button, { iconOnly: true, "aria-label": "Copy" }, h(M.CopyIcon))),
+  Collapsible: h(M.Collapsible, { title: "Advanced" }, "Hidden content"),
+  Accordion: h(M.Accordion, { defaultValue: ["a"] }, h(M.AccordionItem, { value: "a", title: "A" }, "One"), h(M.AccordionItem, { value: "b", title: "B" }, "Two")),
+  Tabs: h(M.Tabs, { items: [{ value: "a", label: "A", content: "Panel A" }, { value: "b", label: "B", content: "Panel B" }] }),
+  Presence: h(M.Presence, { show: true, collapse: true }, "Hi"),
+  "Presence oculto": h(M.Presence, { show: false }, "Hi"),
+  PresenceGroup: h(M.PresenceGroup, null, h("div", { key: "a" }, "A"), h("div", { key: "b" }, "B")),
+  AutoHeight: h(M.AutoHeight, null, "Content"),
   ContextMenu: h(M.ContextMenu, { items: [{ id: "a", label: "A", onSelect() {} }] }, h("div", null, "Area")),
 };
 
@@ -59,4 +66,22 @@ test("SSR: el selector es un combobox con su valor y un <select> para formulario
   assert.match(html, /role="combobox"/);
   assert.match(html, /Medium/);
   assert.match(html, /<select[^>]*name="size"/);
+});
+
+test("SSR: una sección cerrada lleva su contenido, recogido, y lo anuncia", () => {
+  const html = renderToString(h(M.Collapsible, { title: "Advanced" }, "Hidden content"));
+  assert.match(html, /aria-expanded="false"/);
+  assert.match(html, /Hidden content/);
+  assert.match(html, /height:0/);
+});
+
+test("SSR: el panel de una pestaña se llama como su pestaña", () => {
+  const html = renderToString(h(M.Tabs, { items: [{ value: "a", label: "Alpha", content: "Panel A" }] }));
+  const labelledby = /role="tabpanel"[^>]*aria-labelledby="([^"]+)"/.exec(html)?.[1] ?? /aria-labelledby="([^"]+)"[^>]*role="tabpanel"/.exec(html)?.[1];
+  assert.ok(labelledby);
+  assert.match(html, new RegExp(`id="${labelledby}"[^>]*>Alpha<`));
+});
+
+test("SSR: Presence sin mostrar no pinta nada", () => {
+  assert.equal(renderToString(h(M.Presence, { show: false }, "Hi")), "");
 });

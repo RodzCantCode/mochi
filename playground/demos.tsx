@@ -3,6 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import {
   type MenuEntry,
+  Accordion,
+  AccordionItem,
+  AlertIcon,
+  AutoHeight,
+  CloseIcon,
+  Collapsible,
+  PlusIcon,
+  Presence,
+  PresenceGroup,
+  SaveIcon,
+  SlidersIcon,
+  Tabs,
+  UserPlusIcon,
   ArrowRightIcon,
   Button,
   ChartCard,
@@ -553,6 +566,214 @@ export function SelectPillDemo() {
           { value: "name", label: "Name" },
         ]}
       />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------------------
+// Desplegable y acordeón
+
+const FAQ = [
+  { value: "ship", title: "How long does shipping take?", body: "Orders leave our warehouse within two working days. Delivery takes 2–4 days in Europe and 5–8 days everywhere else." },
+  { value: "return", title: "Can I return an item?", body: "Yes, within 30 days. Start the return from your account and print the label; refunds arrive within a week of us receiving the parcel. Items must be unused and in their original packaging, and sale items can be exchanged but not refunded." },
+  { value: "size", title: "How do I pick my size?", body: "Each product page has a size guide. If you are between two sizes, choose the larger one." },
+  { value: "gift", title: "Do you offer gift wrapping?", body: "Not yet." },
+];
+
+/** Una abierta cada vez: abrir otra cierra la anterior en el mismo movimiento. */
+export function AccordionFaqDemo() {
+  return (
+    <div className="stage wide-stage">
+      <Accordion defaultValue={["ship"]} className="demo-accordion">
+        {FAQ.map(f => (
+          <AccordionItem key={f.value} value={f.value} title={f.title}>
+            <p>{f.body}</p>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
+}
+
+/** Varias abiertas; lo de dentro se conserva al cerrar (escribe algo y ciérrala). */
+export function AccordionSettingsDemo() {
+  const [push, setPush] = useState(true);
+  const [digest, setDigest] = useState(false);
+  const [name, setName] = useState("");
+  return (
+    <div className="stage wide-stage">
+      <Accordion multiple defaultValue={["notify"]} className="demo-accordion">
+        <AccordionItem value="notify" title="Notifications" icon={<SlidersIcon size={18} />}>
+          <label className="setting-row">
+            <span>Push notifications</span>
+            <Switch size="sm" checked={push} onCheckedChange={setPush} aria-label="Push notifications" />
+          </label>
+          <label className="setting-row">
+            <span>Weekly digest</span>
+            <Switch size="sm" checked={digest} onCheckedChange={setDigest} aria-label="Weekly digest" />
+          </label>
+        </AccordionItem>
+        <AccordionItem value="team" title="Team" icon={<UserPlusIcon size={18} />}>
+          <div className="setting-form">
+            <TextField label="Invite by email" value={name} onValueChange={setName} placeholder="name@company.com" />
+          </div>
+        </AccordionItem>
+        <AccordionItem value="billing" title="Billing" icon={<SaveIcon size={18} />} disabled>
+          <p>Only admins can change billing.</p>
+        </AccordionItem>
+      </Accordion>
+    </div>
+  );
+}
+
+/** Suelto y plano, dentro de un formulario. */
+export function CollapsibleDemo() {
+  return (
+    <div className="stage col form">
+      <TextField label="Project name" defaultValue="Night Drive" />
+      <Collapsible title="Advanced options" variant="plain">
+        <div className="setting-form">
+          <TextField label="Slug" defaultValue="night-drive" />
+          <TextField label="Webhook URL" placeholder="https://" />
+        </div>
+      </Collapsible>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------------------
+// Pestañas con contenido
+
+const ACTIVITY = ["Ada renamed the project", "Grace invited Linus", "Linus uploaded 12 files", "Ada changed the cover", "Grace left a comment"];
+
+export function TabsDemo() {
+  const [wifi, setWifi] = useState(true);
+  return (
+    <div className="stage wide-stage">
+      <div className="tabs-card">
+        <Tabs
+          aria-label="Project"
+          items={[
+            {
+              value: "overview",
+              label: "Overview",
+              content: <p className="tabs-copy">Night Drive is a synth-pop record in progress: nine tracks, two collaborators and a release planned for spring.</p>,
+            },
+            {
+              value: "activity",
+              label: "Activity",
+              content: (
+                <ul className="tabs-list">
+                  {ACTIVITY.map(a => (
+                    <li key={a}>{a}</li>
+                  ))}
+                </ul>
+              ),
+            },
+            {
+              value: "settings",
+              label: "Settings",
+              content: (
+                <label className="setting-row">
+                  <span>Public link</span>
+                  <Switch size="sm" checked={wifi} onCheckedChange={setWifi} aria-label="Public link" />
+                </label>
+              ),
+            },
+          ]}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------------------
+// Movimiento
+
+/** Un aviso en línea que abre su hueco: los párrafos de alrededor se deslizan. */
+export function PresenceDemo() {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="stage col wide-stage">
+      <div className="presence-copy">
+        <p>Your changes are saved automatically while you edit.</p>
+        <Presence show={show} collapse effect="rise">
+          <div className="inline-notice" role="status">
+            <AlertIcon size={18} />
+            <span>You are offline. Changes will sync when you reconnect.</span>
+          </div>
+        </Presence>
+        <p>Export the project any time from the menu.</p>
+      </div>
+      <Button variant="surface" size="sm" onClick={() => setShow(s => !s)}>
+        {show ? "Hide notice" : "Show notice"}
+      </Button>
+    </div>
+  );
+}
+
+/** Lista con presencia: las filas nuevas abren su hueco; las que se quitan lo cierran. */
+export function PresenceGroupDemo() {
+  const [tasks, setTasks] = useState([
+    { id: 1, text: "Mix the second track" },
+    { id: 2, text: "Send stems to Grace" },
+    { id: 3, text: "Pick a cover photo" },
+  ]);
+  const [draft, setDraft] = useState("");
+  const nextId = useRef(4);
+  const add = () => {
+    const text = draft.trim();
+    if (!text) return;
+    setTasks(t => [...t, { id: nextId.current++, text }]);
+    setDraft("");
+  };
+  return (
+    <div className="stage col form">
+      <form
+        className="task-add"
+        onSubmit={e => {
+          e.preventDefault();
+          add();
+        }}
+      >
+        <TextField label="New task" value={draft} onValueChange={setDraft} />
+        <Button type="submit" iconOnly aria-label="Add task" size="lg">
+          <PlusIcon size={20} />
+        </Button>
+      </form>
+      <PresenceGroup as="ul" itemAs="li" className="task-list">
+        {tasks.map(t => (
+          <div key={t.id} className="task">
+            <span>{t.text}</span>
+            <button type="button" className="task__remove" aria-label={`Remove ${t.text}`} onClick={() => setTasks(ts => ts.filter(x => x.id !== t.id))}>
+              <CloseIcon size={16} />
+            </button>
+          </div>
+        ))}
+      </PresenceGroup>
+    </div>
+  );
+}
+
+/** La tarjeta se estira o se recoge con su texto. */
+export function AutoHeightDemo() {
+  const [more, setMore] = useState(false);
+  return (
+    <div className="stage wide-stage">
+      <div className="autoheight-card">
+        <AutoHeight>
+          <p>Mochi is a small set of interface pieces built around a single idea: one shape that transforms.</p>
+          {more ? (
+            <p>
+              Every control is the same piece changing its size, corners and colour with soft springs, and its content with a short blur. Nothing stops on a fixed curve and nothing
+              bounces; everything can be interrupted halfway without a jump.
+            </p>
+          ) : null}
+        </AutoHeight>
+        <Button variant="surface" size="sm" onClick={() => setMore(m => !m)}>
+          {more ? "Show less" : "Read more"}
+        </Button>
+      </div>
     </div>
   );
 }

@@ -53,6 +53,14 @@ for (const card of cards) {
     await page.goto(pathToFileURL(file).href);
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(1200);
+    // un poco de interacción: con React 18 algunos fallos solo salen al abrir o cambiar algo
+    for (const sel of ["[data-mochi-accordion-trigger]", '[role="tab"]']) {
+      const el = page.locator(sel);
+      if ((await el.count()) > 1) {
+        await el.nth(1).click();
+        await page.waitForTimeout(500);
+      }
+    }
     const inside = await page.evaluate(() => document.querySelectorAll("#root *, .cover *, body > [class^='mochi'] *").length);
     await page.screenshot({ path: join(OUT, `${card}-${theme}.png`) });
     report.push({ card, theme, errors, inside });

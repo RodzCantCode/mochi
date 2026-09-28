@@ -12,6 +12,8 @@ Para nombrar lo que no lleva texto (una barra de iconos) o recordar un atajo. No
 - El elemento como hijo: `<Tooltip content="Copy link"><Button iconOnly aria-label="Copy link"><CopyIcon /></Button></Tooltip>`. Recibe los manejadores de ratón y foco y `aria-describedby` mientras se ve.
 - `side`: `"top"` (por defecto), `"bottom"`, `"left"` o `"right"`.
 - `delay`: la espera con el ratón (500 ms por defecto).
+- `bubbleClassName`: una clase para el globo mientras es de este tooltip. El resto de atributos (`className` incluido) van al elemento.
+- Se puede combinar con `Menu` en los dos sentidos (`<Menu><Tooltip><Button/></Tooltip></Menu>` o al revés): los atributos de uno llegan al botón a través del otro.
 
 ## Reglas
 

@@ -1,0 +1,31 @@
+<!-- @dsCard group="Contenido" height=300 subtitle="el panel entra en el sentido del indicador" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Tabs</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: flex-start; justify-content: center; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+  .card { width: 100%; max-width: 460px; padding: 18px; border-radius: 28px; background: var(--mochi-surface); box-shadow: var(--mochi-shadow-surface); }
+  p { margin: 0; color: var(--mochi-on-surface-muted); }
+  ul { margin: 0; padding: 0; list-style: none; }
+  li { padding: 9px 0; border-top: 1px solid var(--mochi-surface-border); color: var(--mochi-on-surface); }
+  li:first-child { border-top: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement;
+  function Demo() {
+    return h("div", { className: "card" }, h(M.Tabs, { "aria-label": "Project", items: [
+      { value: "overview", label: "Overview", content: h("p", null, "Night Drive is a synth-pop record in progress: nine tracks and two collaborators.") },
+      { value: "activity", label: "Activity", content: h("ul", null, ["Ada renamed the project", "Grace invited Linus", "Linus uploaded 12 files"].map(function (a) { return h("li", { key: a }, a); })) },
+      { value: "settings", label: "Settings", content: h("p", null, "Only admins can change these settings.") },
+    ] }));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

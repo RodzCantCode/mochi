@@ -1,7 +1,7 @@
 // Casos límite de las superposiciones para las pruebas de interacción (test/e2e.mjs). No salen
 // en el menú del sitio: se abren con #/_cases/<nombre>.
 import { useRef, useState, type ReactNode } from "react";
-import { Button, Dialog, TextField } from "../src/index.js";
+import { Button, Dialog, Menu, TextField, Tooltip } from "../src/index.js";
 
 /** Un diálogo abierto dentro de otro; el de dentro puede no cerrarse con Esc. */
 function Nested({ innerDismissible }: { innerDismissible: boolean }) {
@@ -65,7 +65,31 @@ function AutoFocus() {
   );
 }
 
+/** Menú y tooltip, uno dentro del otro en los dos sentidos: los dos tienen que funcionar. */
+function MenuTooltip() {
+  const items = [{ id: "a", label: "Archive", onSelect: () => {} }];
+  return (
+    <div className="stage">
+      <Menu items={items}>
+        <Tooltip content="More (menu outside)">
+          <Button id="mt1" variant="surface" size="sm">
+            Menu → Tooltip
+          </Button>
+        </Tooltip>
+      </Menu>
+      <Tooltip content="More (tooltip outside)">
+        <Menu items={items}>
+          <Button id="mt2" variant="surface" size="sm">
+            Tooltip → Menu
+          </Button>
+        </Menu>
+      </Tooltip>
+    </div>
+  );
+}
+
 const CASES: Record<string, () => ReactNode> = {
+  "menu-tooltip": () => <MenuTooltip />,
   nested: () => <Nested innerDismissible />,
   "nested-locked": () => <Nested innerDismissible={false} />,
   veto: () => <Veto />,

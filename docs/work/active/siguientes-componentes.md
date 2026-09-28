@@ -1,8 +1,10 @@
 # Siguientes componentes de Mochi
 
 > **Actualizado:** 2026-09-28. Traspaso temporal: acento cambiado a matcha, rojo de error añadido
-> y cinco componentes nuevos (campo de texto, diálogo y hoja, menú, selector y tooltip) hechos,
-> probados y publicados en el sistema de diseño. Selector y tooltip están sin commit. Lo pendiente de la librería en general está en el
+> y componentes nuevos hechos y probados: campo de texto, diálogo y hoja, menú, selector y
+> tooltip, y acordeón, pestañas con contenido y piezas de movimiento, con las correcciones de dos
+> revisiones independientes; todo subido a GitHub. Siguen casilla y botón de opción, barra de
+> progreso y esqueleto de carga (planteamiento abajo). Lo pendiente de la librería en general está en el
 > [README](../../../README.md#pendiente); aquí solo lo de esta tarea.
 
 ## Objetivo
@@ -51,7 +53,21 @@ interacción en verde y su ficha publicada en el sistema de diseño.
 - **Git:** subido a GitHub (`RodzCantCode/mochi`, **público**, rama `main`): el estado anterior
   (0.1.0 en azul) y esta tanda. El usuario va a publicar el sitio de pruebas en Vercel para
   probarlo en su iPhone (compilación y carpeta, en el README, apartado «Desarrollo»).
-- **Selector y tooltip (hechos, sin commit):** `Select` (campo de 56 px o píldora compacta; en
+- **Acordeón, pestañas y movimiento (hechos, sin commit):** `Collapsible`, `Accordion` y
+  `AccordionItem` (contenido cerrado con `hidden="until-found"`, puesto a mano porque React no
+  lo admite), `Tabs` (SegmentedControl + AutoHeight + Swap con sentido), `Presence`,
+  `PresenceGroup` y `AutoHeight`. `Swap` gana `align="start"` y `slide`; las opciones de
+  SegmentedControl, `id`.
+- **Segunda revisión independiente** (acordeón, pestañas, movimiento, tooltip y selector): 18
+  fallos con caso reproducible, todos corregidos. El grave: con React 18, abrir una sección del
+  acordeón tumbaba la aplicación (bucle de actualizaciones). Otros: el tooltip no dejaba pasar
+  los atributos de un Menu que lo envolviera (ni al revés), un <Suspense> podía dejar sin
+  globo a todos los tooltips, el selector perdía el foco al elegir con el ratón, las filas que
+  salían de PresenceGroup se desordenaban y el relleno propio hacía saltar las alturas. El
+  tooltip se rehízo: su globo es un único elemento fuera del árbol de React con sus propios
+  muelles, y cada Tooltip pinta su texto dentro con un portal. `className` del Tooltip va
+  ahora al elemento; la clase del globo es `bubbleClassName`.
+- **Selector y tooltip (subidos, luego corregidos en la revisión):** `Select` (campo de 56 px o píldora compacta; en
   táctil, `<select>` nativo encima) y `Tooltip` (un único globo que viaja de un elemento a otro).
   Menú, menú contextual y selector comparten la lista en `src/internal/listPopup.tsx`, y la
   colocación de menús y tooltips está en `src/internal/placement.ts`.
@@ -66,10 +82,12 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   se hizo propio. Pesos (minificado y comprimido, sin React):
   - Radix, medido el 2026-09-28 con `@radix-ui/react-dialog` 1.1.23: diálogo 13,2 kB, tooltip
     18,4 kB, popover 23,0 kB, menú desplegable 28,9 kB, selector 29,5 kB; React 67,4 kB.
-  - Mochi entera: 15,8 kB antes de esta tanda, 28,9 kB ahora.
+  - Mochi entera: 15,8 kB antes de esta tanda, 32,9 kB ahora.
   - Coste de cada pieza nueva sobre Button + CommandPalette: TextField +1,2 kB, Dialog +3,6 kB,
     Menu y ContextMenu +4,6 kB. Diálogo y menú comparten `src/internal/overlay.ts`. Sobre
-    Button + Menu: Select +1,2 kB (comparte la lista del menú) y Tooltip +1,5 kB.
+    Button + Menu: Select +1,2 kB (comparte la lista del menú) y Tooltip +1,5 kB. Sobre Button +
+    SegmentedControl: Presence y AutoHeight +1,5 kB, Accordion +2,9 kB, Tabs +0,8 kB. Mochi
+    entera, 32,9 kB.
 - `accent` es pastel y no pasa 3:1 sobre el lienzo claro. Por eso la prueba de contraste exige
   3:1 a `accent-strong`, y `accent` solo va sobre `solid` o con texto encima.
 - Receta de un componente nuevo (la que siguieron los 12 actuales): valores de `tokens/` →
@@ -112,14 +130,18 @@ interacción en verde y su ficha publicada en el sistema de diseño.
 
 El 2026-09-28, tras el último cambio de código:
 - `npm run typecheck`: sin errores.
-- `npm test`: 52/52 (además de lo anterior: contraste de los colores nuevos, colocación del
+- `npm test`: 62/62 (además de lo anterior: contraste de los colores nuevos, colocación del
   menú, unión de refs y renderizado en servidor de los componentes nuevos).
-- `npm run test:e2e`: 82/82 en Chromium (campo de texto, diálogo que crece desde el botón con
+- `npm run test:e2e`: 106/106 en Chromium (campo de texto, diálogo que crece desde el botón con
   foco retenido y devuelto, diálogos anidados, reabrir desde otro botón, `autoFocus`, hoja en
   pantalla de móvil arrastrada hasta cerrarse o vetada, menú con teclado, letras, contextual,
   colocación junto a los bordes y toque fuera sin atravesar, sin errores de consola). Una
   pasada va sobre una compilación en modo desarrollo, donde React renderiza dos veces seguidas.
-- `node scripts/check-design-system.mjs`: 30/30 vistas previas sin errores con React 18.
+- `node scripts/check-design-system.mjs`: 36/36 vistas previas sin errores con React 18,
+  abriendo una sección del acordeón y cambiando de pestaña (así se habría visto el fallo de
+  React 18).
+- Los casos de la revisión, con React 18.2 y 19.3, con y sin StrictMode, en una aplicación de
+  pruebas fuera del repositorio (`/tmp/claude-501/mochi-repro`, temporal).
 - Capturas revisadas a ojo en claro y oscuro, en escritorio y a 390 px de ancho.
 
 Sin comprobar: Safari, Firefox, pantallas táctiles reales (la pulsación larga y el arrastre de
@@ -129,21 +151,39 @@ nuevos.
 
 ## Bloqueos
 
-Ninguno técnico. Esperan decisión del usuario:
+Esperan decisión del usuario:
 - Si subir la versión a 0.2.0 antes de subirlo.
 - Qué componente sigue: tooltip o selector.
 
 ## Próximos pasos
 
-1. Commit de selector y tooltip cuando el usuario lo pida, y elegir los siguientes elementos
-   (propuesta en el chat: desplegable, pestañas con contenido, casilla y radio, barra de
-   progreso, avatar y skeleton, y piezas de movimiento como `Presence`).
-2. Siguiente componente con la receta de arriba (propuesta: tooltip, que reutiliza la
-   colocación del menú).
+1. Los tres siguientes, pedidos por el usuario (planteamiento en «Siguientes tres»); después,
+   panel flotante, panel lateral y lista que se reordena.
+2. Al terminarlos, una revisión independiente con contexto limpio, probando también React 18
+   (las dos anteriores encontraron 13 y 18 fallos reales).
 3. Tras cada componente: `npm test`, `npm run test:e2e`, `npm run design-system` y publicar el
    sistema de diseño en su dirección.
-4. Al cerrar la tarea: retirar este traspaso y mover lo permanente (la receta, la política de
+4. Integrar Mochi en `phsport-app` desde una sesión en esa carpeta.
+5. Al cerrar la tarea: retirar este traspaso y mover lo permanente (la receta, la política de
    Radix) a documentación estable.
+
+## Siguientes tres (planteamiento, sin empezar)
+
+- **Casilla y botón de opción** (`Checkbox`, `RadioGroup` con sus opciones). La casilla pasa
+  de un cuadro con filo `surface-border-strong` a `solid` con el check en `on-solid` que se
+  dibuja con `draw` (como el de Button); el cambio de tono con la copia que crece desde el
+  centro, nunca fundido. Estado mixto (una raya). El botón de opción: el punto crece con
+  `snappy`. Espacio marca; en el grupo, las flechas mueven y eligen (un solo Tab para entrar).
+  `name` y `value` en formularios con un input nativo oculto, como Switch. Error con el anillo
+  `danger`, como TextField. Etiqueta pulsable.
+- **Barra de progreso** (`Progress` lineal y `ProgressRing` circular). El valor avanza con un
+  muelle; sin valor, «indeterminado»: un tramo que recorre la barra con sus dos bordes en
+  muelles distintos (`lead` y `trail`, como el indicador de pestañas). Al llegar al 100 %, el
+  anillo se transforma en el check. `role="progressbar"` con `aria-valuenow`, y nombre.
+- **Esqueleto de carga** (`Skeleton` con formas de línea, círculo y bloque). Brillo suave que
+  recorre las formas (quieto con «reducir movimiento»). Una pieza para cambiar esqueleto por
+  contenido: los huecos se funden en el contenido real con desenfoque y la altura se adapta
+  (`Swap` con `align="start"` y `AutoHeight`). `aria-busy` en el contenedor mientras carga.
 
 ## Cosas que conviene saber
 
@@ -157,6 +197,8 @@ Ninguno técnico. Esperan decisión del usuario:
   (si anima o salta, desde dónde): en modo desarrollo React renderiza dos veces y la segunda ve
   el cambio como ya hecho. Se apunta en un efecto, cuando ya se ha pintado. Así se arreglaron
   SegmentedControl (saltaba sin estirarse) y MorphBox (crecía desde 0 al cargar).
+- Las pruebas solo usan React 19. La comprobación del sistema de diseño usa React 18 (desde
+  jsDelivr) y hace un poco de interacción: es lo único que prueba React 18 de forma repetible.
 - Los casos límite de diálogos y menús que usan las pruebas están en páginas ocultas del sitio
   (`playground/cases.tsx`, `#/_cases/<nombre>`); no salen en el menú.
 - Al publicar el sistema de diseño puede aparecer una versión más nueva que la local: suele ser

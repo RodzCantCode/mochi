@@ -1,4 +1,6 @@
-import type { Ref, RefCallback } from "react";
+import { version, type Ref, type RefCallback } from "react";
+
+const RETURNS_CLEANUP = Number.parseInt(version, 10) >= 19;
 
 /**
  * Une varias refs (de objeto o de función) en una sola. Devuelve la limpieza al estilo de
@@ -17,6 +19,8 @@ export function mergeRefs<T>(...refs: Array<Ref<T> | undefined>): RefCallback<T>
         cleanups.push(() => ((r as { current: T | null }).current = null));
       }
     }
+    // React 18 no admite limpieza (avisa si la ref devuelve algo): llamará con null al soltarla
+    if (!RETURNS_CLEANUP) return;
     return () => {
       for (const c of cleanups) c();
     };

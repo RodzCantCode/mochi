@@ -303,6 +303,7 @@ function Panel(props: ListPopupProps & { onGone: () => void }) {
         // cierra con el clic de un toque que empezó fuera con la lista ya abierta: así ni el toque
         // atraviesa a lo de debajo ni el dedo que la abrió con pulsación larga la cierra al soltar
         onPointerDown={() => (downOutside.current = true)}
+        onMouseDown={e => !takeFocus && e.preventDefault()}
         onClick={() => {
           if (open && downOutside.current) onClose();
           downOutside.current = false;
@@ -339,6 +340,8 @@ function Panel(props: ListPopupProps & { onGone: () => void }) {
           onKeyDown?.(e);
         }}
         onPointerLeave={() => onActiveChange(-1)}
+        // si no se lleva el foco (selector), pulsar la lista no se lo quita al campo
+        onMouseDown={e => !takeFocus && e.preventDefault()}
       >
         <span ref={reveal} className="mochi-menu__reveal" aria-hidden="true" />
         <div ref={ghostBox} className="mochi-menu__ghost" aria-hidden="true" />

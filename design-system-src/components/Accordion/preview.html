@@ -1,0 +1,31 @@
+<!-- @dsCard group="Contenido" height=340 subtitle="abre otra: la anterior se cierra a la vez" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Accordion</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: flex-start; justify-content: center; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+  .w { width: 100%; max-width: 480px; }
+  p { margin: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement;
+  var faq = [
+    ["ship", "How long does shipping take?", "Orders leave our warehouse within two working days. Delivery takes 2–4 days in Europe."],
+    ["return", "Can I return an item?", "Yes, within 30 days. Start the return from your account and print the label."],
+    ["size", "How do I pick my size?", "Each product page has a size guide. Between two sizes, choose the larger one."],
+  ];
+  function Demo() {
+    return h("div", { className: "w" }, h(M.Accordion, { defaultValue: ["ship"] }, faq.map(function (f) {
+      return h(M.AccordionItem, { key: f[0], value: f[0], title: f[1] }, h("p", null, f[2]));
+    })));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>
