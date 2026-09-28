@@ -2,6 +2,7 @@
 // desplazamiento, cerrar con Esc solo la capa de arriba, retener el foco y leer de dónde sale
 // la forma (el botón que la abre) para crecer desde él.
 import { useEffect, useRef, useState } from "react";
+import { useIsoLayoutEffect } from "./useIsoLayoutEffect.js";
 
 // ---------------------------------------------------------------------------------------
 // Desplazamiento bloqueado (con contador: varias capas a la vez)
@@ -164,6 +165,30 @@ export function ghostOf(el: HTMLElement): HTMLElement {
   g.setAttribute("inert", "");
   g.style.cssText += ";position:absolute;left:0;top:0;margin:0;opacity:1;transform:none;background:transparent;box-shadow:none;pointer-events:none;";
   return g;
+}
+
+/**
+ * La parte de la ventana que se ve de verdad. En iOS, al salir el teclado, la ventana no cambia
+ * de tamaño pero la parte visible sí (y a veces se desplaza): lo fijo en pantalla se queda
+ * debajo del teclado o da un salto. Con esto, una capa se coloca justo sobre la parte visible.
+ */
+export function useVisualViewport(active: boolean): { top: number; height: number } | null {
+  const [box, setBox] = useState<{ top: number; height: number } | null>(null);
+  useIsoLayoutEffect(() => {
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    if (!active || !vv) return;
+    const read = () =>
+      setBox(prev => (prev && prev.top === vv.offsetTop && prev.height === vv.height ? prev : { top: vv.offsetTop, height: vv.height }));
+    read();
+    vv.addEventListener("resize", read);
+    vv.addEventListener("scroll", read);
+    return () => {
+      vv.removeEventListener("resize", read);
+      vv.removeEventListener("scroll", read);
+      setBox(null);
+    };
+  }, [active]);
+  return box;
 }
 
 /** Tamaño de la ventana, al día al redimensionar. */

@@ -37,6 +37,14 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   - Arreglados dos fallos que solo se veían en modo desarrollo: el indicador de
     SegmentedControl saltaba sin estirarse y los botones (MorphBox) crecían desde ancho 0 al
     cargar la página.
+- **Tras la primera prueba del usuario en su iPhone (Safari y Brave, iOS 27):**
+  - Arreglado: al cargar, un botón encogía y movía a los de al lado. Ahora encoge dentro de su
+    hueco (`holdSpace` en MorphBox). Medido: los vecinos se quedan quietos en todo el ciclo.
+  - Cambiado sin poder probarlo en un iPhone: la paleta de comandos daba un salto al salir el
+    teclado. Ahora sigue la parte visible de la pantalla (`useVisualViewport` en
+    `src/internal/overlay.ts`), cabe encima del teclado y bloquea el desplazamiento de la
+    página. Comprobado solo simulando esa parte visible en Chromium.
+  - El resto de componentes le funcionó bien en el iPhone.
 - **Git:** subido a GitHub (`RodzCantCode/mochi`, **público**, rama `main`): el estado anterior
   (0.1.0 en azul) y esta tanda. El usuario va a publicar el sitio de pruebas en Vercel para
   probarlo en su iPhone (compilación y carpeta, en el README, apartado «Desarrollo»).
@@ -96,7 +104,7 @@ El 2026-09-28, tras el último cambio de código:
 - `npm run typecheck`: sin errores.
 - `npm test`: 44/44 (además de lo anterior: contraste de los colores nuevos, colocación del
   menú, unión de refs y renderizado en servidor de los componentes nuevos).
-- `npm run test:e2e`: 62/62 en Chromium (campo de texto, diálogo que crece desde el botón con
+- `npm run test:e2e`: 66/66 en Chromium (campo de texto, diálogo que crece desde el botón con
   foco retenido y devuelto, diálogos anidados, reabrir desde otro botón, `autoFocus`, hoja en
   pantalla de móvil arrastrada hasta cerrarse o vetada, menú con teclado, letras, contextual,
   colocación junto a los bordes y toque fuera sin atravesar, sin errores de consola). Una
@@ -117,8 +125,9 @@ Ninguno técnico. Esperan decisión del usuario:
 
 ## Próximos pasos
 
-1. Recoger lo que el usuario vea en el iPhone (Safari real y táctil real: pulsación larga,
-   arrastre de la hoja, teclado sobre los campos).
+1. Que el usuario vuelva a probar la paleta en el iPhone. Si el salto sigue, o si «Rename»
+   (la hoja del diálogo con un campo) salta al salir el teclado, aplicar lo mismo al diálogo:
+   hoy la hoja se coloca con el alto de la ventana, no con el de la parte visible.
 2. Siguiente componente con la receta de arriba (propuesta: tooltip, que reutiliza la
    colocación del menú).
 3. Tras cada componente: `npm test`, `npm run test:e2e`, `npm run design-system` y publicar el

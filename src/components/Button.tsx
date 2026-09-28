@@ -62,6 +62,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         width={busy || iconOnly ? h : undefined}
         padding={busy || iconOnly ? "0" : `0 ${px}px`}
         pressScale={busy ? undefined : 0.965}
+        holdSpace
         className={cx("mochi-button", className)}
         data-size={size}
         data-status={status}

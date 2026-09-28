@@ -20,4 +20,5 @@ Para cualquier acción. Cuando la acción tarda (guardar, enviar, pagar), dale `
 
 - Mientras carga o muestra el check no responde a clics y lo anuncia a lectores de pantalla; el nombre accesible sigue siendo el texto.
 - Al pulsar se hunde a escala 0,965 con `press` y vuelve con `snappy`.
+- Al cargar se encoge a círculo en su sitio: conserva su hueco, así que lo de alrededor no se mueve ni al encogerse ni al volver.
 - No cambies el texto del botón para decir «Saving…»: el cambio de forma ya lo dice.

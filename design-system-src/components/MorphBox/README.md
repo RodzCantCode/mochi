@@ -9,10 +9,11 @@ Para construir estados propios con el mismo comportamiento que los componentes (
 ## Qué pones tú
 
 - `contentKey`: la identidad del contenido. Cuando cambia, el contenido anterior sale y el nuevo entra; si no cambia, el contenido se actualiza sin animación.
-- `tone`: `"solid"`, `"surface"` o `"accent"`.
+- `tone`: `"solid"`, `"surface"`, `"accent"` o `"danger"`.
 - `radius`: px o `"pill"` (media altura).
 - `width` / `height` fijos si los quieres; si no, los del contenido más `padding`.
 - `as` (`"button"` para acciones) y `pressScale` si debe hundirse al pulsar.
+- `holdSpace`: mientras `width` venga fijado, la forma encoge dentro del hueco que ocupaba con su contenido y lo de al lado no se mueve (así carga `Button`). Usa los márgenes laterales de la forma.
 
 ## Reglas
 

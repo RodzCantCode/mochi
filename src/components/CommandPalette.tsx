@@ -18,6 +18,7 @@ import { cx } from "../internal/cx.js";
 import { matchCommand } from "./commandFilter.js";
 import { CommandIcon, EnterIcon, SearchIcon } from "../icons/index.js";
 import { MorphBox } from "./MorphBox.js";
+import { useScrollLock, useVisualViewport } from "../internal/overlay.js";
 
 // ---------------------------------------------------------------------------------------
 // Teclas
@@ -182,6 +183,13 @@ function Palette(props: {
   const n = filtered.length;
   const act = Math.min(active, Math.max(0, n - 1));
 
+  // en iOS, la paleta va sobre la parte que deja libre el teclado (sin saltar al salir) y no
+  // muestra más filas de las que caben encima de él; la página de debajo no se desplaza
+  const rootEl = useRef<HTMLDivElement>(null);
+  const vv = useVisualViewport(true); // también al cerrarse, mientras el teclado se va
+  const padTop = useRef<number | null>(null);
+  useScrollLock(open);
+
   // filas con presencia: las que dejan de coincidir salen animadas antes de desaparecer
   const [rows, setRows] = useState<RowState[]>(() => filtered.map(cmd => ({ cmd, leaving: false, fresh: false })));
   const ids = filtered.map(c => c.id).join("\u0000");
@@ -197,7 +205,10 @@ function Palette(props: {
   }
   const indexOf = new Map(filtered.map((c, i) => [c.id, i]));
 
-  const visible = Math.min(Math.max(n, 1), maxRows);
+  const viewH = vv?.height ?? (typeof window !== "undefined" ? window.innerHeight : 800);
+  const top = padTop.current ?? viewH * 0.16;
+  const fit = Math.max(1, Math.floor((viewH - top - 16 - INPUT - 1 - PAD * 2) / ROW));
+  const visible = Math.min(Math.max(n, 1), maxRows, fit);
   const listH = visible * ROW;
   const panelH = INPUT + 1 + PAD * 2 + listH;
 
@@ -232,13 +243,17 @@ function Palette(props: {
     { from: { o: 0 } },
   );
 
+  useIsoLayoutEffect(() => {
+    if (rootEl.current) padTop.current = parseFloat(getComputedStyle(rootEl.current).paddingTop) || 0;
+  }, []);
+
   // al abrir: foco en la búsqueda; al cerrar: vuelve a donde estaba
   useIsoLayoutEffect(() => {
     if (open) {
       restore.current = document.activeElement;
       setQuery("");
       setActive(0);
-      input.current?.focus();
+      input.current?.focus({ preventScroll: true });
     } else {
       const el = restore.current as HTMLElement | null;
       if (el && typeof el.focus === "function" && document.contains(el)) el.focus();
@@ -277,7 +292,12 @@ function Palette(props: {
 
   const activeId = n ? `${listId}-${filtered[act]?.id}` : undefined;
   return (
-    <div className="mochi-cmdk-root" data-state={open ? "open" : "closed"}>
+    <div
+      ref={rootEl}
+      className="mochi-cmdk-root"
+      data-state={open ? "open" : "closed"}
+      style={vv ? { top: vv.top, height: vv.height, bottom: "auto" } : undefined}
+    >
       <div ref={scrim} className="mochi-cmdk-scrim" onPointerDown={onClose} style={{ opacity: 0 }} />
       <div ref={panel} role="dialog" aria-modal="true" aria-label={label} className="mochi-cmdk" style={{ opacity: 0, height: panelH }}>
         <div className="mochi-cmdk__input">

@@ -40,6 +40,12 @@ export interface MorphBoxProps extends Omit<HTMLAttributes<HTMLElement>, "childr
   pressScale?: number;
   /** Contenido que no se cambia con desenfoque (p. ej. un nombre accesible oculto). */
   accessory?: ReactNode;
+  /**
+   * Conserva el hueco: mientras `width` venga fijado (p. ej. un botón cargando, en círculo), la
+   * forma ocupa lo mismo que con su contenido y encoge dentro de ese hueco, sin mover lo de al
+   * lado. Usa los márgenes laterales de la forma.
+   */
+  holdSpace?: boolean;
   children: ReactNode;
   [key: string]: unknown;
 }
@@ -62,6 +68,7 @@ export const MorphBox = forwardRef<HTMLElement, MorphBoxProps>(function MorphBox
     padding,
     pressScale,
     accessory,
+    holdSpace,
     className,
     children,
     onPointerDown,
@@ -82,6 +89,13 @@ export const MorphBox = forwardRef<HTMLElement, MorphBoxProps>(function MorphBox
   const measured = tw !== undefined && th !== undefined;
   const everMeasured = useRef(false);
   const firstMeasure = measured && !everMeasured.current;
+  // ancho del contenido la última vez que no había `width` fijado (se apunta al pintar). Al
+  // soltar `width`, la medida del contenido nuevo llega un fotograma después: hasta entonces la
+  // medida es la de antes y se mantiene el hueco reservado
+  const freeWidth = useRef<number | null>(null);
+  const fixedSize = useRef<typeof size>(null);
+  const stale = width === undefined && size !== null && size === fixedSize.current;
+  const footprint = holdSpace ? (width !== undefined || stale ? freeWidth.current ?? tw : tw) : undefined;
 
   // tono pintado debajo; mientras difiere de `tone`, la copia del tono nuevo está creciendo
   const [baseTone, setBaseTone] = useState<Tone>(tone);
@@ -106,6 +120,13 @@ export const MorphBox = forwardRef<HTMLElement, MorphBoxProps>(function MorphBox
       el.style.height = `${h}px`;
       el.style.borderRadius = `${r}px`;
       el.style.transform = v.s === 1 ? "" : `scale(${v.s.toFixed(4)})`;
+      if (holdSpace) {
+        // encoge dentro de su hueco: el margen repone lo que le falta hasta el ancho reservado
+        const m = footprint !== undefined ? Math.max(0, (footprint - w) / 2) : 0;
+        const mm = m > 0.01 ? `${m.toFixed(2)}px` : "";
+        el.style.marginLeft = mm;
+        el.style.marginRight = mm;
+      }
       const rv = reveal.current;
       if (rv) {
         if (revealing && v.p > 0.001) {
@@ -129,6 +150,8 @@ export const MorphBox = forwardRef<HTMLElement, MorphBoxProps>(function MorphBox
   // apuntara al renderizar, la segunda pasada animaría la primera medida desde ancho 0
   useIsoLayoutEffect(() => {
     if (measured) everMeasured.current = true;
+    if (width !== undefined) fixedSize.current = size;
+    else if (size && size !== fixedSize.current) freeWidth.current = size.width;
   });
 
   const press = (on: boolean) => pressScale && setPressed(on);

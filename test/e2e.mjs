@@ -117,6 +117,24 @@ try {
   await sleep(1500);
   check("botón: vuelve a su estado normal", (await btn.getAttribute("data-status")) === "idle");
 
+  // al cargar y volver, el botón encoge en su hueco: los de al lado no se mueven
+  await page.evaluate(() => {
+    const pick = n => [...document.querySelectorAll("button.mochi-morph")].find(e => e.querySelector(".mochi-sr")?.textContent === n);
+    const a = pick("Get started"), c = pick("Upgrade");
+    const xs = (window.__neighbors = []);
+    const t0 = performance.now();
+    const tick = () => {
+      xs.push([a.getBoundingClientRect().x, c.getBoundingClientRect().x]);
+      if (performance.now() - t0 < 2600) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await sleep(2700);
+  const nb = await page.evaluate(() => window.__neighbors);
+  const drift = Math.max(...nb.map(([a, c]) => Math.max(Math.abs(a - nb[0][0]), Math.abs(c - nb[0][1]))));
+  check("botón: al cargar y volver no mueve a los de al lado", nb.length > 30 && drift < 0.5, `se movieron ${drift.toFixed(1)} px`);
+
   // --- reproductor
   const toggle = page.locator(".mochi-player__toggle");
   await toggle.click();
@@ -330,6 +348,32 @@ try {
   const r1 = await box(sw2.locator(".mochi-switch__knob"));
   check("movimiento reducido: el switch salta sin animar", Math.abs(r0.x - r1.x) < 0.5, `${r0.x} vs ${r1.x}`);
   await rm.context().close();
+
+  // --- paleta sobre la parte visible (en iOS, la que deja el teclado)
+  const vvCtx = await browser.newContext({ viewport: { width: 390, height: 780 } });
+  await vvCtx.addInitScript(() => {
+    const vv = new EventTarget();
+    Object.assign(vv, { offsetTop: 0, offsetLeft: 0, pageTop: 0, pageLeft: 0, width: innerWidth, height: innerHeight, scale: 1 });
+    Object.defineProperty(window, "visualViewport", { value: vv, configurable: true });
+    window.__vv = vv;
+  });
+  const vp = await vvCtx.newPage();
+  vp.on("pageerror", e => errors.push(e.message));
+  await vp.goto(URL_ + "#/palette");
+  await sleep(500);
+  await vp.getByRole("button", { name: "Open command palette" }).click();
+  await sleep(500);
+  await vp.evaluate(() => {
+    Object.assign(window.__vv, { offsetTop: 120, height: 400 });
+    window.__vv.dispatchEvent(new Event("resize"));
+  });
+  await sleep(700);
+  const vr = await box(vp.locator(".mochi-cmdk-root"));
+  const vpanel = await box(vp.getByRole("dialog", { name: "Command palette" }));
+  check("paleta: sigue la parte visible cuando sale el teclado", Math.abs(vr.y - 120) < 0.5 && Math.abs(vr.height - 400) < 0.5, `y ${vr.y} alto ${vr.height}`);
+  check("paleta: cabe entera encima del teclado", vpanel.y + vpanel.height <= 520 + 0.5, `acaba en ${(vpanel.y + vpanel.height).toFixed(0)}`);
+  check("paleta: la página de debajo no se desplaza mientras está abierta", (await vp.evaluate(() => document.documentElement.style.overflow)) === "hidden");
+  await vvCtx.close();
 
   // --- hoja en pantalla de móvil
   const mob = await open({ viewport: { width: 390, height: 780 }, hasTouch: true, isMobile: true });
