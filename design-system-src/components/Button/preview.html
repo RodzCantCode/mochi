@@ -1,0 +1,26 @@
+<!-- @dsCard group="Acciones" height=140 subtitle="solid, surface y accent; pulsa el primero: cargando → hecho" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Button</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  function Demo() {
+    var a = M.useButtonStatus(function () { return new Promise(function (r) { setTimeout(r, 1300); }); });
+    return h(React.Fragment, null,
+      h(M.Button, { size: "lg", icon: h(M.ArrowRightIcon, { size: 20 }), status: a.status, onClick: a.run }, "Get started"),
+      h(M.Button, { variant: "surface" }, "Save"),
+      h(M.Button, { variant: "accent", size: "sm" }, "Upgrade"));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

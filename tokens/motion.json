@@ -1,0 +1,21 @@
+{
+  "about": "Muelles de Mochi. response = periodo natural en segundos (lo que tarda en ir y volver si no hubiera amortiguación); damping = amortiguación (1 = sin rebote; desde 0.84 el rebote no llega al 1 %). El sistema de diseño no tiene familia de movimiento: esto lo leen el motor (src/motion) y build-tokens, que además genera curvas CSS linear() equivalentes.",
+  "springs": {
+    "morph":   { "response": 0.42, "damping": 0.86, "usage": "Tamaño, esquinas y posición de la forma." },
+    "snappy":  { "response": 0.26, "damping": 0.88, "usage": "Cambios pequeños: soltar una pulsación, un punto que aparece." },
+    "press":   { "response": 0.14, "damping": 0.95, "usage": "Hundirse al pulsar." },
+    "lead":    { "response": 0.20, "damping": 0.86, "usage": "Borde que va delante en el indicador líquido y la bolita del switch." },
+    "trail":   { "response": 0.42, "damping": 0.88, "usage": "Borde que va detrás: llega después y el indicador se estira." },
+    "fadeIn":  { "response": 0.24, "damping": 1, "usage": "Entrada de contenido (opacidad y desenfoque)." },
+    "fadeOut": { "response": 0.13, "damping": 1, "usage": "Salida de contenido: más rápida que la entrada para que no se solapen." },
+    "draw":    { "response": 0.62, "damping": 1, "usage": "Trazos que se dibujan: la línea de la gráfica, el check." },
+    "back":    { "response": 0.34, "damping": 0.84, "usage": "Vuelta del estirón elástico al soltar." },
+    "color":   { "response": 0.30, "damping": 1, "usage": "Cambios de color dentro del mismo tono (negro a azul)." }
+  },
+  "swap": {
+    "enterDelay": 0.06,
+    "blur": 12,
+    "enterScale": 0.94,
+    "usage": "Cambio de contenido dentro de la forma: sale en fadeOut, entra enterDelay segundos después en fadeIn, con desenfoque de hasta blur px y escala desde enterScale."
+  }
+}

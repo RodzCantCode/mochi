@@ -1,0 +1,50 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Mochi</title>
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--canvas); color: var(--on-canvas); font-family: var(--font-sans); overflow: hidden; }
+  .cover { position: relative; height: 288px; overflow: hidden; }
+  .art { position: absolute; top: 0; left: 480px; width: 480px; height: 288px; overflow: hidden; }
+  .art svg { display: block; width: 480px; height: 288px; }
+  .solid { fill: var(--solid); }
+  .thumb { fill: var(--thumb); }
+  .accent { fill: var(--accent); }
+  .ink { fill: var(--fill); }
+  .words { position: absolute; left: var(--space-8); bottom: var(--space-8); max-width: 440px; }
+  .name { margin: 0; font-size: 120px; line-height: .92; font-weight: 640; letter-spacing: -.035em; color: var(--on-canvas); }
+  .tag { margin: var(--space-3) 0 0 6px; font-size: 14px; line-height: 20px; color: var(--on-canvas-muted); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks      solid: una píldora de 112 de alto que sale por la derecha (la island, la forma de Mochi) · thumb: el disco de 88 que va dentro (la bolita del interruptor) · accent: una píldora de 176 × 72, el único color · fill: siete barras de ecualizador — ≈27 % de 960 × 288
+  arrangement una píldora grande con satélites debajo, alineados a space-8 del borde inferior, huecos de space-4
+  pattern     píldoras y discos (fila «suave, radios grandes»): el README dice que por defecto todo es píldora (radius-full) y que lo que se desplaza es un thumb dentro de un solid
+  scales      alturas en múltiplos de space-2; huecos space-4; paso de las barras space-6 + space-1; todas las esquinas radius-full (rx = media altura)
+-->
+<rect class="solid" x="56" y="40" width="460" height="112" rx="56"/>
+<circle class="thumb" cx="124" cy="96" r="44"/>
+<rect class="accent" x="56" y="176" width="176" height="72" rx="36"/>
+<rect class="ink" x="264" y="200" width="16" height="48" rx="8"/>
+<rect class="ink" x="292" y="176" width="16" height="72" rx="8"/>
+<rect class="ink" x="320" y="216" width="16" height="32" rx="8"/>
+<rect class="ink" x="348" y="184" width="16" height="64" rx="8"/>
+<rect class="ink" x="376" y="208" width="16" height="40" rx="8"/>
+<rect class="ink" x="404" y="192" width="16" height="56" rx="8"/>
+<rect class="ink" x="432" y="224" width="16" height="24" rx="8"/>
+</svg>
+</div>
+<div class="words">
+<h1 class="name">Mochi</h1>
+<p class="tag">Una sola forma que se transforma.</p>
+</div>
+</div>
+</body>
+</html>

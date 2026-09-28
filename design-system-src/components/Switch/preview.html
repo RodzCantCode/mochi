@@ -1,0 +1,29 @@
+<!-- @dsCard group="Controles" height=120 subtitle="la bolita se estira al cambiar" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Switch</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  function Demo() {
+    var s = useState(false);
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: 14 } },
+      h("div", { style: { display: "flex", alignItems: "center", gap: 12 } },
+        h(M.Switch, { checked: s[0], onCheckedChange: s[1], "aria-labelledby": "l1" }),
+        h("span", { id: "l1" }, "Notifications")),
+      h("div", { style: { display: "flex", alignItems: "center", gap: 12 } },
+        h(M.Switch, { size: "sm", defaultChecked: true, "aria-labelledby": "l2" }),
+        h("span", { id: "l2", style: { font: "var(--mochi-text-label)", color: "var(--mochi-on-canvas-muted)" } }, "Compact mode")));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

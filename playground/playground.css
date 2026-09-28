@@ -1,0 +1,33 @@
+/* Banco de pruebas: la página alrededor de los componentes (no forma parte del paquete). */
+@font-face {
+  font-family: "Geist";
+  src: url("../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+html, body { margin: 0; }
+body {
+  min-height: 100vh;
+  background: var(--mochi-canvas);
+  color: var(--mochi-on-canvas);
+  font: var(--mochi-text-body);
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+.page { max-width: 1120px; margin: 0 auto; padding: 40px 24px 120px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 40px; }
+.brand h1 { margin: 0; font: 640 28px/32px var(--mochi-font-sans); letter-spacing: -0.03em; }
+.brand p { margin: 4px 0 0; color: var(--mochi-on-canvas-muted); }
+.theme { width: 280px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.spec { display: flex; flex-direction: column; gap: 14px; min-height: 220px; padding: 18px; border-radius: 28px; background: color-mix(in srgb, var(--mochi-on-canvas) 4%, transparent); }
+.spec.wide { grid-column: span 2; }
+.spec h2 { margin: 0; font: var(--mochi-text-label); color: var(--mochi-on-canvas-muted); }
+.stage { flex: 1; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.stage.col { flex-direction: column; }
+.row { display: flex; align-items: center; gap: 12px; }
+.row label { color: var(--mochi-on-canvas); }
+.hint { font: var(--mochi-text-label); color: var(--mochi-on-canvas-muted); }
+.slider-wrap { width: 100%; max-width: 320px; }
+.card-wrap { width: 100%; max-width: 440px; }
+@media (max-width: 720px) { .spec.wide { grid-column: auto; } }

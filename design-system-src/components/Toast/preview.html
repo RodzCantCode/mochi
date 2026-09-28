@@ -1,0 +1,27 @@
+<!-- @dsCard group="Superpuestos" height=190 subtitle="uno cada vez; el siguiente transforma al anterior" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Toast</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  function Demo() {
+    useEffect(function () { M.toast({ title: "Changes saved", duration: Infinity, action: { label: "Undo", onClick: function () { M.toast({ title: "Change undone", icon: "none", duration: Infinity }); } } }); }, []);
+    return h(React.Fragment, null,
+      h("div", { style: { display: "flex", gap: 12, marginBottom: 72 } },
+        h(M.Button, { variant: "surface", onClick: function () { M.toast({ title: "Link copied", duration: Infinity }); } }, "Copy link"),
+        h(M.Button, { variant: "surface", onClick: function () { M.toast({ title: "Changes saved", duration: Infinity, action: { label: "Undo", onClick: function () {} } }); } }, "Save")),
+      h(M.Toaster, null));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

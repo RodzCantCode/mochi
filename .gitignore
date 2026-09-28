@@ -1,0 +1,14 @@
+node_modules/
+dist/
+playground-dist/
+test/out/
+.DS_Store
+# caché del revisor de diseño
+.impeccable/hook.cache.json
+# prototipo del vídeo: dependencias, renders y la música (licencia de Mixkit: no se redistribuye suelta)
+reel/node_modules/
+reel/.venv/
+reel/out/
+reel/audio/*.mp3
+reel/audio/*.wav
+design-system/

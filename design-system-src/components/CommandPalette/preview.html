@@ -1,0 +1,35 @@
+<!-- @dsCard group="Superpuestos" height=440 subtitle="⌘K, escribe para filtrar, Enter" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CommandPalette</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  function Demo() {
+    var o = useState(true);
+    M.useCommandK(function () { o[1](function (x) { return !x; }); });
+    var run = function (t) { return function () { M.toast(t); }; };
+    var commands = [
+      { id: "new", label: "New project", icon: h(M.PlusIcon, { size: 18 }), shortcut: ["mod", "N"], onSelect: run("Project created") },
+      { id: "invite", label: "Invite teammate", icon: h(M.UserPlusIcon, { size: 18 }), shortcut: ["mod", "I"], onSelect: run("Invite sent") },
+      { id: "docs", label: "Search docs", icon: h(M.FileIcon, { size: 18 }), shortcut: ["mod", "/"], onSelect: run("Opening docs") },
+      { id: "save", label: "Save changes", icon: h(M.SaveIcon, { size: 18 }), shortcut: ["mod", "S"], onSelect: run("Changes saved") },
+      { id: "settings", label: "Settings", icon: h(M.SlidersIcon, { size: 18 }), shortcut: ["mod", ","], keywords: ["preferences"], onSelect: run("Settings") },
+    ];
+    return h(React.Fragment, null,
+      h(M.CommandPaletteTrigger, { onClick: function () { o[1](true); } }),
+      h(M.CommandPalette, { open: o[0], onOpenChange: o[1], commands: commands }),
+      h(M.Toaster, null));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

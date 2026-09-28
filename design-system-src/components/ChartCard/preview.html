@@ -1,0 +1,31 @@
+<!-- @dsCard group="Datos" height=430 subtitle="rango, cifra que cuenta, línea que se dibuja" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ChartCard</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  var SERIES = {
+    day: { total: 1840, delta: "+3.1%", data: [120, 180, 140, 210, 260, 190, 240, 310, 280, 350, 300, 380].map(function (v, i) { return { label: (9 + i) + ":00", value: v }; }) },
+    week: { total: 11920, delta: "+8.7%", data: [1400, 1650, 1520, 1880, 2100, 1700, 1670].map(function (v, i) { return { label: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][i], value: v }; }) },
+    month: { total: 48290, delta: "+12.4%", data: [8.2, 9.1, 8.6, 10.4, 9.8, 11.9, 12.4, 11.2, 13.8, 16.9, 15.2, 17.6].map(function (v, i) { return { label: "Mar " + (1 + Math.round(i * 2.55)), value: v * 1000 }; }) },
+  };
+  function Demo() {
+    var r = useState("month"), s = SERIES[r[0]];
+    return h("div", { style: { width: "100%", maxWidth: 440 } },
+      h(M.ChartCard, { label: "Revenue", value: s.total, delta: s.delta, data: s.data, range: r[0], onRangeChange: r[1], chartLabel: "Revenue by " + r[0],
+        formatValue: function (v) { return "$" + Math.round(v).toLocaleString("en-US"); },
+        ranges: [{ value: "day", label: "Day" }, { value: "week", label: "Week" }, { value: "month", label: "Month" }] }));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

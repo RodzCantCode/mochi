@@ -1,0 +1,28 @@
+<!-- @dsCard group="Multimedia" height=320 subtitle="island compacta ↔ reproductor" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>MediaPlayer</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  function Demo() {
+    var p = useState(false), t = useState(48);
+    useEffect(function () {
+      if (!p[0]) return;
+      var id = setInterval(function () { t[1](function (x) { return x + 0.25 >= 160 ? 0 : x + 0.25; }); }, 250);
+      return function () { clearInterval(id); };
+    }, [p[0]]);
+    return h(M.MediaPlayer, { title: "Night Drive", artist: "Soft Machines", duration: 160, currentTime: t[0], onSeek: t[1], playing: p[0], onPlayingChange: p[1], defaultExpanded: true });
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

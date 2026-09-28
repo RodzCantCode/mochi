@@ -1,0 +1,25 @@
+<!-- @dsCard group="Controles" height=130 subtitle="arrástralo más allá del final" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Slider</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  function Demo() {
+    var v = useState(40);
+    return h("div", { style: { width: "100%", maxWidth: 340, display: "flex", flexDirection: "column", gap: 10, alignItems: "center" } },
+      h(M.Slider, { "aria-label": "Volume", value: v[0], onValueChange: v[1], formatValue: function (x) { return x + "%"; }, icon: function (f) { return h(M.VolumeIcon, { level: f }); } }),
+      h("span", { style: { font: "var(--mochi-text-label)", color: "var(--mochi-on-canvas-muted)" } }, v[0] + "%"));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>
