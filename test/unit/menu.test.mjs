@@ -1,7 +1,7 @@
-// Colocación del menú: se da la vuelta si no cabe y nunca se sale de la ventana.
+// Colocación del menú y del tooltip: se dan la vuelta si no caben y nunca se salen de la ventana.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { placeMenu } from "../../dist/components/Menu.js";
+import { placeMenu, placeTooltip } from "../../dist/internal/placement.js";
 
 const vp = { w: 1000, h: 800 };
 const size = { w: 220, h: 240 };
@@ -41,4 +41,26 @@ test("si no cabe ni arriba ni abajo, elige el lado con más sitio y limita el al
   const p = placeMenu({ x: 100, y: 300, w: 40, h: 40 }, { w: 220, h: 900 }, vp);
   assert.equal(p.side, "bottom");
   assert.equal(p.maxH, 800 - 340 - 6 - 8);
+});
+
+const tip = { w: 80, h: 28 };
+
+test("tooltip: encima y centrado", () => {
+  const p = placeTooltip({ x: 100, y: 200, w: 40, h: 40 }, tip, vp, "top");
+  assert.deepEqual([p.x, p.y, p.side], [80, 164, "top"]);
+});
+
+test("tooltip: pegado arriba, pasa debajo", () => {
+  const p = placeTooltip({ x: 100, y: 10, w: 40, h: 40 }, tip, vp, "top");
+  assert.deepEqual([p.y, p.side], [58, "bottom"]);
+});
+
+test("tooltip: a la derecha sin sitio, pasa a la izquierda", () => {
+  const p = placeTooltip({ x: 950, y: 200, w: 40, h: 40 }, tip, vp, "right");
+  assert.deepEqual([p.x, p.side], [950 - 8 - 80, "left"]);
+});
+
+test("tooltip: junto al borde izquierdo se corre para no salirse", () => {
+  const p = placeTooltip({ x: 0, y: 200, w: 20, h: 20 }, tip, vp, "top");
+  assert.equal(p.x, 8);
 });

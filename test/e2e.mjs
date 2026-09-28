@@ -289,6 +289,66 @@ try {
   await sleep(700);
   check("menú: un clic fuera lo cierra", (await page.locator(".mochi-menu-root").count()) === 0);
 
+  // --- tooltip
+  await page.goto(URL_ + "#/tooltip");
+  await sleep(500);
+  await page.mouse.move(5, 5);
+  const dup = page.getByRole("button", { name: "Duplicate" }).first();
+  await dup.hover();
+  await sleep(200);
+  const early = await page.locator('.mochi-tooltip[data-state="open"]').count();
+  await sleep(600);
+  const tipEl = page.getByRole("tooltip");
+  const tipId = await tipEl.getAttribute("id");
+  check("tooltip: espera un poco y aparece al pasar el ratón", early === 0 && (await tipEl.textContent()) === "Duplicate" && (await dup.getAttribute("aria-describedby"))?.includes(tipId), `a los 200 ms: ${early}`);
+  await page.getByRole("button", { name: "Share" }).first().hover();
+  await sleep(120);
+  check("tooltip: al pasar al siguiente viaja y cambia el texto sin esperar", (await page.locator(".mochi-tooltip").count()) === 1 && /Share/.test((await page.locator('.mochi-tooltip [aria-hidden="true"]').count()) ? await page.locator(".mochi-tooltip .mochi-swap__layer:not([data-leaving])").textContent() : ""));
+  await page.screenshot({ path: `${OUT}/tooltip.png` });
+  await page.mouse.move(5, 5);
+  await sleep(600);
+  check("tooltip: al salir el ratón se va", (await page.locator('.mochi-tooltip[data-state="open"]').count()) === 0);
+  await page.getByRole("button", { name: "Rename" }).first().focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
+  await sleep(300);
+  check("tooltip: con el foco de teclado sale al momento", (await page.getByRole("tooltip").textContent()) === "Rename");
+  await page.keyboard.press("Escape");
+  await sleep(400);
+  check("tooltip: Esc lo cierra", (await page.locator('.mochi-tooltip[data-state="open"]').count()) === 0);
+
+  // --- selector
+  await page.goto(URL_ + "#/select");
+  await sleep(500);
+  const sizeBox = page.getByRole("combobox", { name: "Size" });
+  await sizeBox.click();
+  await sleep(600);
+  const lb = page.getByRole("listbox");
+  const activeId = () => sizeBox.getAttribute("aria-activedescendant");
+  const optText = async () => page.locator(`[id="${await activeId()}"]`).textContent();
+  check("selector: se abre con la opción elegida activa", (await lb.isVisible()) && (await optText()) === "Medium");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  check("selector: las flechas se saltan la opción desactivada", (await optText()) === "Small", await optText());
+  await page.keyboard.press("ArrowUp");
+  await page.keyboard.press("Enter");
+  await sleep(700);
+  check("selector: Enter elige y cierra, con el foco en el campo", (await page.locator(".mochi-menu-root").count()) === 0 && /Large/.test((await sizeBox.textContent()) ?? "") && (await page.evaluate(() => document.activeElement?.getAttribute("role"))) === "combobox");
+  const country = page.getByRole("combobox", { name: "Country" });
+  await country.focus();
+  await page.keyboard.type("sp", { delay: 60 });
+  await sleep(500);
+  check("selector: escribir con el campo cerrado lo abre en la opción que empieza así", (await country.getAttribute("aria-expanded")) === "true" && (await page.locator(`[id="${await country.getAttribute("aria-activedescendant")}"]`).textContent()) === "Spain");
+  await page.keyboard.press("Escape");
+  await sleep(600);
+  check("selector: Esc cierra sin cambiar nada", /Choose a country/.test((await country.textContent()) ?? ""));
+  await country.click();
+  await sleep(600);
+  await page.getByRole("option", { name: "Japan" }).click();
+  await sleep(700);
+  check("selector: un clic en una opción la elige", /Japan/.test((await country.textContent()) ?? "") && (await page.locator('select[aria-hidden="true"]').nth(1).inputValue()) === "japan");
+  await page.screenshot({ path: `${OUT}/select.png` });
+
   // --- casos límite de las superposiciones
   await page.goto(URL_ + "#/_cases/nested");
   await sleep(400);
@@ -434,6 +494,18 @@ try {
   await sleep(1200);
   const v1 = await box(mob.locator(".mochi-dialog"));
   check("hoja: si no se deja cerrar, vuelve a su sitio", Math.abs(v1.y - v0.y) < 1.5, `${v0.y} → ${v1.y}`);
+  await mob.goto(URL_ + "#/tooltip");
+  await sleep(500);
+  await mob.getByRole("button", { name: "Duplicate" }).first().tap();
+  await sleep(800);
+  check("tooltip: en táctil no aparece", (await mob.locator('.mochi-tooltip[data-state="open"]').count()) === 0);
+  await mob.goto(URL_ + "#/select");
+  await sleep(600);
+  const nativeSel = mob.locator(".mochi-select").first();
+  check("selector: en táctil manda el selector nativo", (await nativeSel.getAttribute("data-native")) !== null && (await nativeSel.locator(".mochi-select__trigger").getAttribute("aria-hidden")) === "true");
+  await nativeSel.locator("select").selectOption("s");
+  await sleep(600);
+  check("selector: lo elegido en el nativo se ve en el campo", /Small/.test((await nativeSel.locator(".mochi-select__value").textContent()) ?? ""));
   await mob.goto(URL_ + "#/menu");
   await sleep(600);
   await mob.getByRole("button", { name: "Project actions" }).first().tap();

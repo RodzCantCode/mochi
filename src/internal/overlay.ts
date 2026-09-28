@@ -191,6 +191,20 @@ export function useVisualViewport(active: boolean): { top: number; height: numbe
   return box;
 }
 
+/** Si se cumple una media query (p. ej. "(pointer: coarse)"). En el servidor, false. */
+export function useMediaQuery(query: string): boolean {
+  const [match, setMatch] = useState(false);
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const mql = window.matchMedia(query);
+    const on = () => setMatch(mql.matches);
+    on();
+    mql.addEventListener("change", on);
+    return () => mql.removeEventListener("change", on);
+  }, [query]);
+  return match;
+}
+
 /** Tamaño de la ventana, al día al redimensionar. */
 export function useViewport() {
   const read = () => (typeof window === "undefined" ? { w: 1024, h: 768 } : { w: window.innerWidth, h: window.innerHeight });

@@ -19,7 +19,7 @@ const OUT = "design-system/project";
 const SRC = "design-system-src";
 const NAMESPACE = "Mochi";
 // orden de las fichas en el sistema
-const CARDS = ["Button", "Menu", "Switch", "SegmentedControl", "Slider", "TextField", "MediaPlayer", "ChartCard", "Dialog", "CommandPalette", "Toast", "MorphBox"];
+const CARDS = ["Button", "Menu", "Switch", "SegmentedControl", "Slider", "TextField", "Select", "MediaPlayer", "ChartCard", "Dialog", "Tooltip", "CommandPalette", "Toast", "MorphBox"];
 const pkg = JSON.parse(readFileSync("package.json", "utf8"));
 
 rmSync(OUT, { recursive: true, force: true });
@@ -93,7 +93,7 @@ writeFileSync(join(OUT, "components/index.d.ts"), `// Tipos de ${pkg.name} ${pkg
 
 // --- iconos en SVG (tinta #0D0D0E: un <img> no hereda color) ----------------------------
 const lib = await import(resolve("dist/index.js"));
-const ICONS = ["ArrowRightIcon", "CheckIcon", "SearchIcon", "PlusIcon", "UserPlusIcon", "FileIcon", "SaveIcon", "SlidersIcon", "CheckCircleIcon", "CommandIcon", "EnterIcon", "CloseIcon", "MoreIcon", "AlertIcon", "EyeIcon", "EyeOffIcon", "TrashIcon", "CopyIcon", "PencilIcon", "ShareIcon", "VolumeIcon", "PlayIcon", "PauseIcon", "PreviousIcon", "NextIcon"];
+const ICONS = ["ArrowRightIcon", "CheckIcon", "SearchIcon", "PlusIcon", "UserPlusIcon", "FileIcon", "SaveIcon", "SlidersIcon", "CheckCircleIcon", "CommandIcon", "EnterIcon", "CloseIcon", "ChevronDownIcon", "MoreIcon", "AlertIcon", "EyeIcon", "EyeOffIcon", "TrashIcon", "CopyIcon", "PencilIcon", "ShareIcon", "VolumeIcon", "PlayIcon", "PauseIcon", "PreviousIcon", "NextIcon"];
 mkdirSync(join(OUT, "assets/Icons"), { recursive: true });
 const iconFiles = [];
 for (const name of ICONS) {

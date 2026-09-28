@@ -12,7 +12,9 @@ import {
   Menu,
   MoreIcon,
   PencilIcon,
+  Select,
   ShareIcon,
+  Tooltip,
   CommandPaletteTrigger,
   Kbd,
   MediaPlayer,
@@ -460,6 +462,97 @@ export function MenuEdgesDemo() {
       <Menu items={items} placement="bottom-end">{trigger("bottom-end")}</Menu>
       <Menu items={items} placement="top-start">{trigger("top-start")}</Menu>
       <Menu items={items} placement="top-end">{trigger("top-end")}</Menu>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------------------
+// Tooltip
+
+/** Barra de iconos: el primero espera; al pasar al siguiente, sale al momento. */
+export function TooltipDemo() {
+  const tools = [
+    { label: "Rename", icon: <PencilIcon size={18} /> },
+    { label: "Duplicate", icon: <CopyIcon size={18} /> },
+    { label: "Share", icon: <ShareIcon size={18} /> },
+    { label: "Delete", icon: <TrashIcon size={18} /> },
+  ];
+  return (
+    <div className="stage">
+      <div className="toolbar">
+        {tools.map(t => (
+          <Tooltip key={t.label} content={t.label}>
+            <Button variant="surface" size="sm" iconOnly aria-label={t.label} onClick={() => toast(t.label)}>
+              {t.icon}
+            </Button>
+          </Tooltip>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Cada uno prefiere un lado; junto al borde se da la vuelta. */
+export function TooltipSidesDemo() {
+  return (
+    <div className="stage">
+      {(["top", "bottom", "left", "right"] as const).map(side => (
+        <Tooltip key={side} content={`On the ${side}`} side={side}>
+          <Button variant="surface" size="sm">
+            {side}
+          </Button>
+        </Tooltip>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------------------
+// Selector
+
+const COUNTRIES = ["Argentina", "Australia", "Brazil", "Canada", "Chile", "Colombia", "France", "Germany", "Italy", "Japan", "Mexico", "Netherlands", "Portugal", "Spain", "Sweden", "United Kingdom", "United States"];
+
+/** En un formulario, junto a campos de texto. */
+export function SelectFormDemo() {
+  const [size, setSize] = useState("m");
+  const [country, setCountry] = useState("");
+  return (
+    <div className="stage col form">
+      <Select
+        label="Size"
+        value={size}
+        onValueChange={setSize}
+        options={[
+          { value: "s", label: "Small" },
+          { value: "m", label: "Medium" },
+          { value: "l", label: "Large" },
+          { value: "xl", label: "Extra large", disabled: true },
+        ]}
+      />
+      <Select label="Country" placeholder="Choose a country" value={country} onValueChange={setCountry} options={COUNTRIES.map(c => ({ value: c.toLowerCase(), label: c }))} />
+      <span className="hint">
+        Talla: {size} · País: {country || "—"}
+      </span>
+    </div>
+  );
+}
+
+/** Compacto, para barras: la píldora cambia de ancho con el valor. */
+export function SelectPillDemo() {
+  const [sort, setSort] = useState("newest");
+  return (
+    <div className="stage">
+      <Select
+        size="sm"
+        label="Sort by"
+        value={sort}
+        onValueChange={setSort}
+        options={[
+          { value: "newest", label: "Newest first" },
+          { value: "oldest", label: "Oldest" },
+          { value: "name", label: "Name" },
+        ]}
+      />
     </div>
   );
 }

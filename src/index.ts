@@ -16,5 +16,7 @@ export { matchCommand, type Searchable } from "./components/commandFilter.js";
 export { Toaster, toast, type ToastOptions } from "./components/Toast.js";
 export { Dialog, type DialogProps } from "./components/Dialog.js";
 export { Menu, ContextMenu, type MenuProps, type ContextMenuProps, type MenuEntry, type MenuItem, type MenuSeparator, type MenuPlacement } from "./components/Menu.js";
+export { Select, type SelectProps, type SelectOption } from "./components/Select.js";
+export { Tooltip, type TooltipProps, type TooltipSide } from "./components/Tooltip.js";
 export { formatTime } from "./internal/format.js";
 export * as tokens from "./tokens.js";

@@ -1,8 +1,8 @@
 # Siguientes componentes de Mochi
 
 > **Actualizado:** 2026-09-28. Traspaso temporal: acento cambiado a matcha, rojo de error añadido
-> y tres componentes nuevos (campo de texto, diálogo y hoja, menú) hechos, probados, publicados
-> en el sistema de diseño y subidos a GitHub. Lo pendiente de la librería en general está en el
+> y cinco componentes nuevos (campo de texto, diálogo y hoja, menú, selector y tooltip) hechos,
+> probados y publicados en el sistema de diseño. Selector y tooltip están sin commit. Lo pendiente de la librería en general está en el
 > [README](../../../README.md#pendiente); aquí solo lo de esta tarea.
 
 ## Objetivo
@@ -43,16 +43,22 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   - Cambiado sin poder probarlo en un iPhone: la paleta de comandos daba un salto al salir el
     teclado. Ahora sigue la parte visible de la pantalla (`useVisualViewport` en
     `src/internal/overlay.ts`), cabe encima del teclado y bloquea el desplazamiento de la
-    página. Comprobado solo simulando esa parte visible en Chromium.
+    página. Comprobado simulando esa parte visible en Chromium y por el usuario en su iPhone.
   - En Safari (no en Brave), la hoja de «Rename» se quedaba debajo del teclado. Ahora el diálogo
-    también se coloca sobre la parte visible: la hoja sube con el teclado. Comprobado solo
-    simulando esa parte visible en Chromium.
+    también se coloca sobre la parte visible: la hoja sube con el teclado. Comprobado simulando
+    esa parte visible en Chromium y por el usuario en su iPhone.
   - El resto de componentes le funcionó bien en el iPhone.
 - **Git:** subido a GitHub (`RodzCantCode/mochi`, **público**, rama `main`): el estado anterior
   (0.1.0 en azul) y esta tanda. El usuario va a publicar el sitio de pruebas en Vercel para
   probarlo en su iPhone (compilación y carpeta, en el README, apartado «Desarrollo»).
-- **Siguientes candidatos:** tooltip (web y escritorio) y selector de opciones (en móvil suele
-  ser mejor el nativo).
+- **Selector y tooltip (hechos, sin commit):** `Select` (campo de 56 px o píldora compacta; en
+  táctil, `<select>` nativo encima) y `Tooltip` (un único globo que viaja de un elemento a otro).
+  Menú, menú contextual y selector comparten la lista en `src/internal/listPopup.tsx`, y la
+  colocación de menús y tooltips está en `src/internal/placement.ts`.
+- **Plan acordado:** pulir Mochi aquí antes de integrarlo en `phsport-app` (en una sesión aparte
+  en esa carpeta; el mensaje para arrancarla se le dio al usuario en el chat).
+- El usuario probó en su iPhone (Safari) la paleta y la hoja de «Rename» tras los arreglos:
+  funcionan.
 
 ## Decisiones tomadas
 
@@ -60,9 +66,10 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   se hizo propio. Pesos (minificado y comprimido, sin React):
   - Radix, medido el 2026-09-28 con `@radix-ui/react-dialog` 1.1.23: diálogo 13,2 kB, tooltip
     18,4 kB, popover 23,0 kB, menú desplegable 28,9 kB, selector 29,5 kB; React 67,4 kB.
-  - Mochi entera: 15,8 kB antes de esta tanda, 25,5 kB ahora.
+  - Mochi entera: 15,8 kB antes de esta tanda, 28,9 kB ahora.
   - Coste de cada pieza nueva sobre Button + CommandPalette: TextField +1,2 kB, Dialog +3,6 kB,
-    Menu y ContextMenu +4,6 kB. Diálogo y menú comparten `src/internal/overlay.ts`.
+    Menu y ContextMenu +4,6 kB. Diálogo y menú comparten `src/internal/overlay.ts`. Sobre
+    Button + Menu: Select +1,2 kB (comparte la lista del menú) y Tooltip +1,5 kB.
 - `accent` es pastel y no pasa 3:1 sobre el lienzo claro. Por eso la prueba de contraste exige
   3:1 a `accent-strong`, y `accent` solo va sobre `solid` o con texto encima.
 - Receta de un componente nuevo (la que siguieron los 12 actuales): valores de `tokens/` →
@@ -105,14 +112,14 @@ interacción en verde y su ficha publicada en el sistema de diseño.
 
 El 2026-09-28, tras el último cambio de código:
 - `npm run typecheck`: sin errores.
-- `npm test`: 44/44 (además de lo anterior: contraste de los colores nuevos, colocación del
+- `npm test`: 52/52 (además de lo anterior: contraste de los colores nuevos, colocación del
   menú, unión de refs y renderizado en servidor de los componentes nuevos).
-- `npm run test:e2e`: 68/68 en Chromium (campo de texto, diálogo que crece desde el botón con
+- `npm run test:e2e`: 82/82 en Chromium (campo de texto, diálogo que crece desde el botón con
   foco retenido y devuelto, diálogos anidados, reabrir desde otro botón, `autoFocus`, hoja en
   pantalla de móvil arrastrada hasta cerrarse o vetada, menú con teclado, letras, contextual,
   colocación junto a los bordes y toque fuera sin atravesar, sin errores de consola). Una
   pasada va sobre una compilación en modo desarrollo, donde React renderiza dos veces seguidas.
-- `node scripts/check-design-system.mjs`: 26/26 vistas previas sin errores con React 18.
+- `node scripts/check-design-system.mjs`: 30/30 vistas previas sin errores con React 18.
 - Capturas revisadas a ojo en claro y oscuro, en escritorio y a 390 px de ancho.
 
 Sin comprobar: Safari, Firefox, pantallas táctiles reales (la pulsación larga y el arrastre de
@@ -128,7 +135,9 @@ Ninguno técnico. Esperan decisión del usuario:
 
 ## Próximos pasos
 
-1. Que el usuario vuelva a probar en el iPhone, con Safari, la paleta y la hoja de «Rename».
+1. Commit de selector y tooltip cuando el usuario lo pida, y elegir los siguientes elementos
+   (propuesta en el chat: desplegable, pestañas con contenido, casilla y radio, barra de
+   progreso, avatar y skeleton, y piezas de movimiento como `Presence`).
 2. Siguiente componente con la receta de arriba (propuesta: tooltip, que reutiliza la
    colocación del menú).
 3. Tras cada componente: `npm test`, `npm run test:e2e`, `npm run design-system` y publicar el

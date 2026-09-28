@@ -23,6 +23,9 @@ const cases = {
   "TextField contraseña": h(M.TextField, { label: "Password", type: "password", description: "8+" }),
   Dialog: h(M.Dialog, { open: true, onOpenChange() {}, title: "Delete?", actions: h(M.Button, null, "OK") }),
   Menu: h(M.Menu, { items: [{ id: "a", label: "A", onSelect() {} }, { type: "separator" }] }, h(M.Button, { iconOnly: true, "aria-label": "More" }, h(M.MoreIcon))),
+  Select: h(M.Select, { label: "Size", defaultValue: "m", options: [{ value: "s", label: "Small" }, { value: "m", label: "Medium" }] }),
+  "Select compacto": h(M.Select, { label: "Sort", size: "sm", placeholder: "Sort by", options: [{ value: "a", label: "A" }] }),
+  Tooltip: h(M.Tooltip, { content: "Copy" }, h(M.Button, { iconOnly: true, "aria-label": "Copy" }, h(M.CopyIcon))),
   ContextMenu: h(M.ContextMenu, { items: [{ id: "a", label: "A", onSelect() {} }] }, h("div", null, "Area")),
 };
 
@@ -49,4 +52,11 @@ test("SSR: el botón del menú anuncia que abre un menú", () => {
   const html = renderToString(h(M.Menu, { items: [] }, h(M.Button, { iconOnly: true, "aria-label": "More" }, h(M.MoreIcon))));
   assert.match(html, /aria-haspopup="menu"/);
   assert.match(html, /aria-expanded="false"/);
+});
+
+test("SSR: el selector es un combobox con su valor y un <select> para formularios", () => {
+  const html = renderToString(h(M.Select, { label: "Size", name: "size", defaultValue: "m", options: [{ value: "s", label: "Small" }, { value: "m", label: "Medium" }] }));
+  assert.match(html, /role="combobox"/);
+  assert.match(html, /Medium/);
+  assert.match(html, /<select[^>]*name="size"/);
 });

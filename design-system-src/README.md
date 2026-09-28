@@ -2,7 +2,7 @@ Mochi es un sistema de interfaz con una idea: **una sola forma que se transforma
 
 ## Principios
 
-- **Una forma, sin cortes.** Un estado no sustituye a otro: lo transforma. El botón se encoge a círculo para cargar y se abre de nuevo al terminar; la island se abre en reproductor; el toast se transforma en el siguiente toast; el «…» se convierte en su menú y el botón que abre un diálogo crece hasta ser la ventana.
+- **Una forma, sin cortes.** Un estado no sustituye a otro: lo transforma. El botón se encoge a círculo para cargar y se abre de nuevo al terminar; la island se abre en reproductor; el toast se transforma en el siguiente toast; el «…» se convierte en su menú, el selector en su lista y el botón que abre un diálogo crece hasta ser la ventana; el tooltip viaja de un elemento a otro.
 - **Muelles, con un rebote mínimo.** Nada frena con una curva fija ni rebota: todo va con muelles cuyo rebote se queda por debajo del 1 %.
 - **El contenido no se solapa.** Lo que sale se va deprisa y lo que entra llega 60 ms después, con desenfoque. Nunca hay dos textos legibles a la vez en el mismo sitio.
 - **Blanco y negro, un acento.** El matcha es la única nota de color: interruptor encendido, línea de la gráfica, comando activo. Si todo es verde, nada lo es. El rojo no es un acento: solo aparece cuando algo va mal o no tiene vuelta atrás.
@@ -36,7 +36,7 @@ Mochi es un sistema de interfaz con una idea: **una sola forma que se transforma
 
 ## Forma, espacio y sombra
 
-- Por defecto, las formas son píldoras (`radius-full`): botones, interruptor, pestañas, slider, campos de texto, toast, island. Las tarjetas y los diálogos usan `radius-xl`, la paleta y los menús `radius-lg`, la carátula y el resaltado del menú `radius-md`, las filas de la paleta y el tooltip `radius-sm`, las teclas `radius-xs`.
+- Por defecto, las formas son píldoras (`radius-full`): botones, interruptor, pestañas, slider, campos de texto y selectores, toast, island. Las tarjetas y los diálogos usan `radius-xl`, la paleta, los menús y las listas de los selectores `radius-lg`, la carátula y el resaltado del menú `radius-md`, las filas de la paleta y el tooltip `radius-sm`, las teclas `radius-xs`.
 - Los rellenos siguen la escala de espaciado: `space-1` es el margen de las bolitas e indicadores dentro de su pista, `space-5` el relleno de tarjetas.
 - `shadow-surface` levanta `solid` y `surface` del lienzo; `shadow-thumb`, bolitas e indicadores; `shadow-pop`, el tooltip; `shadow-overlay`, la paleta, los menús y los diálogos sobre `scrim`.
 

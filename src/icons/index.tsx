@@ -52,6 +52,7 @@ export const CheckCircleIcon = make("CheckCircleIcon", <><circle cx="12" cy="12"
 export const CommandIcon = make("CommandIcon", <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />);
 export const EnterIcon = make("EnterIcon", <><path d="M9 10.5 5 14.5l4 4" /><path d="M19 5v6.5a3 3 0 0 1-3 3H5.5" /></>);
 export const CloseIcon = make("CloseIcon", <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />);
+export const ChevronDownIcon = make("ChevronDownIcon", <path d="m6.5 9.5 5.5 5.5 5.5-5.5" />);
 export const MoreIcon = make("MoreIcon", <g fill="currentColor"><circle cx="5.5" cy="12" r="1.1" /><circle cx="12" cy="12" r="1.1" /><circle cx="18.5" cy="12" r="1.1" /></g>);
 export const AlertIcon = make("AlertIcon", <><circle cx="12" cy="12" r="9" /><path d="M12 7.8v5M12 16.2v.01" /></>);
 export const EyeIcon = make("EyeIcon", <><path d="M2.8 12c2.1-4 5.2-6 9.2-6s7.1 2 9.2 6c-2.1 4-5.2 6-9.2 6s-7.1-2-9.2-6z" /><circle cx="12" cy="12" r="3" /></>);

@@ -1,0 +1,28 @@
+<!-- @dsCard group="Controles" height=300 subtitle="el campo se transforma en la lista" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Select</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: flex-start; justify-content: center; padding: 28px 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+  .col { display: flex; flex-direction: column; align-items: stretch; gap: 14px; width: 100%; max-width: 340px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState;
+  function Demo() {
+    var s = useState("m"), o = useState("newest");
+    return h("div", { className: "col" },
+      h(M.Select, { label: "Size", value: s[0], onValueChange: s[1], options: [
+        { value: "s", label: "Small" }, { value: "m", label: "Medium" }, { value: "l", label: "Large" }, { value: "xl", label: "Extra large", disabled: true }] }),
+      h("div", null, h(M.Select, { size: "sm", label: "Sort by", value: o[0], onValueChange: o[1], options: [
+        { value: "newest", label: "Newest first" }, { value: "oldest", label: "Oldest" }, { value: "name", label: "Name" }] })));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

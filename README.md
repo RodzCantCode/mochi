@@ -11,11 +11,13 @@ Funciona en **Next.js** y **Astro** (como isla de React). Solo depende de React 
 | `Switch` | Interruptor cuya bolita se estira al cambiar: cada borde va en su propio muelle. |
 | `SegmentedControl` | Pestañas con indicador líquido; las etiquetas cambian de color justo por donde pasa. |
 | `Slider` | Manipulación directa; al pasarte del límite se estira y al soltar vuelve con su velocidad. |
+| `Select` | El campo se transforma en la lista de opciones; teclado de `<select>`. En pantallas táctiles abre el selector nativo del sistema. |
 | `TextField` | La etiqueta sube al escribir; anillo de foco y de error, mensaje que entra con desenfoque, check de «correcto» y botón para ver la contraseña. |
 | `MediaPlayer` | Island compacta que se abre en reproductor: play/pausa que se transforma y barra arrastrable (`Scrubber`). |
 | `ChartCard`, `LineChart` | La línea se dibuja sola; tooltip con puntero o flechas; la cifra cuenta hasta su valor. |
 | `CommandPalette` | Paleta ⌘K: filtra al escribir, el resaltado se desliza, Enter ejecuta, Esc cierra. `useCommandK`, `Kbd` y `CommandPaletteTrigger` incluidos. |
 | `Dialog` | Ventana que crece desde el botón que la abre y vuelve a él; en pantallas estrechas, hoja que sube desde abajo y se cierra arrastrándola. |
+| `Tooltip` | Etiqueta que sale del elemento al pasar el ratón o al enfocarlo; al pasar a otro elemento, viaja hasta él. No aparece en táctil. |
 | `Toaster`, `toast()` | Aviso en píldora; si llega otro, la píldora se transforma en el nuevo. |
 | `MorphBox`, `Swap` | Las piezas base, por si quieres construir tus propios estados. |
 
