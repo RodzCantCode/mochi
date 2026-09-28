@@ -27,6 +27,7 @@ import {
   useEscapeLayer,
   useScrollLock,
   useViewport,
+  useVisualViewport,
   type Origin,
   type Rect,
 } from "../internal/overlay.js";
@@ -90,6 +91,11 @@ function Panel({
   const descId = useId();
   const vp = useViewport();
   const sheet = presentation === "sheet" || (presentation === "auto" && vp.w < SHEET_BREAKPOINT);
+  // en vertical manda la parte que se ve: en Safari de iOS el teclado la tapa sin cambiar el alto
+  // de la ventana, y la hoja tiene que subir con él
+  const visual = useVisualViewport(true);
+  const viewTop = visual?.top ?? 0;
+  const viewH = visual?.height ?? vp.h;
   const close = () => onOpenChange(false);
 
   // el botón de origen, leído al abrir (y de nuevo al cerrar, por si se movió)
@@ -115,13 +121,13 @@ function Panel({
   const [contentEl, setContentEl] = useState<HTMLDivElement | null>(null);
   const size = useElementSize(contentEl);
   const W = sheet ? vp.w - EDGE * 2 : Math.min(width, vp.w - 32);
-  const maxH = sheet ? vp.h - 56 : vp.h - 48;
+  const maxH = sheet ? viewH - 56 : viewH - 48;
   const H = Math.min(size?.height ?? 0, maxH);
   const to: Rect = sheet
-    ? { x: EDGE, y: vp.h - EDGE - H, w: W, h: H, r: RADIUS }
-    : { x: Math.round((vp.w - W) / 2), y: Math.max(24, Math.round((vp.h - H) * 0.44)), w: W, h: H, r: RADIUS };
+    ? { x: EDGE, y: viewTop + viewH - EDGE - H, w: W, h: H, r: RADIUS }
+    : { x: Math.round((vp.w - W) / 2), y: viewTop + Math.max(24, Math.round((viewH - H) * 0.44)), w: W, h: H, r: RADIUS };
   const from: Rect = sheet
-    ? { ...to, y: vp.h + EDGE }
+    ? { ...to, y: viewTop + viewH + EDGE }
     : grows
       ? originNow!.rect
       : { x: to.x + to.w * 0.02, y: to.y + 10, w: to.w * 0.96, h: to.h * 0.96, r: RADIUS };
@@ -189,7 +195,7 @@ function Panel({
     // el fondo: en la hoja sigue a la posición (también al arrastrar)
     const sc = scrim.current;
     if (sc) {
-      const s = sheet ? clamp01((vp.h + EDGE - v.y) / Math.max(1, vp.h + EDGE - T.y)) : clamp01(v.s);
+      const s = sheet ? clamp01((from.y - v.y) / Math.max(1, from.y - T.y)) : clamp01(v.s);
       sc.style.opacity = s.toFixed(4);
     }
     if (!open) {

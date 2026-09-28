@@ -21,6 +21,6 @@ Para confirmar algo importante («Delete project?») o para una tarea corta que 
 
 - `surface` con `radius-xl` y `shadow-overlay` sobre `scrim`. Título de 20 px en peso 620, descripción en `body` y `on-surface-muted`.
 - Al abrir, la forma del botón se estira con `morph` hasta la ventana. Si el botón es negro, el negro queda en un borde que se estrecha mientras el blanco crece desde el centro. El texto del botón se desvanece y el contenido entra con desenfoque. Al cerrar ocurre lo mismo al revés, y el foco vuelve al botón.
-- La hoja deja 8 px con los bordes, tiene un asa arriba y se arrastra desde la cabecera. Al soltarla vuelve con `back` y la velocidad que llevaba; se cierra si baja más de un 30 % o la lanzas hacia abajo.
+- La hoja deja 8 px con los bordes, tiene un asa arriba y se arrastra desde la cabecera. Cuando sale el teclado, sube con él hasta quedar justo encima (y la ventana centrada se centra en lo que queda visible). Al soltarla vuelve con `back` y la velocidad que llevaba; se cierra si baja más de un 30 % o la lanzas hacia abajo.
 - La acción destructiva va con `Button variant="danger"`. Dentro de la ventana, los botones `surface` y los campos van en el tono del lienzo.
 - Mientras está abierta, la página no se desplaza, Tab no sale de la ventana y Esc la cierra.

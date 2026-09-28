@@ -44,6 +44,9 @@ interacción en verde y su ficha publicada en el sistema de diseño.
     teclado. Ahora sigue la parte visible de la pantalla (`useVisualViewport` en
     `src/internal/overlay.ts`), cabe encima del teclado y bloquea el desplazamiento de la
     página. Comprobado solo simulando esa parte visible en Chromium.
+  - En Safari (no en Brave), la hoja de «Rename» se quedaba debajo del teclado. Ahora el diálogo
+    también se coloca sobre la parte visible: la hoja sube con el teclado. Comprobado solo
+    simulando esa parte visible en Chromium.
   - El resto de componentes le funcionó bien en el iPhone.
 - **Git:** subido a GitHub (`RodzCantCode/mochi`, **público**, rama `main`): el estado anterior
   (0.1.0 en azul) y esta tanda. El usuario va a publicar el sitio de pruebas en Vercel para
@@ -104,7 +107,7 @@ El 2026-09-28, tras el último cambio de código:
 - `npm run typecheck`: sin errores.
 - `npm test`: 44/44 (además de lo anterior: contraste de los colores nuevos, colocación del
   menú, unión de refs y renderizado en servidor de los componentes nuevos).
-- `npm run test:e2e`: 66/66 en Chromium (campo de texto, diálogo que crece desde el botón con
+- `npm run test:e2e`: 68/68 en Chromium (campo de texto, diálogo que crece desde el botón con
   foco retenido y devuelto, diálogos anidados, reabrir desde otro botón, `autoFocus`, hoja en
   pantalla de móvil arrastrada hasta cerrarse o vetada, menú con teclado, letras, contextual,
   colocación junto a los bordes y toque fuera sin atravesar, sin errores de consola). Una
@@ -125,9 +128,7 @@ Ninguno técnico. Esperan decisión del usuario:
 
 ## Próximos pasos
 
-1. Que el usuario vuelva a probar la paleta en el iPhone. Si el salto sigue, o si «Rename»
-   (la hoja del diálogo con un campo) salta al salir el teclado, aplicar lo mismo al diálogo:
-   hoy la hoja se coloca con el alto de la ventana, no con el de la parte visible.
+1. Que el usuario vuelva a probar en el iPhone, con Safari, la paleta y la hoja de «Rename».
 2. Siguiente componente con la receta de arriba (propuesta: tooltip, que reutiliza la
    colocación del menú).
 3. Tras cada componente: `npm test`, `npm run test:e2e`, `npm run design-system` y publicar el

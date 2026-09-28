@@ -349,24 +349,33 @@ try {
   check("movimiento reducido: el switch salta sin animar", Math.abs(r0.x - r1.x) < 0.5, `${r0.x} vs ${r1.x}`);
   await rm.context().close();
 
-  // --- paleta sobre la parte visible (en iOS, la que deja el teclado)
-  const vvCtx = await browser.newContext({ viewport: { width: 390, height: 780 } });
-  await vvCtx.addInitScript(() => {
-    const vv = new EventTarget();
-    Object.assign(vv, { offsetTop: 0, offsetLeft: 0, pageTop: 0, pageLeft: 0, width: innerWidth, height: innerHeight, scale: 1 });
-    Object.defineProperty(window, "visualViewport", { value: vv, configurable: true });
-    window.__vv = vv;
-  });
-  const vp = await vvCtx.newPage();
-  vp.on("pageerror", e => errors.push(e.message));
+  // --- la parte visible de la pantalla (en Safari de iOS, la que deja el teclado): se simula
+  // sustituyendo window.visualViewport, porque el teclado no se puede simular
+  const withVisual = async () => {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 780 } });
+    await ctx.addInitScript(() => {
+      const vv = new EventTarget();
+      Object.assign(vv, { offsetTop: 0, offsetLeft: 0, pageTop: 0, pageLeft: 0, width: innerWidth, height: innerHeight, scale: 1 });
+      Object.defineProperty(window, "visualViewport", { value: vv, configurable: true });
+      window.__vv = vv;
+    });
+    const pg = await ctx.newPage();
+    pg.on("pageerror", e => errors.push(e.message));
+    return pg;
+  };
+  const setVisual = (pg, top, height) =>
+    pg.evaluate(([t, h]) => {
+      Object.assign(window.__vv, { offsetTop: t, height: h });
+      window.__vv.dispatchEvent(new Event("resize"));
+    }, [top, height]);
+
+  const vp = await withVisual();
+  const vvCtx = vp.context();
   await vp.goto(URL_ + "#/palette");
   await sleep(500);
   await vp.getByRole("button", { name: "Open command palette" }).click();
   await sleep(500);
-  await vp.evaluate(() => {
-    Object.assign(window.__vv, { offsetTop: 120, height: 400 });
-    window.__vv.dispatchEvent(new Event("resize"));
-  });
+  await setVisual(vp, 120, 400);
   await sleep(700);
   const vr = await box(vp.locator(".mochi-cmdk-root"));
   const vpanel = await box(vp.getByRole("dialog", { name: "Command palette" }));
@@ -374,6 +383,22 @@ try {
   check("paleta: cabe entera encima del teclado", vpanel.y + vpanel.height <= 520 + 0.5, `acaba en ${(vpanel.y + vpanel.height).toFixed(0)}`);
   check("paleta: la página de debajo no se desplaza mientras está abierta", (await vp.evaluate(() => document.documentElement.style.overflow)) === "hidden");
   await vvCtx.close();
+
+  const rn = await withVisual();
+  await rn.goto(URL_ + "#/dialog");
+  await sleep(500);
+  await rn.getByRole("button", { name: "Rename" }).click();
+  await sleep(900);
+  await setVisual(rn, 0, 440);
+  await sleep(900);
+  const rs = await box(rn.getByRole("dialog", { name: "Rename project" }));
+  const rf = await box(rn.getByRole("textbox", { name: "Project name" }));
+  check("hoja: sube con el teclado hasta quedar encima", Math.abs(rs.y + rs.height - 432) < 1 && rf.y + rf.height <= 440, `hoja acaba en ${(rs.y + rs.height).toFixed(0)}, campo en ${(rf.y + rf.height).toFixed(0)}`);
+  await setVisual(rn, 0, 780);
+  await sleep(900);
+  const rs2 = await box(rn.getByRole("dialog", { name: "Rename project" }));
+  check("hoja: al irse el teclado vuelve abajo", Math.abs(rs2.y + rs2.height - 772) < 1, `acaba en ${(rs2.y + rs2.height).toFixed(0)}`);
+  await rn.context().close();
 
   // --- hoja en pantalla de móvil
   const mob = await open({ viewport: { width: 390, height: 780 }, hasTouch: true, isMobile: true });
