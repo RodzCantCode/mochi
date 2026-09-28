@@ -580,14 +580,23 @@ try {
   await sleep(150);
   check("progreso: sin valor, indeterminado (sin aria-valuenow)", (await upBar.getAttribute("aria-valuenow")) === null && (await upRing.getAttribute("aria-valuenow")) === null);
   const trackW = (await box(upBar)).width;
+  // [instante, borde izquierdo, lo que se ve del tramo, giro del anillo] en cada fotograma, mientras
+  // la demo se prepara (1,6 s)
   const indeterminate = await sampleFrames(page, () => {
     const b = document.querySelector('[data-demo="progress-subida"] .mochi-progress__bar').getBoundingClientRect();
     const t = document.querySelector('[data-demo="progress-subida"] .mochi-progress__track').getBoundingClientRect();
-    return [b.left - t.left, b.width];
-  }, 1100);
-  const segW = indeterminate.map(x => x[1]).filter((_, i) => indeterminate[i][0] > 0 && indeterminate[i][0] + indeterminate[i][1] < trackW);
-  check("progreso: lo indeterminado recorre la barra", indeterminate.some(x => x[0] > trackW * 0.5) && indeterminate.some(x => x[0] < trackW * 0.3), JSON.stringify(indeterminate.slice(0, 5)));
-  check("progreso: y se estira al moverse", segW.length > 0 && Math.max(...segW) > Math.min(...segW) * 1.25, `${Math.min(...segW).toFixed(0)} → ${Math.max(...segW).toFixed(0)}`);
+    const a = parseFloat(document.querySelector('[data-demo="progress-subida"] .mochi-ring__arc').style.strokeDashoffset);
+    return [performance.now(), b.left - t.left, Math.max(0, Math.min(b.right, t.right) - Math.max(b.left, t.left)), a];
+  }, 1300);
+  const seen = indeterminate.map(x => x[2]);
+  const speeds = indeterminate.slice(1).map((x, i) => (x[1] - indeterminate[i][1]) / (x[0] - indeterminate[i][0])).filter(v => v > 0);
+  const median = [...speeds].sort((a, b) => a - b)[Math.floor(speeds.length / 2)];
+  check("progreso: lo indeterminado recorre la barra", indeterminate.some(x => x[1] > trackW * 0.5) && indeterminate.some(x => x[1] < trackW * 0.3));
+  check("progreso: y va a velocidad constante, sin trompicones", speeds.length > 30 && speeds.every(v => Math.abs(v - median) < median * 0.2), `${Math.min(...speeds).toFixed(2)}–${Math.max(...speeds).toFixed(2)} px/ms`);
+  const turns = indeterminate.slice(1).map((x, i) => ((((indeterminate[i][3] - x[3]) % 1) + 1) % 1) / (x[0] - indeterminate[i][0]));
+  const turnMedian = [...turns].sort((a, b) => a - b)[Math.floor(turns.length / 2)];
+  check("progreso: el anillo gira a ritmo constante", turns.length > 20 && turns.every(v => Math.abs(v - turnMedian) < turnMedian * 0.2), `${Math.min(...turns).toFixed(5)}–${Math.max(...turns).toFixed(5)} vueltas/ms`);
+  check("progreso: sale estirándose y se encoge contra el final", seen.some(w => w > 0 && w < trackW * 0.1) && seen.some(w => Math.abs(w - trackW * 0.3) < 2), `se ven de ${Math.min(...seen.filter(w => w > 0)).toFixed(0)} a ${Math.max(...seen).toFixed(0)} px`);
   await page.screenshot({ path: `${OUT}/progress.png`, clip: await box(page.locator('[data-demo="progress-subida"]')) });
   // desde que llega el primer valor, el borde avanza sin saltos
   await page.waitForFunction(() => document.querySelector('[data-demo="progress-subida"] .mochi-progress [role="progressbar"]').hasAttribute("aria-valuenow"), null, { timeout: 4000 });
@@ -957,8 +966,9 @@ try {
   check("desarrollo: la casilla también crece desde el centro", dScale > 0.05 && dScale < 0.95, `escala ${dScale.toFixed(2)}`);
   await dev.goto(DEV_URL + "#/progress");
   await sleep(500);
-  const dInd = await sampleFrames(dev, () => document.querySelector('[data-demo="progress-estados"] .mochi-progress__bar').getBoundingClientRect().width, 900);
-  check("desarrollo: lo indeterminado también se estira", Math.max(...dInd) > Math.min(...dInd) * 1.25, `${Math.min(...dInd).toFixed(0)} → ${Math.max(...dInd).toFixed(0)}`);
+  const dInd = await sampleFrames(dev, () => document.querySelector('[data-demo="progress-estados"] .mochi-progress__bar').getBoundingClientRect().left, 900);
+  const dMoves = dInd.slice(1).map((x, i) => x - dInd[i]);
+  check("desarrollo: lo indeterminado también avanza sin parar", dMoves.length > 20 && dMoves.filter(d => d > 0).length >= dMoves.length - 2, `${dMoves.filter(d => d <= 0).length} fotogramas sin avanzar`);
   await dev.goto(DEV_URL + "#/skeleton");
   await dev.waitForFunction(() => !document.querySelector('[data-demo="skeleton-cambio a contenido"] .mochi-skeleton-swap').hasAttribute("aria-busy"), null, { timeout: 4000 });
   const dSk = await dev.locator('[data-demo="skeleton-cambio a contenido"] .mochi-skeleton-swap .mochi-swap__layer').count();

@@ -1,6 +1,6 @@
 # Progress y ProgressRing
 
-Progreso de algo que tarda: una barra (`Progress`) o un anillo (`ProgressRing`). El valor avanza con un muelle y, sin valor, un tramo recorre la barra estirándose.
+Progreso de algo que tarda: una barra (`Progress`) o un anillo (`ProgressRing`). El valor avanza con un muelle y, sin valor, un tramo recorre la barra sin parar.
 
 ## Cuándo usarlo
 
@@ -18,8 +18,8 @@ Progreso de algo que tarda: una barra (`Progress`) o un anillo (`ProgressRing`).
 
 - Surco teñido del color del relleno (`fill` al 12 %) y relleno `fill` (negro en claro, blanco roto en oscuro), en píldora; valen sobre el lienzo y sobre una superficie. Nunca verde: el acento no es para esperar.
 - El valor avanza con `morph` y la cifra de `showValue` cuenta con él, en cifras tabulares; al llegar el primer valor tras lo indeterminado, cuenta desde 0.
-- Indeterminado: un tramo avanza a saltos con sus dos bordes en muelles distintos, el de delante en `lead` y el de detrás en `trail`, así que se estira al moverse (como el indicador de las pestañas); entra por la izquierda y sale por la derecha. En el anillo, el arco da vueltas con la misma regla.
-- Al pasar de indeterminado a un valor, el tramo se transforma en el relleno; el arco termina hacia delante, hasta las 12.
+- Indeterminado, en bucle y a velocidad constante (sin muelle, como lo que espera sin final conocido): en la barra, un tramo del 30 % del ancho sale estirándose por la izquierda, la cruza en 1,1 s y se encoge contra el final mientras el siguiente asoma. En el anillo, el arco gira a 0,95 vueltas por segundo y se alarga y se acorta (del 8 al 34 % de la vuelta) en ciclos de 1,5 s, sin ir nunca hacia atrás.
+- Al pasar de indeterminado a un valor, lo que se ve del tramo se transforma en el relleno con `morph`; el arco termina hacia delante, hasta las 12.
 - Al llegar al máximo, un disco `fill` crece desde el centro del anillo y dentro se dibuja el check en `on-fill` con `draw`.
 - Con «reducir movimiento», lo indeterminado se queda quieto en el centro y respira (solo cambia su opacidad).
 - Con colores forzados (alto contraste del sistema), el surco lleva borde y el relleno toma el color de resaltado del sistema.

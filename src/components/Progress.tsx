@@ -1,11 +1,11 @@
 "use client";
 // Progreso: una barra (Progress) o un anillo (ProgressRing). El valor avanza con un muelle. Sin
-// valor es «indeterminado»: un tramo recorre la barra (o da vueltas al anillo) con sus dos
-// bordes en muelles distintos, el de delante en `lead` y el de detrás en `trail`, así que se
-// estira al moverse, como el indicador de las pestañas. Al llegar al máximo, el anillo se
-// llena desde el centro y se transforma en un check.
-import { useEffect, useId, useRef, useState, type HTMLAttributes, type ReactNode } from "react";
-import { useSprings } from "../motion/useSprings.js";
+// valor es «indeterminado» y va en bucle, a velocidad constante: en la barra, un tramo sale
+// estirándose por la izquierda, la recorre y se encoge contra el final; en el anillo, el arco
+// gira y se alarga y se acorta mientras gira. Al llegar un valor, lo que se movía se transforma
+// en el relleno. Al llegar al máximo, el anillo se llena desde el centro y se vuelve un check.
+import { useId, useRef, useState, type HTMLAttributes, type ReactNode } from "react";
+import { useSprings, now, type SpringsHandle } from "../motion/useSprings.js";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springs } from "../tokens.js";
 import { useElementSize } from "../internal/useElementSize.js";
@@ -35,27 +35,41 @@ function readValue(value: number | null | undefined, max: number): { v: number |
   return { v, f: v / max };
 }
 
-/**
- * Pasos de `ms` mientras `active` (vuelve a 0 al activarse). Con «reducir movimiento» no avanza:
- * lo indeterminado se queda quieto.
- */
-function useSteps(active: boolean, ms: (step: number) => number): number {
-  const [step, setStep] = useState(0);
-  const [wasActive, setWasActive] = useState(active);
-  if (wasActive !== active) {
-    // ajuste de estado durante el render (patrón de React para reaccionar a un cambio de props)
-    setWasActive(active);
-    if (active) setStep(0);
-  }
-  const msRef = useRef(ms);
-  msRef.current = ms;
-  useEffect(() => {
-    if (!active || prefersReducedMotion()) return;
-    const t = setTimeout(() => setStep(s => s + 1), msRef.current(step));
-    return () => clearTimeout(t);
-  }, [active, step]);
-  return step;
+interface Loop<S> {
+  t0: number;
+  s: S;
+  /** Cuándo se paró (sin valor, sigue en marcha). */
+  stopped?: number;
 }
+
+/**
+ * Bucle de fotogramas mientras `active`: llama a `frame` con los segundos desde que empezó y lo
+ * que devolvió `start` al arrancar. Devuelve el último bucle, para saber dónde iba al pararlo.
+ */
+function useLoop<S>(active: boolean, start: () => S, frame: (elapsed: number, s: S) => void) {
+  const last = useRef<Loop<S> | null>(null);
+  const fns = useRef({ start, frame });
+  fns.current = { start, frame };
+  useIsoLayoutEffect(() => {
+    if (!active) return;
+    const loop: Loop<S> = { t0: now(), s: fns.current.start() };
+    last.current = loop;
+    let raf = 0;
+    const tick = () => {
+      fns.current.frame(now() - loop.t0, loop.s);
+      raf = requestAnimationFrame(tick);
+    };
+    // el primer fotograma ya, antes de pintar
+    tick();
+    return () => {
+      cancelAnimationFrame(raf);
+      loop.stopped = now();
+    };
+  }, [active]);
+  return last;
+}
+
+const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
 // ---------------------------------------------------------------------------------------
 // Barra
@@ -71,17 +85,16 @@ export interface ProgressProps extends CommonProps, Omit<HTMLAttributes<HTMLDivE
 }
 
 const BAR_H = { sm: 6, md: 10 } as const;
-// tramos por los que pasa lo indeterminado, en fracciones del ancho: entra por la izquierda,
-// avanza a saltos que lo estiran y sale por la derecha; el último vuelve al principio sin verse
-const HOPS: Array<[number, number]> = [
-  [0.06, 0.34],
-  [0.36, 0.64],
-  [0.66, 0.94],
-  [1.04, 1.32],
-  [-0.32, -0.04],
-];
+// lo indeterminado: un tramo de un 30 % del ancho que cruza la barra entera en 1,1 s, de fuera a
+// fuera; el surco lo recorta, así que sale estirándose y se encoge contra el final
+const SEG = 0.3;
+const SWEEP = 1.1;
 const STILL: [number, number] = [0.3, 0.7]; // con «reducir movimiento»
-const HOP_MS = 420;
+/** Dónde va el tramo (en fracciones del ancho) a los `el` segundos, si empezó con la cabeza en `head0`. */
+const sweepAt = (head0: number, el: number): [number, number] => {
+  const head = (head0 + (el / SWEEP) * (1 + SEG)) % (1 + SEG);
+  return [head - SEG, head];
+};
 
 export function Progress({ value, max = 100, formatValue, label, showValue, size = "md", className, style, "aria-labelledby": labelledBy, ...rest }: ProgressProps) {
   const { v, f } = readValue(value, max);
@@ -90,10 +103,10 @@ export function Progress({ value, max = 100, formatValue, label, showValue, size
   const hasLabel = label !== undefined && label !== null && label !== false;
   const format = formatValue ?? percent;
 
-  const step = useSteps(indeterminate, s => (s % HOPS.length === HOPS.length - 1 ? 60 : HOP_MS));
-  const hop = step % HOPS.length;
   const reduce = indeterminate && prefersReducedMotion();
-  const [l, r] = !indeterminate ? [0, f] : reduce ? STILL : HOPS[hop]!;
+  const looping = indeterminate && !reduce;
+  // mientras va en bucle, los muelles se quedan en el principio (no pintan)
+  const [l, r] = !indeterminate ? [0, f] : reduce ? STILL : [0, 0];
 
   const [track, setTrack] = useState<HTMLDivElement | null>(null);
   const W = useElementSize(track)?.width ?? 0;
@@ -117,19 +130,43 @@ export function Progress({ value, max = 100, formatValue, label, showValue, size
   const writeNum = (n: number) => {
     if (num.current && v !== null) num.current.textContent = format(Math.min(max, Math.max(0, whole ? Math.round(n) : n)), max);
   };
+  const handleRef = useRef<SpringsHandle<"l" | "r" | "n"> | null>(null);
+  // el bucle empieza donde estaba el borde delantero del relleno, así no salta si era corto
+  const loop = useLoop(
+    looping,
+    () => ({ head0: clamp01(handleRef.current?.read().r ?? 0) }),
+    (el, s) => {
+      const [a, b] = sweepAt(s.head0, el);
+      paint({ l: a, r: b });
+    },
+  );
+  // al llegar un valor, los muelles parten de donde iba el tramo (lo que se ve de él) y lo
+  // transforman en el relleno. Va antes que los muelles: en el mismo pintado, ya parten de ahí
+  const wasLooping = useRef(looping);
+  useIsoLayoutEffect(() => {
+    const lp = loop.current, hd = handleRef.current;
+    if (wasLooping.current && !looping && lp && hd) {
+      const [a, b] = sweepAt(lp.s.head0, (lp.stopped ?? now()) - lp.t0);
+      // ya salido por la derecha: se parte del principio
+      const [a1, b1] = a >= 1 ? [0, 0] : [clamp01(a), clamp01(b)];
+      hd.springs.l.jump(a1, now());
+      hd.springs.r.jump(b1, now());
+    }
+    wasLooping.current = looping;
+  });
   const handle = useSprings(
     { l, r, n: v ?? 0 },
-    // lo indeterminado se estira (delante `lead`, detrás `trail`); el valor avanza con `morph`
-    (key, from, to) => (!indeterminate || key === "n" ? springs.morph : (key === "r") === to > from ? springs.lead : springs.trail),
+    springs.morph,
     p => {
-      paint(p);
+      if (!looping) paint(p);
       writeNum(p.n);
     },
-    // el paso que vuelve al principio salta: va de fuera a fuera
-    { immediate: indeterminate && !reduce && hop === HOPS.length - 1 },
   );
+  handleRef.current = handle;
   // al cambiar de ancho, se recoloca sin animar
-  useIsoLayoutEffect(() => paint(handle.read()), [W]);
+  useIsoLayoutEffect(() => {
+    if (!looping) paint(handle.read());
+  }, [W]);
   // la cifra, al día aunque aparezca cuando la barra ya está quieta
   useIsoLayoutEffect(() => writeNum(handle.read().n));
 
@@ -180,8 +217,18 @@ const RING = {
   sm: { px: 20, stroke: 2.5, check: 2 },
   md: { px: 40, stroke: 4, check: 2.6 },
 } as const;
-const TURN_STEP = 0.3; // vueltas que avanza cada salto de lo indeterminado
-const ARC = 0.12; // largo del arco en reposo, en vueltas
+// lo indeterminado: gira a ritmo constante y el arco se alarga y se acorta (en vueltas)
+const SPIN = 0.95; // vueltas por segundo
+const ARC_MIN = 0.08;
+const ARC_MAX = 0.34;
+const BREATH = 1.5; // segundos de un ciclo de alargarse y acortarse
+/** Cola y cabeza del arco (en vueltas) a los `el` segundos, si empezó con la cola en `tail0`. */
+const spinAt = (tail0: number, el: number): [number, number] => {
+  const tail = tail0 + SPIN * el;
+  // la cabeza nunca va hacia atrás: el arco cambia más despacio de lo que gira
+  const len = ARC_MIN + ((ARC_MAX - ARC_MIN) * (1 - Math.cos((2 * Math.PI * el) / BREATH))) / 2;
+  return [tail, tail + len];
+};
 // check dentro del disco: el de Button, a tres cuartos
 const RING_CHECK = "M7.13 12.38 L10.28 15.53 L16.88 8.85";
 
@@ -194,50 +241,62 @@ export function ProgressRing({ value, max = 100, formatValue, size = "md", class
   const rad = 12 - sw / 2;
   const circle = `M12 ${12 - rad} A${rad} ${rad} 0 1 1 12 ${12 + rad} A${rad} ${rad} 0 1 1 12 ${12 - rad}`;
 
-  // vueltas: al salir de lo indeterminado, la cuenta sigue desde la siguiente vuelta completa,
-  // así el arco termina hacia delante en vez de desenrollarse
-  const step = useSteps(indeterminate, () => HOP_MS);
-  const [mode, setMode] = useState({ indeterminate, base: 0 });
-  if (mode.indeterminate !== indeterminate) {
-    setMode({ indeterminate, base: indeterminate ? mode.base : Math.ceil(mode.base + step * TURN_STEP - 1e-9) });
-  }
   const reduce = indeterminate && prefersReducedMotion();
-  const spin = mode.base + step * TURN_STEP;
-  const [t, hd] = !indeterminate ? [mode.base, mode.base + f] : reduce ? [mode.base, mode.base + 0.25] : [spin, spin + ARC];
-
+  const looping = indeterminate && !reduce;
   const arc = useRef<SVGPathElement>(null);
   const disc = useRef<SVGCircleElement>(null);
   const mark = useRef<SVGPathElement>(null);
+  const paintArc = (tail: number, head: number) => {
+    const a = arc.current;
+    if (!a) return;
+    const len = clamp01(head - tail);
+    const start = tail - Math.floor(tail);
+    // el patrón se repite cada vuelta: un arco que cruza las 12 se pinta en dos trozos
+    a.style.strokeDasharray = `${len.toFixed(4)} ${(1 - len).toFixed(4)}`;
+    a.style.strokeDashoffset = (-start).toFixed(4);
+    // sin largo, el extremo redondo dejaría un punto
+    a.style.opacity = len > 0.002 ? "1" : "0";
+  };
+  const handleRef = useRef<SpringsHandle<"t" | "hd" | "c" | "d"> | null>(null);
+  // el bucle empieza donde estaba la cola del arco
+  const loop = useLoop(
+    looping,
+    () => ({ tail0: handleRef.current?.read().t ?? 0 }),
+    (el, s) => paintArc(...spinAt(s.tail0, el)),
+  );
+  // vueltas: al salir del bucle, la cuenta sigue desde la siguiente vuelta completa, así el arco
+  // termina hacia delante, hasta las 12, en vez de desenrollarse
+  const [mode, setMode] = useState({ indeterminate, base: 0 });
+  if (mode.indeterminate !== indeterminate) {
+    const running = loop.current && loop.current.stopped === undefined ? loop.current : null;
+    setMode({ indeterminate, base: indeterminate || !running ? mode.base : Math.ceil(spinAt(running.s.tail0, now() - running.t0)[0] - 1e-9) });
+  }
+  // mientras va en bucle, los muelles se quedan en la base (no pintan el arco)
+  const [t, hd] = !indeterminate ? [mode.base, mode.base + f] : reduce ? [mode.base, mode.base + 0.25] : [mode.base, mode.base];
+
   const [initial] = useState(() => ({
     arc: { strokeDasharray: `${f} ${1 - f}`, opacity: f > 0.002 ? 1 : 0 },
     r: complete ? 12 : 0,
     mark: { strokeDashoffset: complete ? 0 : 1 },
   }));
-  useSprings(
+  // al llegar un valor, los muelles parten de donde iba el arco (va antes que los muelles)
+  const wasLooping = useRef(looping);
+  useIsoLayoutEffect(() => {
+    const lp = loop.current, h = handleRef.current;
+    if (wasLooping.current && !looping && lp && h) {
+      const [tl, hd] = spinAt(lp.s.tail0, (lp.stopped ?? now()) - lp.t0);
+      h.springs.t.jump(tl, now());
+      h.springs.hd.jump(hd, now());
+    }
+    wasLooping.current = looping;
+  });
+  handleRef.current = useSprings(
     { t, hd, c: complete ? 1 : 0, d: complete ? 1 : 0 },
-    (key, from, to) =>
-      key === "d"
-        ? to > from
-          ? { config: springs.draw, delay: 0.12 }
-          : springs.fadeOut
-        : indeterminate && (key === "t" || key === "hd")
-          ? (key === "hd") === to > from
-            ? springs.lead
-            : springs.trail
-          : springs.morph,
+    (key, from, to) => (key === "d" ? (to > from ? { config: springs.draw, delay: 0.12 } : springs.fadeOut) : springs.morph),
     p => {
-      const a = arc.current;
-      if (a) {
-        const len = Math.min(1, Math.max(0, p.hd - p.t));
-        const start = p.t - Math.floor(p.t);
-        // el patrón se repite cada vuelta: un arco que cruza las 12 se pinta en dos trozos
-        a.style.strokeDasharray = `${len.toFixed(4)} ${(1 - len).toFixed(4)}`;
-        a.style.strokeDashoffset = (-start).toFixed(4);
-        // sin largo, el extremo redondo dejaría un punto
-        a.style.opacity = len > 0.002 ? "1" : "0";
-      }
-      if (disc.current) disc.current.setAttribute("r", (12 * Math.min(1, Math.max(0, p.c))).toFixed(3));
-      if (mark.current) mark.current.style.strokeDashoffset = (1 - Math.min(1, Math.max(0, p.d))).toFixed(4);
+      if (!looping) paintArc(p.t, p.hd);
+      if (disc.current) disc.current.setAttribute("r", (12 * clamp01(p.c)).toFixed(3));
+      if (mark.current) mark.current.style.strokeDashoffset = (1 - clamp01(p.d)).toFixed(4);
     },
   );
 

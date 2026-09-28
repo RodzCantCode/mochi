@@ -22,7 +22,7 @@ Funciona en **Next.js** y **Astro** (como isla de React). Solo depende de React 
 | `Toaster`, `toast()` | Aviso en píldora; si llega otro, la píldora se transforma en el nuevo. |
 | `Accordion`, `Collapsible` | Secciones que se abren con muelle; abrir una puede cerrar la otra en el mismo movimiento. La búsqueda del navegador abre la sección donde encuentra el texto. |
 | `Tabs` | Pestañas con su contenido: el panel entra en el sentido del indicador y la altura se adapta. |
-| `Progress`, `ProgressRing` | Barra y anillo de progreso: el valor avanza con un muelle; sin valor, un tramo recorre la barra estirándose. Al terminar, el anillo se transforma en un check. |
+| `Progress`, `ProgressRing` | Barra y anillo de progreso: el valor avanza con un muelle; sin valor, un tramo cruza la barra sin parar, saliendo estirado y encogiéndose al final. Al terminar, el anillo se transforma en un check. |
 | `Skeleton`, `SkeletonSwap` | Huecos con la forma de lo que va a llegar y un brillo que los recorre; al llegar el contenido, se funden en él y la altura se adapta. |
 | `Presence`, `PresenceGroup`, `AutoHeight` | Aparecer y desaparecer con muelle (también en listas) y alturas que siguen a su contenido, para tus propias pantallas. |
 | `MorphBox`, `Swap` | Las piezas base, por si quieres construir tus propios estados. |

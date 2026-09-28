@@ -57,12 +57,12 @@ No hay valores de movimiento en la tabla de tokens: viven en el código (`mochi-
 | `back` | 0,34 s | 0,84 | Vuelta del estirón elástico al soltar |
 | `color` | 0,30 s | 1 | Cambio de color dentro del mismo tono (negro → verde) |
 
-- Lo que se desplaza (indicador de pestañas, bolita del interruptor, el tramo de una barra de progreso sin valor) mueve sus dos bordes con muelles distintos: el de delante en `lead` y el de detrás en `trail`.
+- Lo que se desplaza (indicador de pestañas, bolita del interruptor) mueve sus dos bordes con muelles distintos: el de delante en `lead` y el de detrás en `trail`.
 - En los arrastres manda el puntero: mientras está pulsado, el valor sale de su posición. Al pasar de un límite, la forma se estira con resistencia creciente; al soltar vuelve con `back` y la velocidad que llevaba.
 - Lo que aparece en línea (un aviso, una fila nueva, una sección que se abre) abre primero su hueco con `morph` y el contenido entra 60 ms después; al irse, el contenido sale con `fadeOut` y el hueco se cierra. Lo de alrededor se desliza, nunca salta.
 - Lo que cambia de sitio en un sentido (pestañas) se desplaza en ese sentido: el contenido nuevo llega desde donde va el indicador.
 - Todo se puede interrumpir a mitad sin saltos.
-- Lo que espera sin final conocido va en bucle, sin muelle: el arco que gira del botón que carga y el brillo del esqueleto de carga, una banda que recorre la pantalla a ritmo constante.
+- Lo que espera sin final conocido va en bucle, sin muelle y a ritmo constante: el arco que gira del botón que carga, el progreso sin valor (un tramo que cruza la barra; un arco que gira alargándose y acortándose) y el brillo del esqueleto de carga, una banda que recorre la pantalla.
 - Con «reducir movimiento» activado, los muelles saltan al destino, el esqueleto no brilla y el progreso sin valor se queda quieto y respira.
 
 ## Temas

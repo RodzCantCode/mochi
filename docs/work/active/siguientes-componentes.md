@@ -126,9 +126,10 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   formularios se portan como los nativos: lo desactivado no viaja y al reiniciar el formulario
   vuelven a como empezaron. `RadioGroup` usa `null` para «ninguna elegida».
 - Progreso en `fill` (negro en claro, blanco roto en oscuro) sobre un surco del mismo color al
-  12 %, nunca verde. Lo indeterminado avanza a saltos que lo estiran; con «reducir movimiento»
-  se queda quieto y respira (solo opacidad). Un valor que no es un número cuenta como
-  indeterminado.
+  12 %, nunca verde. Lo indeterminado va en bucle a velocidad constante (pedido por el usuario
+  el 2026-09-29): el tramo cruza la barra y se encoge y estira en los bordes; el arco gira
+  alargándose y acortándose. Con «reducir movimiento» se queda quieto y respira (solo
+  opacidad). Un valor que no es un número cuenta como indeterminado.
 - El brillo del esqueleto va fijado a la ventana (`background-attachment: fixed`), así una sola
   pasada recorre todas las formas. En Safari de iOS eso no existe: cada forma tendrá su pasada,
   a la misma velocidad.
@@ -154,6 +155,9 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   toque atravesara hasta lo de debajo. **Cerrar con el clic** a secas cerraba el menú contextual
   al levantar el dedo de la pulsación larga. Lo que funciona: cerrar con el clic solo si el toque
   empezó fuera con la capa ya abierta.
+- **Progreso indeterminado a saltos** (el tramo avanzaba por posiciones fijas con sus bordes en
+  `lead` y `trail`, como el indicador de pestañas, y el arco igual): en el iPhone del usuario
+  se veía a trompicones. Se cambió a un bucle continuo.
 - **Pegar el bundle en las vistas previas con un reemplazo de texto**: el minificado puede
   contener `$&`, que `String.replace` interpreta, y rompía todas las vistas previas. El
   comprobador lo inserta ahora con una función.
@@ -164,11 +168,12 @@ El 2026-09-29, tras el último cambio de código:
 - `npm run typecheck`: sin errores.
 - `npm test`: 75/75 (además de lo anterior: renderizado en servidor de casilla, radio,
   progreso y esqueleto, con sus roles, estados y valores de formulario).
-- `npm run test:e2e`: 161/161 en Chromium. De los tres nuevos: el negro que crece desde el
+- `npm run test:e2e`: 163/163 en Chromium. De los tres nuevos: el negro que crece desde el
   centro, el check dibujado y transformado en raya, etiqueta pulsable, Espacio sí y Enter no,
   un solo Tab y flechas en el grupo, errores y foco al enviar, valores del formulario (también
   desactivados, `fieldset` desactivado, valor `""` y reinicio), la barra indeterminada que
-  recorre y se estira, el valor que avanza sin saltos, el anillo que acaba en check, `NaN`,
+  cruza a velocidad constante y se encoge y estira en los bordes, el anillo que gira a ritmo
+  constante, el valor que avanza sin saltos, el anillo que acaba en check, `NaN`,
   `max` 0, la cifra que cuenta desde 0 y por enteros, el esqueleto que se funde y adapta la
   altura, lo que sale al volver a cargar, «reducir movimiento», alto contraste y la pasada en
   modo desarrollo. Sin errores de consola.
