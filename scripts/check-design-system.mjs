@@ -54,7 +54,7 @@ for (const card of cards) {
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(1200);
     // un poco de interacción: con React 18 algunos fallos solo salen al abrir o cambiar algo
-    for (const sel of ["[data-mochi-accordion-trigger]", '[role="tab"]']) {
+    for (const sel of ["[data-mochi-accordion-trigger]", '[role="tab"]', '[role="checkbox"]', '[role="radio"]']) {
       const el = page.locator(sel);
       if ((await el.count()) > 1) {
         await el.nth(1).click();

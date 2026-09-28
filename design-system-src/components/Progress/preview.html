@@ -1,0 +1,47 @@
+<!-- @dsCard group="Estado" height=200 subtitle="prepara sin valor, avanza y el anillo acaba en check" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Progress</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+  .up { display: flex; align-items: flex-end; gap: 16px; width: 100%; max-width: 440px; }
+  .bar { flex: 1; min-width: 0; padding-bottom: 15px; }
+  .row { display: flex; align-items: center; gap: 14px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  // en bucle: prepara (sin valor), sube por partes, termina y vuelve a empezar
+  function Demo() {
+    var s = useState(null), value = s[0], setValue = s[1];
+    useEffect(function () {
+      var v = null, t;
+      function next() {
+        if (v === null) { v = 0; t = setTimeout(next, 0); return; }
+        if (v >= 100) { v = null; setValue(null); t = setTimeout(next, 1800); return; }
+        v = Math.min(100, v + 9 + Math.round(Math.random() * 12));
+        setValue(v);
+        t = setTimeout(next, v >= 100 ? 2200 : 420);
+      }
+      t = setTimeout(next, 600);
+      return function () { clearTimeout(t); };
+    }, []);
+    var label = value === null ? "Preparing photos…" : value >= 100 ? "Upload complete" : "Uploading 12 photos";
+    return h(React.Fragment, null,
+      h("div", { className: "up" },
+        h(M.ProgressRing, { value: value, "aria-label": "Upload" }),
+        h("div", { className: "bar" }, h(M.Progress, { value: value, label: label, showValue: true }))),
+      h("div", { className: "row" },
+        h(M.ProgressRing, { size: "sm", "aria-label": "Loading" }),
+        h(M.ProgressRing, { size: "sm", value: 40, "aria-label": "Download" }),
+        h(M.ProgressRing, { size: "sm", value: 100, "aria-label": "Done" })));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

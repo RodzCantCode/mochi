@@ -5,6 +5,13 @@ import { useState } from "react";
 import {
   ButtonDemo,
   ChartDemo,
+  CheckboxDemo,
+  ChoiceFormDemo,
+  ProgressStatesDemo,
+  RadioDemo,
+  SkeletonShapesDemo,
+  SkeletonSwapDemo,
+  UploadDemo,
   AccordionFaqDemo,
   AccordionSettingsDemo,
   AutoHeightDemo,
@@ -130,6 +137,20 @@ export const PAGES: Page[] = [
     sections: [{ title: "Tamaños", hint: "Mantenlo pulsado: la bolita se alarga hacia donde va a ir.", render: () => <SwitchDemo /> }],
   },
   {
+    id: "checkbox",
+    name: "Checkbox y radio",
+    group: "Controles",
+    isNew: true,
+    summary: "Casilla y botones de opción: al marcar, el tono negro crece desde el centro y el check se dibuja; el estado mixto es una raya en la que se transforma el check. La etiqueta también marca.",
+    imports: "Checkbox, RadioGroup",
+    overview: () => <CheckboxDemo />,
+    sections: [
+      { title: "Casillas", hint: "Marca y desmarca las de dentro: «Back up everything» pasa a mixto. Espacio marca; Enter no.", render: () => <CheckboxDemo /> },
+      { title: "Opciones", hint: "Entra con Tab y muévete con las flechas: eligen al moverse y se saltan la desactivada.", render: () => <RadioDemo /> },
+      { title: "Formulario", hint: "Pulsa «Subscribe» sin elegir nada: salen los errores y el foco va al primero. Lo elegido viaja en el formulario.", render: () => <ChoiceFormDemo /> },
+    ],
+  },
+  {
     id: "segmented",
     name: "Segmented control",
     group: "Controles",
@@ -248,6 +269,32 @@ export const PAGES: Page[] = [
     sections: [{ title: "Proyecto", hint: "Pasa de «Overview» a «Settings» y vuelve: el contenido se desliza en el sentido del indicador. También con flechas.", render: () => <TabsDemo /> }],
   },
   {
+    id: "progress",
+    name: "Progress",
+    group: "Estado",
+    isNew: true,
+    summary: "Barra y anillo de progreso: el valor avanza con un muelle. Sin valor, un tramo recorre la barra estirándose como el indicador de las pestañas. Al terminar, el anillo se llena y se transforma en un check.",
+    imports: "Progress, ProgressRing",
+    overview: () => <UploadDemo />,
+    sections: [
+      { title: "Subida", hint: "Pulsa «Upload»: primero prepara (sin valor), luego avanza y el anillo acaba en check.", render: () => <UploadDemo /> },
+      { title: "Estados", hint: "Indeterminado, con valor propio y terminado, en los dos tamaños.", render: () => <ProgressStatesDemo /> },
+    ],
+  },
+  {
+    id: "skeleton",
+    name: "Skeleton",
+    group: "Estado",
+    isNew: true,
+    summary: "Huecos con la forma de lo que va a llegar y un brillo suave que los recorre. SkeletonSwap los funde en el contenido real con desenfoque y la altura se adapta.",
+    imports: "Skeleton, SkeletonSwap",
+    overview: () => <SkeletonSwapDemo />,
+    sections: [
+      { title: "Formas", hint: "Línea, círculo y bloque. Con «reducir movimiento» el brillo se detiene.", render: () => <SkeletonShapesDemo /> },
+      { title: "Cambio a contenido", hint: "Pulsa «Reload»: el contenido vuelve a esqueleto y, al llegar, se funde y la tarjeta cambia de alto.", render: () => <SkeletonSwapDemo /> },
+    ],
+  },
+  {
     id: "motion",
     name: "Movimiento",
     group: "Base",
@@ -270,4 +317,4 @@ export const PAGES: Page[] = [
   },
 ];
 
-export const GROUPS = ["Acciones", "Controles", "Superposiciones", "Contenido", "Base"];
+export const GROUPS = ["Acciones", "Controles", "Superposiciones", "Contenido", "Estado", "Base"];

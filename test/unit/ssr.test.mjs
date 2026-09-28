@@ -34,6 +34,15 @@ const cases = {
   PresenceGroup: h(M.PresenceGroup, null, h("div", { key: "a" }, "A"), h("div", { key: "b" }, "B")),
   AutoHeight: h(M.AutoHeight, null, "Content"),
   ContextMenu: h(M.ContextMenu, { items: [{ id: "a", label: "A", onSelect() {} }] }, h("div", null, "Area")),
+  Checkbox: h(M.Checkbox, { label: "Terms", defaultChecked: true, name: "terms", error: "Required" }),
+  "Checkbox mixta": h(M.Checkbox, { "aria-label": "All", checked: "indeterminate" }),
+  RadioGroup: h(M.RadioGroup, { label: "Plan", name: "plan", defaultValue: "a", options: [{ value: "a", label: "A", description: "One" }, { value: "b", label: "B", disabled: true }] }),
+  Progress: h(M.Progress, { value: 40, label: "Upload", showValue: true }),
+  "Progress indeterminado": h(M.Progress, { "aria-label": "Sync" }),
+  ProgressRing: h(M.ProgressRing, { value: 100, "aria-label": "Done" }),
+  "ProgressRing indeterminado": h(M.ProgressRing, { size: "sm", "aria-label": "Loading" }),
+  Skeleton: h(M.Skeleton, { lines: 3 }),
+  SkeletonSwap: h(M.SkeletonSwap, { loading: true, skeleton: h(M.Skeleton, { shape: "circle" }) }, "Content"),
 };
 
 for (const [name, el] of Object.entries(cases)) {
@@ -84,4 +93,37 @@ test("SSR: el panel de una pestaña se llama como su pestaña", () => {
 
 test("SSR: Presence sin mostrar no pinta nada", () => {
   assert.equal(renderToString(h(M.Presence, { show: false }, "Hi")), "");
+});
+
+test("SSR: la casilla es un checkbox con su estado, su etiqueta y su valor para formularios", () => {
+  const html = renderToString(h(M.Checkbox, { label: "Terms", defaultChecked: true, name: "terms" }));
+  assert.match(html, /role="checkbox"/);
+  assert.match(html, /aria-checked="true"/);
+  const labelledby = /aria-labelledby="([^"]+)"/.exec(html)?.[1];
+  assert.ok(labelledby);
+  assert.match(html, new RegExp(`<label[^>]*id="${labelledby}"[^>]*>Terms</label>`));
+  assert.match(html, /<input[^>]*name="terms"[^>]*checked/);
+  assert.match(renderToString(h(M.Checkbox, { "aria-label": "All", checked: "indeterminate" })), /aria-checked="mixed"/);
+});
+
+test("SSR: el grupo de radios, con un solo Tab y el valor para formularios", () => {
+  const html = renderToString(h(M.RadioGroup, { label: "Plan", name: "plan", defaultValue: "b", options: [{ value: "a", label: "A" }, { value: "b", label: "B" }] }));
+  assert.match(html, /role="radiogroup"/);
+  assert.equal(html.match(/role="radio"/g)?.length, 2);
+  assert.equal(html.match(/tabindex="0"/g)?.length, 1);
+  assert.match(html, /<input type="hidden" name="plan" value="b"/);
+});
+
+test("SSR: la barra de progreso anuncia su valor; indeterminada, sin él", () => {
+  assert.match(renderToString(h(M.Progress, { value: 40, label: "Upload" })), /role="progressbar"[^>]*aria-valuenow="40"/);
+  const ind = renderToString(h(M.Progress, { "aria-label": "Sync" }));
+  assert.match(ind, /role="progressbar"/);
+  assert.doesNotMatch(ind, /aria-valuenow/);
+});
+
+test("SSR: el esqueleto marca el contenedor como ocupado y lo dice", () => {
+  const html = renderToString(h(M.SkeletonSwap, { loading: true, skeleton: h(M.Skeleton) }, "Content"));
+  assert.match(html, /aria-busy="true"/);
+  assert.match(html, />Loading</);
+  assert.doesNotMatch(html, /Content/);
 });

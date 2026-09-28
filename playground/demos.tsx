@@ -19,6 +19,12 @@ import {
   ArrowRightIcon,
   Button,
   ChartCard,
+  Checkbox,
+  Progress,
+  ProgressRing,
+  RadioGroup,
+  Skeleton,
+  SkeletonSwap,
   ContextMenu,
   CopyIcon,
   Dialog,
@@ -774,6 +780,239 @@ export function AutoHeightDemo() {
           {more ? "Show less" : "Read more"}
         </Button>
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------------------
+// Casilla y botón de opción
+
+const MEDIA = [
+  { id: "photos", label: "Photos" },
+  { id: "videos", label: "Videos" },
+  { id: "docs", label: "Documents" },
+];
+
+/** «Todas» queda en mixto mientras solo hay algunas marcadas. */
+export function CheckboxDemo() {
+  const [picked, setPicked] = useState<string[]>(["photos"]);
+  const [news, setNews] = useState(true);
+  const all = picked.length === MEDIA.length ? true : picked.length ? "indeterminate" : false;
+  return (
+    <div className="stage col form">
+      <div className="check-list">
+        <Checkbox label="Back up everything" checked={all} onCheckedChange={on => setPicked(on ? MEDIA.map(m => m.id) : [])} />
+        <div className="check-list__children">
+          {MEDIA.map(m => (
+            <Checkbox
+              key={m.id}
+              label={m.label}
+              checked={picked.includes(m.id)}
+              onCheckedChange={on => setPicked(p => (on ? [...p, m.id] : p.filter(x => x !== m.id)))}
+            />
+          ))}
+        </div>
+      </div>
+      <Checkbox label="Email me product updates" description="About once a month. You can stop them any time." checked={news} onCheckedChange={setNews} />
+      <Checkbox label="Sync over mobile data" disabled />
+    </div>
+  );
+}
+
+export function RadioDemo() {
+  const [ship, setShip] = useState("standard");
+  return (
+    <div className="stage col form">
+      <RadioGroup
+        label="Delivery"
+        value={ship}
+        onValueChange={setShip}
+        options={[
+          { value: "standard", label: "Standard", description: "3–5 working days · Free" },
+          { value: "express", label: "Express", description: "Next working day · $9" },
+          { value: "pickup", label: "Pick up in store", description: "Not available in your area", disabled: true },
+        ]}
+      />
+      <RadioGroup
+        label="Density"
+        size="sm"
+        orientation="horizontal"
+        defaultValue="comfortable"
+        options={[
+          { value: "compact", label: "Compact" },
+          { value: "comfortable", label: "Comfortable" },
+          { value: "spacious", label: "Spacious" },
+        ]}
+      />
+    </div>
+  );
+}
+
+/** Formulario: los errores salen al enviar y el foco va al primero. */
+export function ChoiceFormDemo() {
+  const [plan, setPlan] = useState("");
+  const [terms, setTerms] = useState(false);
+  const [sent, setSent] = useState(false);
+  const submit = useButtonStatus(() => wait(1000));
+  return (
+    <form
+      className="stage col form"
+      noValidate
+      onSubmit={e => {
+        e.preventDefault();
+        setSent(true);
+        if (!plan || !terms) {
+          const first = e.currentTarget.querySelector<HTMLElement>(!plan ? '[role="radio"]:not([disabled])' : '[role="checkbox"]');
+          first?.focus();
+          return;
+        }
+        const data = new FormData(e.currentTarget);
+        submit.run().then(() => toast(`Subscribed: ${data.get("plan")}, terms ${data.get("terms")}`));
+      }}
+    >
+      <RadioGroup
+        label="Plan"
+        name="plan"
+        value={plan}
+        onValueChange={setPlan}
+        error={sent && !plan ? "Choose a plan" : undefined}
+        options={[
+          { value: "monthly", label: "Monthly", description: "$12 a month" },
+          { value: "yearly", label: "Yearly", description: "$120 a year · two months free" },
+        ]}
+      />
+      <Checkbox
+        label="I accept the terms of service"
+        name="terms"
+        value="accepted"
+        checked={terms}
+        onCheckedChange={setTerms}
+        error={sent && !terms ? "Accept the terms to continue" : undefined}
+      />
+      <Button type="submit" status={submit.status}>
+        Subscribe
+      </Button>
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------------------------
+// Progreso
+
+/** Primero prepara (indeterminado), luego sube por partes y el anillo acaba en check. */
+export function UploadDemo() {
+  const [value, setValue] = useState<number | null>(0);
+  const [running, setRunning] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const start = () => {
+    clearTimeout(timer.current);
+    setRunning(true);
+    setValue(null);
+    let v = 0;
+    const tick = () => {
+      v = Math.min(100, v + 6 + Math.round(Math.random() * 14));
+      setValue(v);
+      if (v < 100) timer.current = setTimeout(tick, 380);
+      else setRunning(false);
+    };
+    timer.current = setTimeout(tick, 1600);
+  };
+  const label = value === null ? "Preparing photos…" : value >= 100 ? "Upload complete" : "Uploading 12 photos";
+  return (
+    <div className="stage col form">
+      <div className="upload">
+        <ProgressRing value={value} aria-label="Upload" />
+        <div className="upload__bar">
+          <Progress value={value} label={label} showValue />
+        </div>
+      </div>
+      <Button variant="surface" size="sm" onClick={start} disabled={running}>
+        {value === 0 ? "Upload" : "Upload again"}
+      </Button>
+    </div>
+  );
+}
+
+export function ProgressStatesDemo() {
+  return (
+    <div className="stage col form">
+      <Progress label="Syncing library" />
+      <Progress size="sm" value={64} label="Storage" showValue formatValue={v => `${(v / 10).toFixed(1)} of 10 GB`} />
+      <div className="row">
+        <ProgressRing size="sm" aria-label="Loading" />
+        <ProgressRing size="sm" value={40} aria-label="Download" />
+        <ProgressRing size="sm" value={100} aria-label="Download" />
+        <ProgressRing aria-label="Loading" />
+        <ProgressRing value={100} aria-label="Done" />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------------------
+// Esqueleto de carga
+
+function ProfileSkeleton() {
+  return (
+    <div className="profile">
+      <div className="profile__head">
+        <Skeleton shape="circle" size={48} />
+        <div className="profile__who">
+          <Skeleton width="45%" />
+          <Skeleton width="30%" className="profile__sub" />
+        </div>
+      </div>
+      <Skeleton lines={3} />
+      <Skeleton shape="block" height={140} />
+    </div>
+  );
+}
+
+export function SkeletonShapesDemo() {
+  return (
+    <div className="stage wide-stage">
+      <div className="profile-card">
+        <ProfileSkeleton />
+      </div>
+    </div>
+  );
+}
+
+/** Carga, se sustituye por el contenido y la altura se adapta; «Reload» vuelve a cargar. */
+export function SkeletonSwapDemo() {
+  const [loading, setLoading] = useState(true);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const load = () => {
+    clearTimeout(timer.current);
+    setLoading(true);
+    timer.current = setTimeout(() => setLoading(false), 1600);
+  };
+  useEffect(() => {
+    load();
+    return () => clearTimeout(timer.current);
+  }, []);
+  return (
+    <div className="stage col wide-stage">
+      <div className="profile-card">
+        <SkeletonSwap loading={loading} skeleton={<ProfileSkeleton />}>
+          <div className="profile">
+            <div className="profile__head">
+              <span className="profile__avatar" aria-hidden="true">
+                AL
+              </span>
+              <div className="profile__who">
+                <b>Ada Lovelace</b>
+                <span className="profile__sub">Analytical Engines · London</span>
+              </div>
+            </div>
+            <p>Writes the programs before the machine exists. Currently annotating a translation that has grown three times longer than the original.</p>
+          </div>
+        </SkeletonSwap>
+      </div>
+      <Button variant="surface" size="sm" onClick={load} disabled={loading}>
+        Reload
+      </Button>
     </div>
   );
 }

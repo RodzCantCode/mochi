@@ -5,6 +5,7 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { useSprings } from "../motion/useSprings.js";
 import { springs, swap as SWAP } from "../tokens.js";
+import { useIsoLayoutEffect } from "../internal/useIsoLayoutEffect.js";
 import { cx } from "../internal/cx.js";
 
 interface Layer {
@@ -38,13 +39,18 @@ export interface SwapProps {
 
 export function Swap({ id, children, className, layerStyle, blur = SWAP.blur, enterScale = SWAP.enterScale, align = "center", slide = 0 }: SwapProps) {
   const [layers, setLayers] = useState<Layer[]>(() => [{ key: id, node: children, leaving: false, fresh: false, style: layerStyle, slide: 0 }]);
+  // lo último que se pintó en la capa viva: es lo que se ve irse (no lo que tenía al aparecer)
+  const shown = useRef<ReactNode>(children);
+  useIsoLayoutEffect(() => {
+    shown.current = children;
+  });
 
   const current = layers.find(l => !l.leaving);
   if (!current || current.key !== id) {
     // ajuste de estado durante el render (patrón de React para reaccionar a un cambio de props)
     setLayers(prev => {
       const revived = prev.find(l => l.key === id);
-      const rest = prev.filter(l => l.key !== id).map(l => (l.leaving ? l : { ...l, leaving: true, slide }));
+      const rest = prev.filter(l => l.key !== id).map(l => (l.leaving ? l : { ...l, leaving: true, slide, node: shown.current }));
       const next: Layer = revived
         ? { ...revived, leaving: false, style: layerStyle, slide }
         : { key: id, node: children, leaving: false, fresh: true, style: layerStyle, slide };

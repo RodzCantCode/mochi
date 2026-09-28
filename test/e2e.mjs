@@ -50,6 +50,18 @@ async function open(opts = {}) {
 const box = async loc => (await loc.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
 // nombre del elemento enfocado (los botones de Mochi repiten su texto para lectores de pantalla)
 const focusedName = p => p.evaluate(() => { const a = document.activeElement; return a?.getAttribute("aria-label") ?? a?.querySelector(".mochi-sr")?.textContent ?? a?.textContent; });
+// el de las casillas y los radios, que se nombran con su etiqueta (aria-labelledby)
+const focusedLabel = p => p.evaluate(() => { const id = document.activeElement?.getAttribute("aria-labelledby"); return id ? document.getElementById(id)?.textContent : null; });
+// escala en x de un elemento transformado con scale()
+const scaleOf = loc => loc.evaluate(e => { const t = getComputedStyle(e).transform; return t === "none" ? 1 : new DOMMatrix(t).a; });
+// muestras de algo en cada fotograma durante `ms` (se recogen en la página)
+const sampleFrames = (p, fn, ms) =>
+  p.evaluate(([src, ms]) => new Promise(done => {
+    const f = new Function(`return (${src})()`);
+    const out = [], t0 = performance.now();
+    const tick = () => { out.push(f()); if (performance.now() - t0 < ms) requestAnimationFrame(tick); else done(out); };
+    requestAnimationFrame(tick);
+  }), [fn.toString(), ms]);
 
 try {
   const page = await open();
@@ -482,6 +494,210 @@ try {
   const ah1 = await hOf(card);
   check("AutoHeight: la tarjeta crece con su texto", ahMid > ah0 + 2 && ahMid < ah1 - 2 && (await card.evaluate(e => e.style.height)) === "", `${ah0.toFixed(0)} → ${ahMid.toFixed(0)} → ${ah1.toFixed(0)}`);
 
+  // --- casilla y botón de opción
+  await page.goto(URL_ + "#/checkbox");
+  await sleep(600);
+  const cbAll = page.getByRole("checkbox", { name: "Back up everything" });
+  check("casilla: la de «todas» empieza en mixto", (await cbAll.getAttribute("aria-checked")) === "mixed");
+  const cbVideos = page.getByRole("checkbox", { name: "Videos" });
+  const vFill = cbVideos.locator(".mochi-choice__fill");
+  await cbVideos.click();
+  await sleep(50);
+  const vMid = await scaleOf(vFill);
+  await sleep(800);
+  const vEnd = await scaleOf(vFill);
+  const vDash = await cbVideos.locator("path").evaluate(e => parseFloat(getComputedStyle(e).strokeDashoffset));
+  check("casilla: al marcar, el negro crece desde el centro", vMid > 0.05 && vMid < 0.95 && Math.abs(vEnd - 1) < 0.01, `${vMid.toFixed(2)} → ${vEnd.toFixed(2)}`);
+  check("casilla: el check queda dibujado", (await cbVideos.getAttribute("aria-checked")) === "true" && vDash < 0.01, `offset ${vDash}`);
+  await page.locator("label", { hasText: /^Documents$/ }).click();
+  await sleep(300);
+  check("casilla: pulsar la etiqueta también marca", (await page.getByRole("checkbox", { name: "Documents" }).getAttribute("aria-checked")) === "true");
+  check("casilla: con todas marcadas, la de «todas» deja de estar en mixto", (await cbAll.getAttribute("aria-checked")) === "true");
+  await cbAll.focus();
+  await page.keyboard.press("Enter");
+  await sleep(100);
+  check("casilla: Enter no la marca", (await cbAll.getAttribute("aria-checked")) === "true");
+  await page.keyboard.press("Space");
+  await sleep(100);
+  check("casilla: Espacio la desmarca, y con ella a las de dentro", (await cbAll.getAttribute("aria-checked")) === "false" && (await cbVideos.getAttribute("aria-checked")) === "false");
+  await page.getByRole("checkbox", { name: "Photos" }).click();
+  await sleep(700);
+  const dashLen = await cbAll.locator("path").evaluate(e => e.getBBox().width);
+  const dashH = await cbAll.locator("path").evaluate(e => e.getBBox().height);
+  check("casilla: en mixto, el check se transforma en una raya", (await cbAll.getAttribute("aria-checked")) === "mixed" && dashLen > 6 && dashH < 0.5, `raya ${dashLen.toFixed(1)}×${dashH.toFixed(1)}`);
+  await cbAll.click();
+  await sleep(100);
+  check("casilla: desde mixto, pulsar la marca", (await cbAll.getAttribute("aria-checked")) === "true");
+  check("casilla: la desactivada no se puede pulsar", await page.getByRole("checkbox", { name: "Sync over mobile data" }).isDisabled());
+
+  await page.getByRole("checkbox", { name: "Email me product updates" }).focus();
+  await page.keyboard.press("Tab");
+  check("radio: un solo Tab entra en el grupo, en la elegida", (await focusedLabel(page)) === "Standard");
+  const stdFill = page.getByRole("radio", { name: "Standard" }).locator(".mochi-choice__fill");
+  await page.keyboard.press("ArrowDown");
+  await sleep(60);
+  const stdMid = await scaleOf(stdFill);
+  check("radio: la flecha elige la siguiente y la enfoca", (await focusedLabel(page)) === "Express" && (await page.getByRole("radio", { name: "Express" }).getAttribute("aria-checked")) === "true");
+  check("radio: la que deja de estar elegida se recoge hacia su centro", stdMid > 0.05 && stdMid < 0.95, `escala ${stdMid.toFixed(2)}`);
+  await page.keyboard.press("ArrowDown");
+  check("radio: las flechas se saltan la desactivada y dan la vuelta", (await focusedLabel(page)) === "Standard" && (await page.getByRole("radio", { name: "Standard" }).getAttribute("aria-checked")) === "true");
+  await page.keyboard.press("ArrowUp");
+  check("radio: hacia arriba, también", (await focusedLabel(page)) === "Express");
+  await page.keyboard.press("Tab");
+  check("radio: Tab sale del grupo al siguiente, en su elegida", (await focusedLabel(page)) === "Comfortable");
+  await page.locator("label", { hasText: /^Spacious$/ }).click();
+  check("radio: pulsar la etiqueta elige", (await page.getByRole("radio", { name: "Spacious" }).getAttribute("aria-checked")) === "true");
+
+  await page.getByRole("button", { name: "Subscribe" }).click();
+  await sleep(500);
+  const planGroup = page.getByRole("radiogroup", { name: "Plan" });
+  const planMsg = await planGroup.evaluate(e => document.getElementById(e.getAttribute("aria-describedby") ?? "")?.textContent);
+  check("formulario: sin elegir, el grupo se marca con error y lo explica", (await planGroup.getAttribute("aria-invalid")) === "true" && planMsg === "Choose a plan", planMsg ?? "");
+  check("formulario: el foco va a la primera opción", (await focusedLabel(page)) === "Monthly");
+  const terms = page.getByRole("checkbox", { name: "I accept the terms of service" });
+  check("formulario: la casilla obligatoria también", (await terms.getAttribute("aria-invalid")) === "true");
+  await page.screenshot({ path: `${OUT}/choice-error.png`, clip: await box(page.locator('[data-demo="checkbox-formulario"]')) });
+  await page.getByRole("radio", { name: "Yearly" }).click();
+  await terms.click();
+  await page.evaluate(() => {
+    const f = document.querySelector('[data-demo="checkbox-formulario"] form');
+    f.addEventListener("submit", () => (window.__fd = Object.fromEntries(new FormData(f))), { once: true });
+  });
+  await page.getByRole("button", { name: "Subscribe" }).click();
+  await sleep(300);
+  const fd = await page.evaluate(() => window.__fd);
+  check("formulario: lo elegido viaja con su nombre", fd?.plan === "yearly" && fd?.terms === "accepted", JSON.stringify(fd));
+  check("formulario: al corregirlo, el error se va", (await terms.getAttribute("aria-invalid")) === null && (await planGroup.getAttribute("aria-invalid")) === null);
+  await sleep(1500);
+
+  // --- progreso
+  await page.goto(URL_ + "#/progress");
+  await sleep(600);
+  const upBar = page.locator('[data-demo="progress-subida"] .mochi-progress [role="progressbar"]');
+  const upRing = page.getByRole("progressbar", { name: "Upload" });
+  check("progreso: la barra anuncia su valor", (await upBar.getAttribute("aria-valuenow")) === "0" && (await upBar.getAttribute("aria-valuemax")) === "100");
+  await page.getByRole("button", { name: "Upload", exact: true }).click();
+  await sleep(150);
+  check("progreso: sin valor, indeterminado (sin aria-valuenow)", (await upBar.getAttribute("aria-valuenow")) === null && (await upRing.getAttribute("aria-valuenow")) === null);
+  const trackW = (await box(upBar)).width;
+  const indeterminate = await sampleFrames(page, () => {
+    const b = document.querySelector('[data-demo="progress-subida"] .mochi-progress__bar').getBoundingClientRect();
+    const t = document.querySelector('[data-demo="progress-subida"] .mochi-progress__track').getBoundingClientRect();
+    return [b.left - t.left, b.width];
+  }, 1100);
+  const segW = indeterminate.map(x => x[1]).filter((_, i) => indeterminate[i][0] > 0 && indeterminate[i][0] + indeterminate[i][1] < trackW);
+  check("progreso: lo indeterminado recorre la barra", indeterminate.some(x => x[0] > trackW * 0.5) && indeterminate.some(x => x[0] < trackW * 0.3), JSON.stringify(indeterminate.slice(0, 5)));
+  check("progreso: y se estira al moverse", segW.length > 0 && Math.max(...segW) > Math.min(...segW) * 1.25, `${Math.min(...segW).toFixed(0)} → ${Math.max(...segW).toFixed(0)}`);
+  await page.screenshot({ path: `${OUT}/progress.png`, clip: await box(page.locator('[data-demo="progress-subida"]')) });
+  // desde que llega el primer valor, el borde avanza sin saltos
+  await page.waitForFunction(() => document.querySelector('[data-demo="progress-subida"] .mochi-progress [role="progressbar"]').hasAttribute("aria-valuenow"), null, { timeout: 4000 });
+  // (primero el tramo se transforma en el relleno; se mide cuando ya solo cambia el valor)
+  await sleep(800);
+  const edge = await sampleFrames(page, () => {
+    const b = document.querySelector('[data-demo="progress-subida"] .mochi-progress__bar').getBoundingClientRect();
+    const t = document.querySelector('[data-demo="progress-subida"] .mochi-progress__track').getBoundingClientRect();
+    return b.right - t.left;
+  }, 1500);
+  const jumps = edge.slice(1).map((x, i) => x - edge[i]);
+  check("progreso: el valor avanza con un muelle, sin saltos", edge.length > 30 && Math.max(...jumps.map(Math.abs)) < trackW * 0.06, `salto máximo ${Math.max(...jumps.map(Math.abs)).toFixed(1)} px de ${trackW.toFixed(0)}`);
+  await page.waitForFunction(() => document.querySelector('[data-demo="progress-subida"] .mochi-progress [role="progressbar"]').getAttribute("aria-valuenow") === "100", null, { timeout: 12000 });
+  await sleep(1200);
+  const doneW = (await box(page.locator('[data-demo="progress-subida"] .mochi-progress__bar'))).width;
+  check("progreso: al terminar, la barra llega al final", Math.abs(doneW - trackW) < 1, `${doneW} de ${trackW}`);
+  const discR = await upRing.locator(".mochi-ring__disc").evaluate(e => parseFloat(e.getAttribute("r")));
+  const ringCheck = await upRing.locator(".mochi-ring__check").evaluate(e => parseFloat(getComputedStyle(e).strokeDashoffset));
+  check("progreso: el anillo se llena y se transforma en el check", discR > 11.9 && ringCheck < 0.01, `r ${discR}, check ${ringCheck}`);
+  check("progreso: el texto del valor acaba en 100 %", (await page.locator('[data-demo="progress-subida"] .mochi-progress__value').textContent()) === "100%");
+  const storage = page.getByRole("progressbar", { name: "Storage" });
+  check("progreso: con formatValue, lo anuncia con su texto", (await storage.getAttribute("aria-valuetext")) === "6.4 of 10 GB");
+
+  // --- esqueleto de carga
+  await page.goto(URL_ + "#/skeleton");
+  await sleep(300);
+  const skSwap = page.locator('[data-demo="skeleton-cambio a contenido"] .mochi-skeleton-swap');
+  check("esqueleto: mientras carga, el contenedor está ocupado", (await skSwap.getAttribute("aria-busy")) === "true" && (await skSwap.getByText("Loading").count()) === 1);
+  check("esqueleto: el brillo recorre las formas", (await page.locator(".mochi-skeleton").first().evaluate(e => getComputedStyle(e).animationName)) === "mochi-shimmer");
+  await sleep(2200);
+  const skH1 = await hOf(skSwap);
+  check("esqueleto: al llegar, el contenido sustituye al esqueleto", (await skSwap.getAttribute("aria-busy")) === null && (await skSwap.getByText("Ada Lovelace").isVisible()) && (await skSwap.locator(".mochi-skeleton").count()) === 0);
+  await page.getByRole("button", { name: "Reload" }).click();
+  await sleep(1000);
+  const skH0 = await hOf(skSwap);
+  const skHs = await sampleFrames(page, () => document.querySelector('[data-demo="skeleton-cambio a contenido"] .mochi-skeleton-swap').getBoundingClientRect().height, 2000);
+  const between = skHs.filter(v => v < skH0 - 2 && v > skH1 + 2).length;
+  check("esqueleto: la altura se adapta con un muelle", skH0 > skH1 + 20 && between >= 4 && Math.abs(skHs[skHs.length - 1] - skH1) < 1, `${skH0.toFixed(0)} → ${skH1.toFixed(0)}, ${between} fotogramas entre medias`);
+  await page.screenshot({ path: `${OUT}/skeleton.png`, clip: await box(page.locator('[data-demo="skeleton-formas"]')) });
+
+  // --- casos límite de casillas, radios, progreso y esqueleto
+  await page.goto(URL_ + "#/_cases/choice-forms");
+  await sleep(500);
+  const formData = () => page.evaluate(() => [...new FormData(document.getElementById("f1")).entries()].map(([k, v]) => `${k}=${v}`).join("&"));
+  check("formulario: lo desactivado no viaja (casilla, grupo, opción elegida o fieldset)", (await formData()) === "r1=a", await formData());
+  check('radio: sin valor de partida no hay ninguna elegida, aunque una valga ""', (await page.getByRole("radio", { name: "Any" }).getAttribute("aria-checked")) === "false");
+  await page.getByRole("checkbox", { name: "One" }).click();
+  const radiosGroup = page.getByRole("radiogroup", { name: "Radios" });
+  await radiosGroup.getByRole("radio", { name: "Beta" }).click();
+  await page.getByRole("radio", { name: "Any" }).click();
+  await sleep(200);
+  check('formulario: lo elegido viaja, también un valor ""', (await formData()) === "c1=on&r1=b&r4=", await formData());
+  await page.click("#reset");
+  await sleep(300);
+  const afterReset = [
+    await page.getByRole("checkbox", { name: "One" }).getAttribute("aria-checked"),
+    await radiosGroup.getByRole("radio", { name: "Alpha" }).getAttribute("aria-checked"),
+    await page.getByRole("radio", { name: "Any" }).getAttribute("aria-checked"),
+  ].join(",");
+  check("formulario: al reiniciarlo, vuelve a como empezó y envía lo que se ve", afterReset === "false,true,false" && (await formData()) === "r1=a", `${afterReset} · ${await formData()}`);
+  const c3 = page.locator("#c3");
+  const c3Label = await box(page.locator("label", { hasText: "In a disabled fieldset" }));
+  await page.mouse.move(c3Label.x + 10, c3Label.y + c3Label.height / 2);
+  await page.mouse.down();
+  await sleep(200);
+  const c3Scale = await scaleOf(c3);
+  await page.mouse.up();
+  check("casilla: en un fieldset desactivado se ve desactivada y no se hunde", Math.abs(c3Scale - 1) < 0.001 && (await c3.evaluate(e => getComputedStyle(e).opacity)) === "0.45", `escala ${c3Scale}`);
+  await page.locator("#c1").focus();
+  await page.keyboard.down("Space");
+  await sleep(200);
+  const heldScale = await scaleOf(page.locator("#c1"));
+  await page.keyboard.press("Tab");
+  await page.keyboard.up("Space");
+  await sleep(500);
+  check("casilla: con Espacio pulsado y el foco fuera, deja de estar hundida", heldScale < 0.95 && Math.abs((await scaleOf(page.locator("#c1"))) - 1) < 0.001, `${heldScale.toFixed(2)} → ${(await scaleOf(page.locator("#c1"))).toFixed(2)}`);
+
+  await page.goto(URL_ + "#/_cases/progress-edges");
+  await sleep(500);
+  const valueText = id => page.locator(".mochi-progress", { has: page.locator(id) }).locator(".mochi-progress__value");
+  check("progreso: un valor que no es un número (0/0) cuenta como indeterminado", (await page.locator("#p-nan").getAttribute("aria-valuenow")) === null && (await page.locator("#r-nan").getAttribute("aria-valuenow")) === null);
+  check("progreso: con max 0, la cifra es 0 %", (await valueText("#p-max0").textContent()) === "0%");
+  await page.click("#to60");
+  await sleep(1200);
+  const nanBar = await box(page.locator("#p-nan .mochi-progress__bar"));
+  const nanTrack = await box(page.locator("#p-nan"));
+  check("progreso: tras un NaN, un valor bueno se pinta bien", Math.abs(nanBar.x + nanBar.width - nanTrack.x - nanTrack.width * 0.6) < 1 && (await valueText("#p-nan").textContent()) === "60%", `${(nanBar.x + nanBar.width - nanTrack.x).toFixed(0)} de ${nanTrack.width}`);
+  await page.click("#toNull");
+  await sleep(600);
+  await page.click("#to7");
+  const texts = await sampleFrames(page, () => [...document.querySelectorAll(".mochi-progress__value")].map(e => e.textContent).join("|"), 700);
+  const pct = texts.map(t => parseInt(t.split("|")[0], 10));
+  const files = texts.map(t => t.split("|")[2]);
+  check("progreso: al llegar un valor, la cifra cuenta desde 0 (no desde el tramo)", pct.every(x => x >= 0 && x <= 7) && pct[pct.length - 1] === 7, pct.join(","));
+  check("progreso: con valores enteros, la cifra pasa por enteros", files.every(f => /^\d+ of 12 files$/.test(f)) && files[files.length - 1] === "7 of 12 files", [...new Set(files)].join(" | "));
+
+  await page.goto(URL_ + "#/_cases/skeleton-stale");
+  await sleep(400);
+  await page.click("#bump");
+  await page.click("#bump");
+  await sleep(200);
+  const leavingText = await page.evaluate(async () => {
+    document.getElementById("load").click();
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    return document.querySelector("#sk .mochi-swap__layer[data-leaving]")?.textContent;
+  });
+  check("esqueleto: al volver a cargar, lo que se va es lo último que se veía", leavingText === "content v3", leavingText ?? "sin capa");
+  const lineW = await page.locator("#lines .mochi-skeleton").evaluateAll(els => els.map(e => e.getBoundingClientRect().width));
+  check("esqueleto: con ancho propio, la última línea es más corta", lineW[0] === 120 && lineW[1] === 120 && lineW[2] < 120, JSON.stringify(lineW));
+
   // --- casos límite de las superposiciones
   await page.goto(URL_ + "#/_cases/menu-tooltip");
   await sleep(500);
@@ -554,7 +770,36 @@ try {
   await sleep(600);
   const r1 = await box(sw2.locator(".mochi-switch__knob"));
   check("movimiento reducido: el switch salta sin animar", Math.abs(r0.x - r1.x) < 0.5, `${r0.x} vs ${r1.x}`);
+  await rm.goto(URL_ + "#/checkbox");
+  await sleep(500);
+  const rmBox = rm.getByRole("checkbox", { name: "Videos" });
+  await rmBox.click();
+  await sleep(40);
+  check("movimiento reducido: la casilla se marca sin animar", Math.abs((await scaleOf(rmBox.locator(".mochi-choice__fill"))) - 1) < 0.001);
+  await rm.goto(URL_ + "#/progress");
+  await sleep(500);
+  const rmBar = rm.getByRole("progressbar", { name: "Syncing library" }).locator(".mochi-progress__bar");
+  const rb0 = await box(rmBar);
+  await sleep(900);
+  const rb1 = await box(rmBar);
+  check("movimiento reducido: lo indeterminado se queda quieto y respira", Math.abs(rb0.x - rb1.x) < 0.5 && Math.abs(rb0.width - rb1.width) < 0.5 && (await rmBar.evaluate(e => getComputedStyle(e).animationName)) === "mochi-breathe");
+  await rm.goto(URL_ + "#/skeleton");
+  await sleep(300);
+  check("movimiento reducido: el esqueleto no brilla", (await rm.locator(".mochi-skeleton").first().evaluate(e => getComputedStyle(e).animationName)) === "none");
   await rm.context().close();
+
+  // --- alto contraste (colores forzados): el estado se sigue viendo
+  const fc = await open({ forcedColors: "active" });
+  await fc.goto(URL_ + "#/checkbox");
+  await sleep(500);
+  const fcFill = await fc.getByRole("radio", { name: "Standard" }).locator(".mochi-choice__fill").evaluate(e => getComputedStyle(e).backgroundColor);
+  const fcRing = await fc.getByRole("checkbox", { name: "Videos" }).locator(".mochi-choice__ring").evaluate(e => `${getComputedStyle(e).borderTopStyle} ${getComputedStyle(e).borderTopWidth}`);
+  await fc.goto(URL_ + "#/progress");
+  await sleep(500);
+  const fcBar = await fc.getByRole("progressbar", { name: "Storage" }).locator(".mochi-progress__bar").evaluate(e => getComputedStyle(e).backgroundColor);
+  const fcTrack = await fc.getByRole("progressbar", { name: "Storage" }).evaluate(e => getComputedStyle(e).backgroundColor);
+  check("alto contraste: la opción elegida, el filo y la barra se ven", fcFill !== "rgba(0, 0, 0, 0)" && /^solid (1|1\.5)px$/.test(fcRing) && fcBar !== fcTrack, `${fcFill} · ${fcRing} · ${fcBar} sobre ${fcTrack}`);
+  await fc.context().close();
 
   // --- la parte visible de la pantalla (en Safari de iOS, la que deja el teclado): se simula
   // sustituyendo window.visualViewport, porque el teclado no se puede simular
@@ -703,6 +948,22 @@ try {
   const dLayers = await dev.locator(".tabs-card .mochi-swap__layer").count();
   check("desarrollo: las pestañas también cambian de panel animando", dLayers === 2, `${dLayers} capas`);
   check("desarrollo: los botones salen con su tamaño, sin crecer desde 0", widths.length > 0 && Math.min(...widths) > 100, `mínimo ${Math.min(...widths).toFixed(0)} px`);
+  await dev.goto(DEV_URL + "#/checkbox");
+  await sleep(500);
+  const dBox = dev.getByRole("checkbox", { name: "Videos" });
+  await dBox.click();
+  await sleep(50);
+  const dScale = await scaleOf(dBox.locator(".mochi-choice__fill"));
+  check("desarrollo: la casilla también crece desde el centro", dScale > 0.05 && dScale < 0.95, `escala ${dScale.toFixed(2)}`);
+  await dev.goto(DEV_URL + "#/progress");
+  await sleep(500);
+  const dInd = await sampleFrames(dev, () => document.querySelector('[data-demo="progress-estados"] .mochi-progress__bar').getBoundingClientRect().width, 900);
+  check("desarrollo: lo indeterminado también se estira", Math.max(...dInd) > Math.min(...dInd) * 1.25, `${Math.min(...dInd).toFixed(0)} → ${Math.max(...dInd).toFixed(0)}`);
+  await dev.goto(DEV_URL + "#/skeleton");
+  await dev.waitForFunction(() => !document.querySelector('[data-demo="skeleton-cambio a contenido"] .mochi-skeleton-swap').hasAttribute("aria-busy"), null, { timeout: 4000 });
+  const dSk = await dev.locator('[data-demo="skeleton-cambio a contenido"] .mochi-skeleton-swap .mochi-swap__layer').count();
+  await sleep(900);
+  check("desarrollo: el esqueleto también se funde en el contenido", dSk === 2 && (await dev.getByText("Ada Lovelace").first().isVisible()), `${dSk} capas`);
   await dev.context().close();
 
   check("sin errores en la consola", errors.length === 0, errors.join(" | "));

@@ -5,6 +5,8 @@ export { Swap, type SwapProps } from "./components/Swap.js";
 export { MorphBox, type MorphBoxProps, type Tone } from "./components/MorphBox.js";
 export { Button, Spinner, CheckMark, useButtonStatus, type ButtonProps, type ButtonStatus } from "./components/Button.js";
 export { Switch, type SwitchProps } from "./components/Switch.js";
+export { Checkbox, type CheckboxProps, type CheckedState } from "./components/Checkbox.js";
+export { RadioGroup, type RadioGroupProps, type RadioOption } from "./components/RadioGroup.js";
 export { SegmentedControl, type SegmentedControlProps, type SegmentedOption } from "./components/SegmentedControl.js";
 export { Slider, type SliderProps } from "./components/Slider.js";
 export { TextField, type TextFieldProps } from "./components/TextField.js";
@@ -22,5 +24,7 @@ export { Collapsible, Accordion, AccordionItem, type CollapsibleProps, type Acco
 export { Tabs, type TabsProps, type TabItem } from "./components/Tabs.js";
 export { Presence, PresenceGroup, type PresenceProps, type PresenceGroupProps, type PresenceEffect } from "./components/Presence.js";
 export { AutoHeight, type AutoHeightProps } from "./components/AutoHeight.js";
+export { Progress, ProgressRing, type ProgressProps, type ProgressRingProps } from "./components/Progress.js";
+export { Skeleton, SkeletonSwap, type SkeletonProps, type SkeletonSwapProps } from "./components/Skeleton.js";
 export { formatTime } from "./internal/format.js";
 export * as tokens from "./tokens.js";

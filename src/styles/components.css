@@ -175,6 +175,113 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
   outline-offset: 3px;
 }
 
+/* ---------------------------------------------------------------- casilla y botón de opción */
+
+.mochi-choice {
+  --mochi-choice-size: 22px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+  font: var(--mochi-text-body);
+  letter-spacing: -0.01em;
+  color: var(--mochi-on-canvas);
+}
+.mochi-choice[data-size="sm"] {
+  --mochi-choice-size: 18px;
+  column-gap: 10px;
+  font: var(--mochi-text-label);
+}
+.mochi-choice__control {
+  position: relative;
+  display: block;
+  flex: none;
+  width: var(--mochi-choice-size);
+  height: var(--mochi-choice-size);
+  /* centrada en la primera línea de la etiqueta (20 px en body, 16 px en label) */
+  margin: -1px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: var(--mochi-surface);
+  overflow: hidden;
+  cursor: pointer;
+  transform-origin: 50% 50%;
+  -webkit-tap-highlight-color: transparent;
+}
+.mochi-check[data-size="sm"] .mochi-choice__control { border-radius: 6px; }
+.mochi-radio .mochi-choice__control { border-radius: 50%; }
+/* el tono nuevo crece desde el centro (el muelle escribe la escala) */
+.mochi-choice__fill {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  background: var(--mochi-solid);
+  box-shadow: inset 0 0 0 1px var(--mochi-solid-border);
+  color: var(--mochi-on-solid);
+  transform: scale(0);
+  transform-origin: 50% 50%;
+}
+.mochi-choice__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1.5px var(--mochi-surface-border-strong);
+  pointer-events: none;
+  transition: box-shadow var(--mochi-duration-snappy) var(--mochi-ease-snappy);
+}
+.mochi-choice:not([data-state="unchecked"]) .mochi-choice__ring { box-shadow: inset 0 0 0 1px transparent; }
+.mochi-choice[data-invalid] .mochi-choice__ring,
+.mochi-radio-group[data-invalid] .mochi-choice__ring { box-shadow: inset 0 0 0 1.5px var(--mochi-danger); }
+@media (hover: hover) {
+  .mochi-choice[data-state="unchecked"]:not([data-disabled], [data-invalid], .mochi-radio-group[data-invalid] *, :has(> .mochi-choice__control:disabled)):has(> .mochi-choice__control:hover, .mochi-choice__label:hover) .mochi-choice__ring {
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--mochi-on-surface) 34%, transparent);
+  }
+}
+.mochi-choice__control:focus-visible {
+  outline: 2px solid var(--mochi-focus-ring);
+  outline-offset: 3px;
+}
+.mochi-check__mark { width: 100%; height: 100%; }
+.mochi-radio__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mochi-on-solid);
+  transform: scale(0);
+}
+.mochi-choice[data-size="sm"] .mochi-radio__dot { width: 6px; height: 6px; }
+.mochi-choice__text { min-width: 0; }
+.mochi-choice__label {
+  display: block;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.mochi-choice__desc { margin-top: 2px; font: var(--mochi-text-label); color: var(--mochi-on-canvas-muted); }
+.mochi-choice[data-size="sm"] .mochi-choice__desc { font: var(--mochi-text-caption); }
+/* desactivada por su prop o por un <fieldset disabled> que la contiene */
+.mochi-choice:is([data-disabled], :has(> .mochi-choice__control:disabled)) :is(.mochi-choice__control, .mochi-choice__text) { opacity: 0.45; }
+.mochi-choice:is([data-disabled], :has(> .mochi-choice__control:disabled)) :is(.mochi-choice__control, .mochi-choice__label) { cursor: default; }
+.mochi-choice__msgtext {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding-top: 4px;
+  font: var(--mochi-text-label);
+  color: var(--mochi-on-canvas-muted);
+}
+.mochi-choice__msgtext[data-kind="error"] { color: var(--mochi-danger-strong); }
+.mochi-choice__msgtext svg { flex: none; color: var(--mochi-danger); }
+.mochi-radio-group { font-family: var(--mochi-font-sans); letter-spacing: -0.01em; color: var(--mochi-on-canvas); }
+.mochi-radio-group__label { margin-bottom: 12px; font: 560 15px/20px var(--mochi-font-sans); }
+.mochi-radio-group[data-size="sm"] .mochi-radio-group__label { margin-bottom: 10px; font: 560 13px/16px var(--mochi-font-sans); }
+.mochi-radio-group__list { display: flex; flex-direction: column; gap: 14px; }
+.mochi-radio-group[data-size="sm"] .mochi-radio-group__list { gap: 10px; }
+.mochi-radio-group[data-orientation="horizontal"] .mochi-radio-group__list { flex-direction: row; flex-wrap: wrap; column-gap: 24px; }
+.mochi-radio-group > .mochi-choice__msg .mochi-choice__msgtext { padding-top: 10px; }
+
 /* ---------------------------------------------------------------- pestañas */
 
 .mochi-seg {
@@ -620,6 +727,66 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
 
 .mochi-autoheight__inner,
 .mochi-presence__inner { display: flow-root; }
+
+/* ---------------------------------------------------------------- progreso */
+
+.mochi-progress { width: 100%; font-family: var(--mochi-font-sans); letter-spacing: -0.01em; color: var(--mochi-on-canvas); }
+.mochi-progress__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  font: var(--mochi-text-body);
+}
+.mochi-progress[data-size="sm"] .mochi-progress__head { margin-bottom: 8px; font: var(--mochi-text-label); }
+.mochi-progress__label { min-width: 0; }
+.mochi-progress__value { margin-left: auto; color: var(--mochi-on-canvas-muted); font-variant-numeric: tabular-nums; }
+/* surco teñido del color del relleno: vale sobre el lienzo y sobre una superficie */
+.mochi-progress__track {
+  position: relative;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--mochi-fill) 12%, transparent);
+}
+.mochi-progress__bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 9999px;
+  background: var(--mochi-fill);
+}
+.mochi-ring { position: relative; display: inline-block; flex: none; vertical-align: middle; }
+.mochi-ring svg { display: block; overflow: visible; }
+.mochi-ring__track { stroke: color-mix(in srgb, var(--mochi-fill) 12%, transparent); }
+.mochi-ring__arc { stroke: var(--mochi-fill); }
+.mochi-ring__disc { fill: var(--mochi-fill); }
+.mochi-ring__check { stroke: var(--mochi-on-fill); }
+
+/* ---------------------------------------------------------------- esqueleto de carga */
+
+/* el brillo va fijado a la ventana: una sola pasada recorre todas las formas a la vez */
+.mochi-skeleton {
+  display: block;
+  flex: none;
+  max-width: 100%;
+  border-radius: var(--mochi-radius-xs);
+  background-color: color-mix(in srgb, var(--mochi-on-canvas) 8%, transparent);
+  background-image: linear-gradient(100deg, transparent 38%, color-mix(in srgb, var(--mochi-surface) 72%, transparent) 50%, transparent 62%);
+  background-size: 100vw 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  animation: mochi-shimmer 2.2s linear infinite;
+}
+.mochi-skeleton[data-shape="line"] { width: 100%; height: 0.75em; margin: 0.3em 0; border-radius: 9999px; }
+.mochi-skeleton[data-shape="circle"] { border-radius: 50%; }
+.mochi-skeleton[data-shape="block"] { width: 100%; height: 120px; border-radius: var(--mochi-radius-md); }
+.mochi-skeleton-lines { display: block; }
+@keyframes mochi-shimmer {
+  0% { background-position: -100vw 0; }
+  70%, 100% { background-position: 100vw 0; }
+}
 
 /* ---------------------------------------------------------------- island y reproductor */
 
@@ -1218,4 +1385,24 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
   .mochi-spinner circle { animation: none; stroke-dasharray: 40 100; }
   .mochi-checkmark path { animation: none; stroke-dashoffset: 0; }
   .mochi-player__ctl { transition: none; }
+  .mochi-skeleton { animation: none; background-image: none; }
+  /* lo indeterminado se queda quieto y respira */
+  .mochi-progress[data-state="indeterminate"] .mochi-progress__bar,
+  .mochi-ring[data-state="indeterminate"] .mochi-ring__arc { animation: mochi-breathe 1.6s ease-in-out infinite; }
+}
+@keyframes mochi-breathe { 50% { opacity: 0.35; } }
+
+/* ---------------------------------------------------------------- alto contraste */
+
+/* con colores forzados el sistema quita sombras y fondos: el filo pasa a borde y lo marcado,
+   el relleno y el progreso toman los colores de resaltado del sistema */
+@media (forced-colors: active) {
+  .mochi-choice__ring { border: 1.5px solid CanvasText; box-shadow: none; }
+  .mochi-choice:not([data-state="unchecked"]) .mochi-choice__ring { border-color: Highlight; }
+  .mochi-choice__fill { forced-color-adjust: none; background: Highlight; color: HighlightText; box-shadow: none; }
+  .mochi-radio__dot { forced-color-adjust: none; background: HighlightText; }
+  .mochi-choice:has(> .mochi-choice__control:disabled) .mochi-choice__ring { border-color: GrayText; }
+  .mochi-progress__track { border: 1px solid CanvasText; }
+  .mochi-progress__bar { forced-color-adjust: none; background: Highlight; }
+  .mochi-skeleton { border: 1px solid GrayText; }
 }

@@ -1,0 +1,49 @@
+<!-- @dsCard group="Estado" height=330 subtitle="el esqueleto se funde en el contenido" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Skeleton</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: flex-start; justify-content: center; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+  .card { width: 100%; max-width: 400px; padding: 20px; border-radius: 28px; background: var(--mochi-surface); box-shadow: var(--mochi-shadow-surface); color: var(--mochi-on-surface); }
+  .p { display: flex; flex-direction: column; gap: 14px; }
+  .head { display: flex; align-items: center; gap: 14px; }
+  .who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .who b { font-weight: 600; }
+  .sub { font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); }
+  .av { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--mochi-solid); color: var(--mochi-on-solid); font: var(--mochi-text-label); font-weight: 600; }
+  p { margin: 0; color: var(--mochi-on-surface-muted); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState, useEffect = React.useEffect;
+  function Demo() {
+    // en bucle: carga 1,6 s (la primera vez, menos), enseña el contenido 2,6 s y vuelve a cargar
+    var s = useState(true), loading = s[0], setLoading = s[1];
+    var first = React.useRef(true);
+    useEffect(function () {
+      var t = setTimeout(function () { first.current = false; setLoading(!loading); }, first.current ? 700 : loading ? 1600 : 2600);
+      return function () { clearTimeout(t); };
+    }, [loading]);
+    var skeleton = h("div", { className: "p" },
+      h("div", { className: "head" },
+        h(M.Skeleton, { shape: "circle", size: 48 }),
+        h("div", { className: "who" }, h(M.Skeleton, { width: "45%" }), h(M.Skeleton, { width: "30%", className: "sub" }))),
+      h(M.Skeleton, { lines: 3 }),
+      h(M.Skeleton, { shape: "block", height: 96 }));
+    return h("div", { className: "card" },
+      h(M.SkeletonSwap, { loading: loading, skeleton: skeleton },
+        h("div", { className: "p" },
+          h("div", { className: "head" },
+            h("span", { className: "av", "aria-hidden": "true" }, "AL"),
+            h("div", { className: "who" }, h("b", null, "Ada Lovelace"), h("span", { className: "sub" }, "Analytical Engines · London"))),
+          h("p", null, "Writes the programs before the machine exists. Currently annotating a translation that has grown three times longer than the original."))));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>

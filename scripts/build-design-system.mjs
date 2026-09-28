@@ -19,7 +19,7 @@ const OUT = "design-system/project";
 const SRC = "design-system-src";
 const NAMESPACE = "Mochi";
 // orden de las fichas en el sistema
-const CARDS = ["Button", "Menu", "Switch", "SegmentedControl", "Slider", "TextField", "Select", "MediaPlayer", "ChartCard", "Accordion", "Tabs", "Dialog", "Tooltip", "CommandPalette", "Toast", "MorphBox", "Motion"];
+const CARDS = ["Button", "Menu", "Switch", "Checkbox", "SegmentedControl", "Slider", "TextField", "Select", "MediaPlayer", "ChartCard", "Accordion", "Tabs", "Progress", "Skeleton", "Dialog", "Tooltip", "CommandPalette", "Toast", "MorphBox", "Motion"];
 const pkg = JSON.parse(readFileSync("package.json", "utf8"));
 
 rmSync(OUT, { recursive: true, force: true });

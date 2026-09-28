@@ -2,7 +2,7 @@ Mochi es un sistema de interfaz con una idea: **una sola forma que se transforma
 
 ## Principios
 
-- **Una forma, sin cortes.** Un estado no sustituye a otro: lo transforma. El botón se encoge a círculo para cargar y se abre de nuevo al terminar; la island se abre en reproductor; el toast se transforma en el siguiente toast; el «…» se convierte en su menú, el selector en su lista y el botón que abre un diálogo crece hasta ser la ventana; el tooltip viaja de un elemento a otro.
+- **Una forma, sin cortes.** Un estado no sustituye a otro: lo transforma. El botón se encoge a círculo para cargar y se abre de nuevo al terminar; la island se abre en reproductor; el toast se transforma en el siguiente toast; el «…» se convierte en su menú, el selector en su lista y el botón que abre un diálogo crece hasta ser la ventana; el tooltip viaja de un elemento a otro; el check de una casilla se transforma en la raya del estado mixto y el anillo de progreso, al terminar, en un check.
 - **Muelles, con un rebote mínimo.** Nada frena con una curva fija ni rebota: todo va con muelles cuyo rebote se queda por debajo del 1 %.
 - **El contenido no se solapa.** Lo que sale se va deprisa y lo que entra llega 60 ms después, con desenfoque. Nunca hay dos textos legibles a la vez en el mismo sitio.
 - **Blanco y negro, un acento.** El matcha es la única nota de color: interruptor encendido, línea de la gráfica, comando activo. Si todo es verde, nada lo es. El rojo no es un acento: solo aparece cuando algo va mal o no tiene vuelta atrás.
@@ -17,10 +17,10 @@ Mochi es un sistema de interfaz con una idea: **una sola forma que se transforma
 ## Color
 
 - Pon la página sobre `canvas`. Nunca pongas texto directamente sobre `canvas` salvo con `on-canvas` u `on-canvas-muted`.
-- `solid` es la forma de Mochi: botones, island y reproductor, interruptor apagado, pestañas, tarjeta de gráfica, toast. Texto encima en `on-solid`; lo secundario en `on-solid-muted`.
+- `solid` es la forma de Mochi: botones, island y reproductor, interruptor apagado, pestañas, tarjeta de gráfica, toast, casilla marcada y botón de opción elegido. Texto encima en `on-solid`; lo secundario en `on-solid-muted`.
 - `surface` es la superficie tranquila: paleta de comandos, pista del slider, tecla ⌘K. Texto encima en `on-surface` y `on-surface-muted`, separadores en `surface-border`.
 - `thumb` es lo que se desplaza encima de `solid`: la bolita del interruptor, el indicador de las pestañas, el tooltip. Texto encima en `on-thumb`.
-- `fill` es el relleno del slider sobre `surface`: negro en claro, blanco roto en oscuro. Iconos encima en `on-fill`.
+- `fill` es el relleno del slider sobre `surface` y el de la barra y el anillo de progreso: negro en claro, blanco roto en oscuro. Iconos encima en `on-fill`.
 - `accent` es un matcha pastel. Va siempre con texto `on-accent` (tinta) encima o sobre `solid` (la línea de la gráfica); sobre el lienzo claro solo, se pierde. Úsalo en una sola cosa por pantalla.
 - `accent-strong` es el matcha profundo, para el verde que va solo sobre el lienzo o la superficie: el interruptor encendido, el check de «correcto».
 - `danger` es un rojo coral suave para lo que va mal o no tiene vuelta atrás: el anillo de un campo con error, el icono de alerta, el resaltado de una opción destructiva, el botón «Delete». Lleva `on-danger` (tinta) encima.
@@ -36,7 +36,7 @@ Mochi es un sistema de interfaz con una idea: **una sola forma que se transforma
 
 ## Forma, espacio y sombra
 
-- Por defecto, las formas son píldoras (`radius-full`): botones, interruptor, pestañas, slider, campos de texto y selectores, toast, island. Las tarjetas y los diálogos usan `radius-xl`; la paleta, los menús, las listas de los selectores y los acordeones, `radius-lg`; la carátula y el resaltado del menú, `radius-md`; las filas de la paleta y el tooltip, `radius-sm`, y las teclas, `radius-xs`.
+- Por defecto, las formas son píldoras (`radius-full`): botones, interruptor, pestañas, slider, campos de texto y selectores, toast, island. Las tarjetas y los diálogos usan `radius-xl`; la paleta, los menús, las listas de los selectores y los acordeones, `radius-lg`; la carátula, el resaltado del menú y el bloque del esqueleto, `radius-md`; las filas de la paleta y el tooltip, `radius-sm`, y las teclas, `radius-xs`. La casilla lleva 7 px (6 px en `sm`); el botón de opción y el anillo de progreso son círculos.
 - Los rellenos siguen la escala de espaciado: `space-1` es el margen de las bolitas e indicadores dentro de su pista, `space-5` el relleno de tarjetas.
 - `shadow-surface` levanta `solid` y `surface` del lienzo; `shadow-thumb`, bolitas e indicadores; `shadow-pop`, el tooltip; `shadow-overlay`, la paleta, los menús y los diálogos sobre `scrim`.
 
@@ -57,12 +57,13 @@ No hay valores de movimiento en la tabla de tokens: viven en el código (`mochi-
 | `back` | 0,34 s | 0,84 | Vuelta del estirón elástico al soltar |
 | `color` | 0,30 s | 1 | Cambio de color dentro del mismo tono (negro → verde) |
 
-- Lo que se desplaza (indicador de pestañas, bolita del interruptor) mueve sus dos bordes con muelles distintos: el de delante en `lead` y el de detrás en `trail`.
+- Lo que se desplaza (indicador de pestañas, bolita del interruptor, el tramo de una barra de progreso sin valor) mueve sus dos bordes con muelles distintos: el de delante en `lead` y el de detrás en `trail`.
 - En los arrastres manda el puntero: mientras está pulsado, el valor sale de su posición. Al pasar de un límite, la forma se estira con resistencia creciente; al soltar vuelve con `back` y la velocidad que llevaba.
 - Lo que aparece en línea (un aviso, una fila nueva, una sección que se abre) abre primero su hueco con `morph` y el contenido entra 60 ms después; al irse, el contenido sale con `fadeOut` y el hueco se cierra. Lo de alrededor se desliza, nunca salta.
 - Lo que cambia de sitio en un sentido (pestañas) se desplaza en ese sentido: el contenido nuevo llega desde donde va el indicador.
 - Todo se puede interrumpir a mitad sin saltos.
-- Con «reducir movimiento» activado, los muelles saltan al destino.
+- Lo que espera sin final conocido va en bucle, sin muelle: el arco que gira del botón que carga y el brillo del esqueleto de carga, una banda que recorre la pantalla a ritmo constante.
+- Con «reducir movimiento» activado, los muelles saltan al destino, el esqueleto no brilla y el progreso sin valor se queda quieto y respira.
 
 ## Temas
 

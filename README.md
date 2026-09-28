@@ -9,6 +9,7 @@ Funciona en **Next.js** y **Astro** (como isla de React). Solo depende de React 
 | `Button` | Normal → cargando (se encoge a círculo en su sitio, sin mover lo de al lado) → hecho (el check se dibuja). `useButtonStatus` lo gestiona solo. `variant="danger"` para acciones destructivas; `iconOnly` para un botón redondo con solo un icono. |
 | `Menu`, `ContextMenu` | El botón «…» se transforma en el menú; también con clic derecho o pulsación larga. Se coloca solo para no salirse de la ventana. |
 | `Switch` | Interruptor cuya bolita se estira al cambiar: cada borde va en su propio muelle. |
+| `Checkbox`, `RadioGroup` | Casilla y botones de opción: al marcar, el negro crece desde el centro y el check se dibuja; el estado mixto es una raya. Las flechas mueven y eligen en el grupo. |
 | `SegmentedControl` | Pestañas con indicador líquido; las etiquetas cambian de color justo por donde pasa. |
 | `Slider` | Manipulación directa; al pasarte del límite se estira y al soltar vuelve con su velocidad. |
 | `Select` | El campo se transforma en la lista de opciones; teclado de `<select>`. En pantallas táctiles abre el selector nativo del sistema. |
@@ -21,6 +22,8 @@ Funciona en **Next.js** y **Astro** (como isla de React). Solo depende de React 
 | `Toaster`, `toast()` | Aviso en píldora; si llega otro, la píldora se transforma en el nuevo. |
 | `Accordion`, `Collapsible` | Secciones que se abren con muelle; abrir una puede cerrar la otra en el mismo movimiento. La búsqueda del navegador abre la sección donde encuentra el texto. |
 | `Tabs` | Pestañas con su contenido: el panel entra en el sentido del indicador y la altura se adapta. |
+| `Progress`, `ProgressRing` | Barra y anillo de progreso: el valor avanza con un muelle; sin valor, un tramo recorre la barra estirándose. Al terminar, el anillo se transforma en un check. |
+| `Skeleton`, `SkeletonSwap` | Huecos con la forma de lo que va a llegar y un brillo que los recorre; al llegar el contenido, se funden en él y la altura se adapta. |
 | `Presence`, `PresenceGroup`, `AutoHeight` | Aparecer y desaparecer con muelle (también en listas) y alturas que siguen a su contenido, para tus propias pantallas. |
 | `MorphBox`, `Swap` | Las piezas base, por si quieres construir tus propios estados. |
 
@@ -171,4 +174,5 @@ La carpeta `reel/` es el prototipo del vídeo con el que nació el sistema (una 
 
 - **Distribución para despliegues**: el código está en GitHub (`RodzCantCode/mochi`, público, rama `main`). Falta probar en un proyecto real la instalación con `npm install github:RodzCantCode/mochi`: al instalarse desde Git, npm debe compilarlo (`prepare`). Otra opción es un registro de npm.
 - **App móvil**: cuando se elija la tecnología, los valores (`mochi-ui/tokens`) sirven tal cual; los componentes habrá que rehacerlos para esa plataforma.
+- **Alto contraste**: solo la casilla, el radio, el progreso y el esqueleto tienen reglas para los colores forzados del sistema (`forced-colors`); en el resto (Switch, SegmentedControl, Slider…) el estado puede no verse con el alto contraste de Windows.
 - **Colores de estado**: hay rojo de error (`danger`, `danger-strong`) y «correcto» usa el matcha profundo (`accent-strong`). No hay color de aviso (ámbar); se añadirá si algún componente lo necesita.

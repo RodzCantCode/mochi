@@ -1,0 +1,41 @@
+<!-- @dsCard group="Controles" height=330 subtitle="el negro crece desde el centro; mixto, una raya" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Checkbox</title>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mochi-canvas); }
+  #root { min-height: 100%; box-sizing: border-box; display: flex; align-items: flex-start; justify-content: center; gap: 48px; flex-wrap: wrap; padding: 24px; font: var(--mochi-text-body); color: var(--mochi-on-canvas); }
+  .col { display: flex; flex-direction: column; gap: 12px; }
+  .kids { display: flex; flex-direction: column; gap: 12px; padding-left: 34px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var M = window.Mochi, h = React.createElement, useState = React.useState;
+  var MEDIA = ["Photos", "Videos", "Documents"];
+  function Demo() {
+    var p = useState(["Photos"]), picked = p[0], setPicked = p[1];
+    var ship = useState("standard");
+    var all = picked.length === MEDIA.length ? true : picked.length ? "indeterminate" : false;
+    return h(React.Fragment, null,
+      h("div", { className: "col" },
+        h(M.Checkbox, { label: "Back up everything", checked: all, onCheckedChange: function (on) { setPicked(on ? MEDIA.slice() : []); } }),
+        h("div", { className: "kids" }, MEDIA.map(function (m) {
+          return h(M.Checkbox, { key: m, label: m, checked: picked.indexOf(m) >= 0, onCheckedChange: function (on) {
+            setPicked(function (x) { return on ? x.concat(m) : x.filter(function (y) { return y !== m; }); });
+          } });
+        })),
+        h(M.Checkbox, { label: "I accept the terms", error: "Accept the terms to continue" })),
+      h(M.RadioGroup, { label: "Delivery", value: ship[0], onValueChange: ship[1], options: [
+        { value: "standard", label: "Standard", description: "3–5 working days · Free" },
+        { value: "express", label: "Express", description: "Next working day · $9" },
+        { value: "pickup", label: "Pick up in store", description: "Not available", disabled: true },
+      ] }));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(h(Demo));
+</script>
+</body>
+</html>
