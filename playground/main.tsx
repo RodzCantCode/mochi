@@ -1,11 +1,13 @@
 // Sitio de pruebas de Mochi: una portada con todos los componentes y una página por
-// componente, con tema claro, oscuro o del sistema. `npm run dev` lo abre en
-// http://localhost:5178. No forma parte del paquete.
-import { StrictMode, useEffect, useState } from "react";
+// componente, con tema claro, oscuro o del sistema, y Studio, una app de demostración que los usa
+// juntos (selector «Lista | Demo»). `npm run dev` lo abre en http://localhost:5178. No forma
+// parte del paquete.
+import { StrictMode, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "../src/styles/tokens.css";
 import "../src/styles/components.css";
 import "./playground.css";
+import "./studio/studio.css";
 import {
   CommandPalette,
   FileIcon,
@@ -22,6 +24,8 @@ import {
 import { GROUPS, PAGES, type PageContext } from "./pages.js";
 import { ColorsPage } from "./colors.js";
 import { CasePage } from "./cases.js";
+import { ModeSwitch, StudioBar, StudioLinks, StudioMain, isDemoRoute } from "./studio/Studio.js";
+import { StudioProvider, useStudio } from "./studio/state.js";
 
 const THEME_KEY = "mochi-site-theme";
 
@@ -75,13 +79,18 @@ function useRoute() {
   return r;
 }
 
-function Nav({ current }: { current: string }) {
+function Nav({ current, onMode }: { current: string; onMode: (demo: boolean) => void }) {
+  const demo = isDemoRoute(current);
   return (
-    <nav className="nav" aria-label="Components">
+    <nav className="nav" aria-label={demo ? "Studio" : "Components"} data-mode={demo ? "demo" : "list"}>
       <a className="nav__brand" href="#/">
         <span className="nav__logo" aria-hidden="true" />
         Mochi
       </a>
+      <ModeSwitch demo={demo} onChange={onMode} />
+      {demo ? (
+        <StudioLinks route={current} />
+      ) : (
       <div className="nav__list">
         <div className="nav__group">
           <a href="#/" aria-current={current === "" ? "page" : undefined}>
@@ -103,6 +112,7 @@ function Nav({ current }: { current: string }) {
           </div>
         ))}
       </div>
+      )}
     </nav>
   );
 }
@@ -158,8 +168,18 @@ function ComponentPage({ id, ctx }: { id: string; ctx: PageContext }) {
 
 function App() {
   const current = useRoute();
+  const demo = isDemoRoute(current);
+  const studio = useStudio();
   const [open, setOpen] = useState(false);
-  useCommandK(() => setOpen(o => !o));
+  // en «Demo», ⌘K abre la paleta de Studio
+  useCommandK(() => !demo && setOpen(o => !o));
+  // al cambiar de modo se vuelve a la última página de cada uno
+  const lastList = useRef("");
+  const lastDemo = useRef("demo");
+  useEffect(() => {
+    if (demo) lastDemo.current = current;
+    else lastList.current = current;
+  }, [current, demo]);
   const ctx: PageContext = { openPalette: setOpen };
   const commands: Command[] = [
     { id: "new", label: "New project", icon: <PlusIcon size={18} />, shortcut: ["mod", "N"], onSelect: () => toast("Project created") },
@@ -170,12 +190,15 @@ function App() {
   ];
   return (
     <div className="site">
-      <Nav current={current} />
+      <Nav current={current} onMode={d => (location.hash = `#/${d ? lastDemo.current : lastList.current}`)} />
       <main className="main">
         <div className="bar">
+          {demo ? <StudioBar /> : null}
           <ThemePicker />
         </div>
-        {current === "" ? (
+        {demo ? (
+          <StudioMain route={current} />
+        ) : current === "" ? (
           <Overview ctx={ctx} />
         ) : current === "colors" ? (
           <ColorsPage />
@@ -185,14 +208,17 @@ function App() {
           <ComponentPage key={current} id={current} ctx={ctx} />
         )}
       </main>
-      <CommandPalette open={open} onOpenChange={setOpen} commands={commands} />
-      <Toaster />
+      {demo ? null : <CommandPalette open={open} onOpenChange={setOpen} commands={commands} />}
+      {/* con el reproductor abajo, los avisos salen por encima de él */}
+      <Toaster offset={demo && studio.playing ? 96 : 24} />
     </div>
   );
 }
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <StudioProvider>
+      <App />
+    </StudioProvider>
   </StrictMode>,
 );

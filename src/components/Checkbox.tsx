@@ -103,7 +103,8 @@ export const Checkbox = forwardRef<HTMLButtonElement, CheckboxProps>(function Ch
   const [initial] = useState(() => ({
     fill: { transform: `scale(${on ? 1 : 0})` },
     d: markPath(mixed ? 1 : 0),
-    mark: { strokeDashoffset: on ? 0 : 1 },
+    // sin dibujar, oculto: Safari pinta el remate redondo del trazo vacío como un punto
+    mark: { strokeDashoffset: on ? 0 : 1, opacity: on ? 1 : 0 },
   }));
   const fill = useRef<HTMLSpanElement>(null);
   const mark = useRef<SVGPathElement>(null);
@@ -141,6 +142,7 @@ export const Checkbox = forwardRef<HTMLButtonElement, CheckboxProps>(function Ch
           drawn.current = d;
         }
         mk.style.strokeDashoffset = (1 - Math.min(1, Math.max(0, v.d))).toFixed(4);
+        mk.style.opacity = v.d > 0.001 ? "1" : "0";
       }
       if (box.current) box.current.style.transform = v.s === 1 ? "" : `scale(${v.s.toFixed(4)})`;
     },

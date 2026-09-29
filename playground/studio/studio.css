@@ -1,0 +1,187 @@
+/* Studio: la app de demostración del sitio de pruebas (no forma parte del paquete). Solo usa
+   variables --mochi-*, así que sigue el tema claro u oscuro como los componentes. */
+
+/* ---------------------------------------------------------------- selector y navegación */
+
+.mode-switch { margin: 0 8px 20px; }
+.mode-switch .mochi-seg { width: 100%; }
+
+.bar .studio-bar { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+.studio-bar__menu { display: none; }
+
+.studio-links { display: flex; flex-direction: column; gap: 18px; }
+.studio-links__group { display: flex; flex-direction: column; gap: 2px; }
+.studio-links__title { padding: 0 12px 6px; font: var(--mochi-text-caption); letter-spacing: 0.02em; text-transform: uppercase; color: var(--mochi-on-surface-muted); }
+.nav .studio-links__title { color: var(--mochi-on-canvas-muted); }
+.studio-links a {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  color: var(--mochi-on-surface);
+  font: 500 14px/18px var(--mochi-font-sans);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 120ms linear, color 120ms linear;
+}
+.nav .studio-links a:not([aria-current="page"]) { color: var(--mochi-on-canvas); }
+.nav .studio-links a { justify-content: flex-start; }
+.studio-links a:hover { background: color-mix(in srgb, var(--mochi-on-surface) 6%, transparent); }
+.studio-links a[aria-current="page"] { background: var(--mochi-fill); color: var(--mochi-on-fill); }
+.studio-links a:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 2px; }
+.studio-links__count { margin-left: auto; font: var(--mochi-text-caption); font-variant-numeric: tabular-nums; opacity: 0.6; }
+.studio-links__cover { flex: none; width: 18px; height: 18px; border-radius: 6px; }
+.studio-links__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------------------------------------------------------------- páginas */
+
+.studio-page { max-width: 760px; }
+.studio-head { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+.studio-head__text { flex: 1; min-width: 0; }
+.studio-head h1 { margin: 0; font: var(--mochi-text-display); letter-spacing: -0.025em; overflow-wrap: anywhere; }
+.studio-head p { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 6px 0 0; color: var(--mochi-on-canvas-muted); }
+.studio-head__actions { display: flex; gap: 8px; }
+.studio-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  border-radius: 6px;
+  font: var(--mochi-text-label);
+  color: var(--mochi-on-canvas-muted);
+  text-decoration: none;
+}
+.studio-back:hover { color: var(--mochi-on-canvas); }
+.studio-back:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 3px; }
+.studio-back__icon { transform: rotate(180deg); }
+.studio-small { font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); }
+.studio-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px 4px; color: var(--mochi-on-canvas-muted); }
+.studio-empty p { margin: 0; }
+.studio-cover { display: block; flex: none; border-radius: 14px; }
+
+/* tarjetas: lo que sería superficie blanca dentro de ellas va en el tono del lienzo */
+.studio-card,
+.studio-upload { padding: 20px; border-radius: 28px; background: var(--mochi-surface); color: var(--mochi-on-surface); box-shadow: var(--mochi-shadow-surface); }
+.studio-card h2 { margin: 0 0 14px; font: var(--mochi-text-title); letter-spacing: -0.015em; }
+.studio-card .mochi-field__box,
+.studio-accordion .mochi-field__box { background: var(--mochi-canvas); box-shadow: none; }
+.studio-card .mochi-morph[data-tone="surface"],
+.studio-project .mochi-morph[data-tone="surface"],
+.studio-accordion .mochi-morph[data-tone="surface"] { background: var(--mochi-canvas); box-shadow: none; }
+
+.studio-form { display: flex; flex-direction: column; gap: 12px; }
+.studio-form__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.studio-form__actions--start { justify-content: flex-start; margin-top: 12px; }
+
+/* ---------------------------------------------------------------- proyectos */
+
+.studio-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.studio-toolbar__search { flex: 1 1 240px; min-width: 0; }
+.studio-toolbar__search .mochi-field { min-width: 0; }
+.studio-projects { margin: 0; padding: 0; list-style: none; }
+.studio-project {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+  padding: 10px 12px 10px 10px;
+  border-radius: 22px;
+  background: var(--mochi-surface);
+  color: var(--mochi-on-surface);
+  box-shadow: var(--mochi-shadow-surface);
+}
+.studio-project__main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; border-radius: 14px; color: inherit; text-decoration: none; }
+.studio-project__main:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 3px; }
+.studio-project__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.studio-project__text b { overflow: hidden; font: var(--mochi-text-body); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.studio-status { display: inline-flex; align-items: center; gap: 6px; font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); white-space: nowrap; }
+.studio-head .studio-status { color: inherit; }
+.studio-status__dot { width: 8px; height: 8px; border-radius: 50%; background: color-mix(in srgb, var(--mochi-on-surface) 30%, transparent); }
+.studio-status[data-status="mixing"] .studio-status__dot { background: var(--mochi-accent-strong); }
+.studio-status[data-status="released"] .studio-status__dot { background: var(--mochi-fill); }
+
+/* ---------------------------------------------------------------- un proyecto */
+
+.studio-overview { display: flex; flex-direction: column; gap: 20px; }
+.studio-activity { margin: 0; padding: 0; list-style: none; }
+.studio-activity li { padding: 10px 0; border-top: 1px solid color-mix(in srgb, var(--mochi-on-canvas) 8%, transparent); }
+.studio-activity li:first-child { border-top: 0; }
+.studio-tracks__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.studio-tracks__head .studio-small { color: var(--mochi-on-canvas-muted); }
+.studio-upload { display: flex; align-items: flex-end; gap: 14px; margin-bottom: 14px; padding: 14px 18px; }
+.studio-upload__bar { flex: 1; min-width: 0; padding-bottom: 15px; }
+.studio-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 8px 18px 8px 8px;
+  border-radius: 9999px;
+  background: var(--mochi-surface);
+  color: var(--mochi-on-surface);
+  box-shadow: var(--mochi-shadow-surface);
+}
+.studio-track[data-current] .studio-track__title { font-weight: 600; }
+.studio-track__play {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--mochi-fill);
+  color: var(--mochi-on-fill);
+  cursor: pointer;
+}
+.studio-track__play:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 2px; }
+.studio-track__title { flex: 1; min-width: 0; overflow: hidden; font: var(--mochi-text-body); text-overflow: ellipsis; white-space: nowrap; }
+.studio-track__time { font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); font-variant-numeric: tabular-nums; }
+.studio-accordion { max-width: 640px; }
+.studio-accordion p { margin: 0; }
+.studio-share { width: 280px; max-width: 100%; }
+.studio-share__link { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border-radius: 9999px; background: var(--mochi-canvas); }
+.studio-share__url { flex: 1; min-width: 0; overflow: hidden; font: var(--mochi-text-label); text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------------------------------------------------------------- ajustes y ayuda */
+
+.studio-settings { display: flex; flex-direction: column; gap: 16px; max-width: 560px; }
+.studio-indent { display: flex; flex-direction: column; gap: 12px; padding-left: 34px; }
+.studio-field-label { margin: 4px 0 -4px; font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); }
+.studio-help { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; max-width: 640px; margin-top: 20px; }
+.studio-help p { margin: 0; }
+
+/* ---------------------------------------------------------------- reproductor abajo */
+
+.studio-dock {
+  position: fixed;
+  z-index: 900;
+  left: 240px;
+  right: 0;
+  bottom: 16px;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  pointer-events: none;
+}
+.studio-dock__inner { width: 100%; max-width: 344px; pointer-events: auto; }
+.studio-dock__art { display: block; width: 100%; height: 100%; }
+
+/* ---------------------------------------------------------------- pantallas estrechas */
+
+@media (max-width: 860px) {
+  .mode-switch { margin: 0 0 10px; }
+  .nav[data-mode="demo"] .studio-links { display: none; }
+  .bar:has(.studio-bar) { flex-wrap: wrap; gap: 10px; }
+  .bar .studio-bar { flex: 1; }
+  .studio-bar__menu { display: inline-flex; }
+  .studio-dock { left: 0; }
+}
+@media (max-width: 480px) {
+  .studio-project .studio-status { display: none; }
+}

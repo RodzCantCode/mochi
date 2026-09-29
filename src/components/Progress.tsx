@@ -277,7 +277,8 @@ export function ProgressRing({ value, max = 100, formatValue, size = "md", class
   const [initial] = useState(() => ({
     arc: { strokeDasharray: `${f} ${1 - f}`, opacity: f > 0.002 ? 1 : 0 },
     r: complete ? 12 : 0,
-    mark: { strokeDashoffset: complete ? 0 : 1 },
+    // sin dibujar, oculto: Safari pinta el remate redondo del trazo vacío como un punto
+    mark: { strokeDashoffset: complete ? 0 : 1, opacity: complete ? 1 : 0 },
   }));
   // al llegar un valor, los muelles parten de donde iba el arco (va antes que los muelles)
   const wasLooping = useRef(looping);
@@ -296,7 +297,10 @@ export function ProgressRing({ value, max = 100, formatValue, size = "md", class
     p => {
       if (!looping) paintArc(p.t, p.hd);
       if (disc.current) disc.current.setAttribute("r", (12 * clamp01(p.c)).toFixed(3));
-      if (mark.current) mark.current.style.strokeDashoffset = (1 - clamp01(p.d)).toFixed(4);
+      if (mark.current) {
+        mark.current.style.strokeDashoffset = (1 - clamp01(p.d)).toFixed(4);
+        mark.current.style.opacity = p.d > 0.001 ? "1" : "0";
+      }
     },
   );
 

@@ -113,7 +113,7 @@ function Save() {
 }
 ```
 
-El sitio de pruebas (`npm run dev`, ver «Desarrollo») tiene una página por componente con ejemplos conectados; su código está en `playground/demos.tsx`.
+El sitio de pruebas (`npm run dev`, ver «Desarrollo») tiene una página por componente con ejemplos conectados (su código está en `playground/demos.tsx`) y, con el selector «Lista | Demo», Studio: una app de demostración que los usa todos juntos, en escritorio y en móvil (`playground/studio/`).
 
 ## Temas
 
@@ -170,6 +170,8 @@ npm run design-system  # regenera y comprueba el sistema de diseño
 ```
 
 Para publicar el sitio de pruebas (por ejemplo en Vercel, para verlo en el móvil), la orden de compilación es `npx vite build` y la carpeta que se sirve, `playground-dist`. La compilación por defecto (`npm run build`) solo compila la librería.
+
+El sitio de pruebas es también la presentación de la librería y la referencia de cómo se comporta sola: si algo se ve o se mueve distinto dentro de un proyecto, se compara con su página aquí (o con Studio, la app de demostración, para verlo junto a los demás). Por eso cada componente mantiene la suya con ejemplos conectados.
 
 La carpeta `reel/` es el prototipo del vídeo con el que nació el sistema (una animación de 14 s a 120 BPM); no forma parte del paquete.
 

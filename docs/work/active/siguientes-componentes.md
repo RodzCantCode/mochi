@@ -5,7 +5,8 @@
 > tooltip, acordeón, pestañas con contenido y piezas de movimiento, y casilla y botón de opción,
 > barra y anillo de progreso y esqueleto de carga, con las correcciones de tres revisiones
 > independientes, y panel flotante, panel lateral y lista que se reordena, hechos y probados;
-> todo subido a GitHub. Sigue la pasada final de repaso y pulido (ver
+> todo subido a GitHub. Después, Studio, una app de demostración en el sitio de pruebas que los
+> usa todos juntos; todo subido a GitHub. Sigue la pasada final de repaso y pulido (ver
 > «Próximos pasos»). Lo pendiente de la librería en general está en el
 > [README](../../../README.md#pendiente); aquí solo lo de esta tarea.
 
@@ -53,7 +54,7 @@ interacción en verde y su ficha publicada en el sistema de diseño.
     esa parte visible en Chromium y por el usuario en su iPhone.
   - El resto de componentes le funcionó bien en el iPhone.
 - **Git:** todo subido a GitHub (`RodzCantCode/mochi`, **público**, rama `main`), incluidos
-  casilla, radio, progreso y esqueleto, y los paneles y la lista. El usuario va a publicar el sitio de pruebas en Vercel para
+  casilla, radio, progreso y esqueleto, los paneles y la lista, y Studio. El usuario va a publicar el sitio de pruebas en Vercel para
   probarlo en su iPhone (compilación y carpeta, en el README, apartado «Desarrollo»).
 - **Acordeón, pestañas y movimiento (hechos y subidos):** `Collapsible`, `Accordion` y
   `AccordionItem` (contenido cerrado con `hidden="until-found"`, puesto a mano porque React no
@@ -83,6 +84,15 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   pruebas y su ficha (`Popover`, `Drawer`, `ReorderList`) en `design-system-src/components/`;
   cómo se comportan está en esas fichas. Sin revisión independiente todavía: va en la pasada
   final.
+- **Studio, la app de demostración (hecha y subida):** en el sitio de pruebas, bajo «Mochi»,
+  el selector «Lista | Demo». En «Demo», la columna lateral es la navegación de la app (en
+  móvil, un panel lateral con el botón de menú) y el contenido, sus páginas: proyectos (carga
+  con esqueleto, búsqueda, filtros en un panel flotante, orden, menú «…» y menú contextual con
+  renombrar, duplicar y borrar con deshacer), un proyecto (estadísticas, actividad, pistas que
+  suenan y se reordenan, subida con progreso, compartir, editar en panel lateral, ajustes en
+  acordeón), ajustes de la cuenta y ayuda; ⌘K con su propia paleta y el reproductor flotando
+  abajo mientras suena algo. El código está en `playground/studio/` (datos en memoria: recargar
+  lo devuelve a como empieza). No destapó fallos de la librería.
 - **Tercera revisión independiente** (dos revisores con contexto limpio: comportamiento con
   React 18.2, 18.3 y 19, y accesibilidad, estilos y documentación): 18 fallos distintos con caso
   reproducible (dos los encontraron los dos), todos corregidos salvo el contraste del filo (ver
@@ -153,6 +163,9 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   escritorio). Cada fila anima cualquier cambio de su sitio en la lista partiendo de donde se
   veía (mide su posición tras cada render), así que también se animan los órdenes que llegan de
   fuera y las filas que se deslizan cuando se añade o quita otra.
+- El sitio de pruebas se queda como presentación de la librería y referencia de su
+  comportamiento «sola», para comparar con su uso dentro de un proyecto (decidido por el
+  usuario el 2026-09-29; está en el README, apartado «Desarrollo»).
 - Personalizar por proyecto se hace redefiniendo variables `--mochi-*` en el CSS del proyecto
   (en `:root`, en el contenedor de una página o en un componente con `className`). Probado en el
   navegador el 2026-09-28: el cambio solo afecta a lo que queda dentro.
@@ -186,7 +199,11 @@ El 2026-09-29, tras el último cambio de código:
 - `npm run typecheck`: sin errores.
 - `npm test`: 80/80 (además de lo anterior: renderizado en servidor de casilla, radio,
   progreso, esqueleto, paneles y lista, con sus roles, estados y valores de formulario).
-- `npm run test:e2e`: 194/194 en Chromium. De los paneles y la lista: el botón que se
+- `npm run test:e2e`: 223/223 en Chromium. De Studio: el selector de modo, el esqueleto al
+  cargar, buscar, filtrar, renombrar, borrar y deshacer, crear desde ⌘K, abrir un proyecto,
+  reproducir, reordenar pistas, subir con progreso, compartir, editar en el panel lateral, la
+  validación de los ajustes, la ayuda, volver a «Lista», la navegación en móvil sin desplazamiento
+  horizontal y una pasada en modo desarrollo. Antes de Studio (196/196): De los paneles y la lista: el botón que se
   transforma en el panel flotante, el foco que entra, Tab que sale y lo cierra, Esc, el toque
   fuera sin atravesar, «Apply», la hoja en móvil; el panel lateral que entra desde su borde,
   foco retenido, arrastre que vuelve o cierra, fondo, X y Esc, y su ancho en móvil; la fila
@@ -210,6 +227,10 @@ El 2026-09-29, tras el último cambio de código:
   temporal): todos dan ya el resultado esperado; marcar 300 casillas, 0 recálculos de la página.
 - Capturas revisadas a ojo en claro y oscuro, en escritorio y con colores forzados; los paneles
   también a 390 px y la lista a mitad de arrastre.
+- El punto blanco que el usuario vio en el anillo de progreso en su iPhone (el extremo del
+  check sin dibujar, que Safari pinta y Chromium no) se arregló ocultando el trazo mientras no se
+  dibuja, también en la casilla. Comprobado en Chromium que queda oculto; en Safari, pendiente de
+  que lo vea el usuario.
 
 Sin comprobar: Safari (y el brillo del esqueleto en iOS), Firefox, pantallas táctiles reales,
 lectores de pantalla reales, alto contraste real de Windows (solo emulado en Chromium), la
@@ -229,13 +250,16 @@ Esperan decisión del usuario:
 
 ## Próximos pasos
 
-1. Que el usuario pruebe en su iPhone el panel lateral (arrastre) y la lista (asa en táctil).
+1. Que el usuario pruebe en su iPhone el panel lateral (arrastre), la lista (asa en táctil),
+   Studio y el punto del check del anillo (ya arreglado).
 2. Pasada final de repaso y pulido (acordada con el usuario el 2026-09-29): una revisión
    independiente con contexto limpio de los componentes sin revisar (panel flotante, panel
-   lateral, lista), probando también React 18 (las tres anteriores encontraron 13, 18 y 18
-   fallos reales); el filo de la casilla y el radio; las dos tareas sueltas (botón que se queda
-   hundido con Espacio y Tab; alto contraste del resto); la versión 0.2.0; y publicar el sistema
-   de diseño (con `GripIcon`).
+   lateral, lista) y de Studio como uso conjunto, probando también React 18 (las tres anteriores
+   encontraron 13, 18 y 18 fallos reales); el filo de la casilla y el radio; las dos tareas
+   sueltas (botón que se queda hundido con Espacio y Tab; alto contraste del resto); el posible
+   punto del check del botón al terminar de cargar (`.mochi-checkmark`, mismo motivo que el del
+   anillo; sin comprobar en Safari); la versión 0.2.0; y publicar el sistema de diseño (con
+   `GripIcon`).
 3. Integrar Mochi en `phsport-app` desde una sesión en esa carpeta.
 4. Al cerrar la tarea: retirar este traspaso y mover lo permanente (la receta, la política de
    Radix) a documentación estable.
