@@ -50,6 +50,13 @@ function useTheme() {
     } catch {
       /* sin almacenamiento: el tema no se recuerda */
     }
+    // las barras del navegador van del color del lienzo (con «System», también si cambia el sistema)
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    const paint = () => meta?.setAttribute("content", getComputedStyle(document.body).backgroundColor);
+    paint();
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    mql.addEventListener("change", paint);
+    return () => mql.removeEventListener("change", paint);
   }, [theme]);
   return [theme, setTheme] as const;
 }

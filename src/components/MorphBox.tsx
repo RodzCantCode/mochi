@@ -199,10 +199,12 @@ export const MorphBox = forwardRef<HTMLElement, MorphBoxProps>(function MorphBox
   );
 });
 
-// el color de texto se congela en cada capa: el contenido que sale conserva el de su tono
+// el color de texto se congela en cada capa: el contenido que sale conserva el de su tono. Un
+// cambio de tono también cambia de capa: el texto se funde al color nuevo mientras el tono
+// nuevo crece desde el centro (si no, se quedaría con el color del tono anterior)
 function Swapper({ contentKey, tone, children }: { contentKey: string | number; tone: Tone; children: ReactNode }) {
   return (
-    <Swap id={contentKey} layerStyle={{ color: TONE_COLOR[tone] }}>
+    <Swap id={`${contentKey}:${tone}`} layerStyle={{ color: TONE_COLOR[tone] }}>
       {children}
     </Swap>
   );

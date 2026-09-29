@@ -310,6 +310,8 @@ function Palette(props: {
             aria-activedescendant={activeId}
             aria-autocomplete="list"
             autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
             spellCheck={false}
             placeholder={placeholder}
             value={query}

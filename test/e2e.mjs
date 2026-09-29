@@ -873,6 +873,12 @@ try {
   await page.getByRole("button", { name: "Done" }).click();
   await sleep(900);
   check("demo: el panel de filtros filtra y el botón lo dice", (await rows.count()) === 3 && (await page.getByRole("button", { name: "Filters · 2" }).count()) === 1);
+  // el botón pasa de surface a solid: su texto sigue al tono nuevo (antes, negro sobre negro)
+  const filtLabel = await page.getByRole("button", { name: "Filters · 2" }).evaluate(e => {
+    const l = e.querySelector(".mochi-swap__layer:not([data-leaving])");
+    return [getComputedStyle(e).backgroundColor, getComputedStyle(l).color];
+  });
+  check("botón: al cambiar de variante, el texto cambia de color con él", filtLabel[0] !== filtLabel[1] && filtLabel[1] === "rgb(255, 255, 255)", filtLabel.join(" · "));
   await page.getByRole("button", { name: "Filters · 2" }).click();
   await sleep(600);
   await page.getByRole("button", { name: "Reset" }).click();
@@ -1049,6 +1055,7 @@ try {
   await sleep(600);
   const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   check("tema: oscuro cambia el lienzo", (await page.evaluate(() => document.documentElement.dataset.theme)) === "dark" && bg === "rgb(15, 15, 14)", bg);
+  check("tema: las barras del navegador van del color del lienzo", (await page.evaluate(() => document.querySelector('meta[name="theme-color"]').content)) === bg);
   await page.mouse.move(10, 10);
   await sleep(3500); // que se vaya el aviso
   await page.screenshot({ path: `${OUT}/dark.png`, fullPage: true });
@@ -1266,6 +1273,15 @@ try {
   await mob.getByRole("dialog", { name: "Studio" }).getByRole("link", { name: "Settings" }).tap();
   await sleep(900);
   check("demo en móvil: elegir una sección la abre y cierra el panel", (await mob.evaluate(() => location.hash)) === "#/demo/settings" && (await mob.getByRole("dialog").count()) === 0);
+  // página más corta que la pantalla: el sobrante va abajo, no a la fila de la cabecera
+  await mob.goto(URL_ + "#/demo/p/field-notes");
+  await sleep(1500);
+  await mob.getByRole("tab", { name: "Settings" }).tap();
+  await sleep(900);
+  await mob.getByRole("button", { name: "General" }).tap();
+  await sleep(900);
+  const shortRows = await mob.evaluate(() => [Math.round(document.querySelector(".nav").getBoundingClientRect().height), parseFloat(getComputedStyle(document.querySelector(".site")).gridTemplateRows), document.documentElement.scrollHeight <= innerHeight]);
+  check("móvil: con la página corta, el contenido no baja", shortRows[2] && Math.abs(shortRows[0] - shortRows[1]) < 1, `cabecera ${shortRows[0]}, su fila ${shortRows[1]}, página corta ${shortRows[2]}`);
   await mob.screenshot({ path: `${OUT}/studio-mobile.png` });
   await mob.goto(URL_ + "#/tooltip");
   await sleep(500);
@@ -1287,6 +1303,24 @@ try {
   await mob.touchscreen.tap(home.x + home.width / 2, home.y + home.height / 2);
   await sleep(700);
   check("menú táctil: tocar fuera lo cierra sin pulsar lo de debajo", (await mob.locator(".mochi-menu-root").count()) === 0 && (await mob.evaluate(() => location.hash)) === "#/menu");
+  // en táctil, el efecto de pasar el ratón no se queda pegado tras el toque
+  await mob.goto(URL_ + "#/accordion");
+  await sleep(600);
+  const accTrig = mob.locator(".mochi-accordion__trigger").first();
+  await accTrig.tap();
+  await sleep(900);
+  check("táctil: la cabecera del acordeón no se queda resaltada tras tocarla", (await accTrig.evaluate(e => getComputedStyle(e).backgroundColor)) === "rgba(0, 0, 0, 0)");
+  // la paleta en táctil: sin teclas que no hay y sin mayúsculas ni correcciones al buscar
+  await mob.goto(URL_ + "#/palette");
+  await sleep(600);
+  await mob.getByRole("button", { name: "Open command palette" }).tap();
+  await sleep(700);
+  const cmdkTouch = await mob.evaluate(() => {
+    const vis = sel => [...document.querySelectorAll(sel)].some(e => e.getClientRects().length > 0);
+    const i = document.querySelector(".mochi-cmdk input");
+    return { esc: vis(".mochi-cmdk__esc"), sc: vis(".mochi-cmdk__sc"), cap: i.getAttribute("autocapitalize"), cor: i.getAttribute("autocorrect") };
+  });
+  check("paleta en táctil: sin teclas a la vista y sin mayúsculas ni correcciones", !cmdkTouch.esc && !cmdkTouch.sc && cmdkTouch.cap === "off" && cmdkTouch.cor === "off", JSON.stringify(cmdkTouch));
   await mob.context().close();
 
   // --- modo desarrollo

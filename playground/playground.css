@@ -74,12 +74,13 @@ a { color: inherit; }
   white-space: nowrap;
   transition: background-color 120ms linear, color 120ms linear;
 }
-.nav a:not(.nav__brand):hover { background: color-mix(in srgb, var(--mochi-on-canvas) 6%, transparent); }
+/* con ratón (en táctil se quedaría pegado tras el toque); la página actual no cambia */
+@media (hover: hover) { .nav a:not(.nav__brand, [aria-current="page"]):hover { background: color-mix(in srgb, var(--mochi-on-canvas) 6%, transparent); } }
 .nav a[aria-current="page"] { background: var(--mochi-solid); color: var(--mochi-on-solid); }
 .nav a:focus-visible,
 .nav-panel a:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 2px; }
 /* la misma lista dentro del panel lateral (móvil), sobre la superficie */
-.nav-panel a:hover { background: color-mix(in srgb, var(--mochi-on-surface) 6%, transparent); }
+@media (hover: hover) { .nav-panel a:not([aria-current="page"]):hover { background: color-mix(in srgb, var(--mochi-on-surface) 6%, transparent); } }
 .nav-panel a[aria-current="page"] { background: var(--mochi-fill); color: var(--mochi-on-fill); }
 .nav-panel .nav__title { color: var(--mochi-on-surface-muted); }
 .nav-panel__theme { flex: 1; }
@@ -117,7 +118,7 @@ a { color: inherit; }
 .spec.wide { grid-column: span 2; }
 .spec h2 { display: flex; align-items: center; gap: 8px; margin: 0; font: var(--mochi-text-label); color: var(--mochi-on-canvas-muted); }
 .spec h2 a { text-decoration: none; }
-.spec h2 a:hover { color: var(--mochi-on-canvas); text-decoration: underline; text-underline-offset: 3px; }
+@media (hover: hover) { .spec h2 a:hover { color: var(--mochi-on-canvas); text-decoration: underline; text-underline-offset: 3px; } }
 .spec__hint { max-width: 70ch; margin: -6px 0 0; font: var(--mochi-text-label); color: var(--mochi-on-canvas-muted); }
 .stage { flex: 1; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
 .stage.col { flex-direction: column; }
@@ -159,7 +160,7 @@ a { color: inherit; }
 .task-list > li + li { margin-top: 0; }
 .task { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; padding: 12px 10px 12px 18px; border-radius: 9999px; background: var(--mochi-surface); box-shadow: var(--mochi-shadow-surface); }
 .task__remove { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: var(--mochi-on-surface-muted); cursor: pointer; }
-.task__remove:hover { background: var(--mochi-surface-border); color: var(--mochi-on-surface); }
+@media (hover: hover) { .task__remove:hover { background: var(--mochi-surface-border); color: var(--mochi-on-surface); } }
 .task__remove:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 1px; }
 .autoheight-card { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; width: 100%; max-width: 460px; padding: 20px; border-radius: 28px; background: var(--mochi-surface); box-shadow: var(--mochi-shadow-surface); }
 .autoheight-card p { margin: 0 0 10px; color: var(--mochi-on-surface-muted); }
@@ -187,7 +188,7 @@ a { color: inherit; }
 .avatar-button:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 3px; }
 .drawer-nav { display: flex; flex-direction: column; gap: 2px; margin: 0 -12px; }
 .drawer-nav__link { display: flex; align-items: center; height: 44px; padding: 0 12px; border: 0; border-radius: var(--mochi-radius-sm); background: transparent; color: var(--mochi-on-surface); font: var(--mochi-text-body-lg); text-align: left; cursor: pointer; }
-.drawer-nav__link:hover { background: var(--mochi-surface-border); }
+@media (hover: hover) { .drawer-nav__link:hover { background: var(--mochi-surface-border); } }
 .drawer-nav__link[aria-current="page"] { background: var(--mochi-fill); color: var(--mochi-on-fill); }
 .drawer-nav__link:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: -2px; }
 .drawer-note { margin: 0; padding: 12px 0; border-top: 1px solid var(--mochi-surface-border); color: var(--mochi-on-surface-muted); }
@@ -218,7 +219,8 @@ a { color: inherit; }
 /* ---------------------------------------------------------------- pantallas estrechas */
 
 @media (max-width: 860px) {
-  .site { grid-template-columns: minmax(0, 1fr); }
+  /* con la página más corta que la pantalla, el sobrante va abajo (no a la fila de la cabecera) */
+  .site { grid-template-columns: minmax(0, 1fr); align-content: start; }
   .nav { position: static; height: auto; padding: 16px 16px 8px; border-right: 0; }
   .nav__brand { margin: 0 0 10px; }
   /* los enlaces y el tema van en el panel lateral, que abre el botón de menú */

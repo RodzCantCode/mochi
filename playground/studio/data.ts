@@ -115,9 +115,24 @@ export function ago(minutes: number): string {
 /** Portada: un degradado apagado del tono del proyecto. */
 export const cover = (hue: number) => `linear-gradient(135deg, hsl(${hue} 32% 72%), hsl(${hue} 26% 44%))`;
 
-/** Escuchas de ejemplo para la tarjeta de estadísticas. */
+/** Escuchas de ejemplo para la tarjeta de estadísticas (la base; cada proyecto la varía). */
 export const PLAYS = {
   day: { total: 1_284, delta: "+6.2%", data: ["9", "11", "13", "15", "17", "19", "21", "23"].map((h, i) => ({ label: `${h}:00`, value: [40, 62, 88, 120, 150, 210, 260, 180][i]! })) },
   week: { total: 8_912, delta: "+11.8%", data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => ({ label: d, value: [980, 1120, 1040, 1310, 1570, 1720, 1172][i]! })) },
   month: { total: 36_450, delta: "+24.5%", data: [5.1, 5.8, 6.4, 6.1, 7.3, 8.8, 9.6, 9.1, 10.4, 11.2].map((v, i) => ({ label: `Sep ${1 + i * 3}`, value: v * 100 })) },
 };
+
+export type PlaysRange = keyof typeof PLAYS;
+
+/**
+ * Las escuchas de un proyecto: la base escalada y con su propia forma, siempre igual para el
+ * mismo proyecto (sale de su id), para que cada uno tenga sus cifras.
+ */
+export function playsFor(id: string, range: PlaysRange) {
+  const seed = [...id].reduce((n, c) => (n * 31 + c.charCodeAt(0)) % 9973, 7);
+  const scale = 0.35 + (seed % 97) / 60;
+  const base = PLAYS[range];
+  const data = base.data.map((d, i) => ({ label: d.label, value: Math.round(d.value * scale * (1 + 0.22 * Math.sin(i * 1.3 + seed))) }));
+  const change = ((seed * 7) % 260) / 10 + 1.5;
+  return { total: Math.round(base.total * scale), delta: `+${change.toFixed(1)}%`, data };
+}

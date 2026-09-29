@@ -28,7 +28,8 @@
 }
 .nav .studio-links a:not([aria-current="page"]) { color: var(--mochi-on-canvas); }
 .nav .studio-links a { justify-content: flex-start; }
-.studio-links a:hover { background: color-mix(in srgb, var(--mochi-on-surface) 6%, transparent); }
+/* con ratón (en táctil se quedaría pegado tras el toque); la página actual no cambia */
+@media (hover: hover) { .studio-links a:not([aria-current="page"]):hover { background: color-mix(in srgb, var(--mochi-on-surface) 6%, transparent); } }
 .studio-links a[aria-current="page"] { background: var(--mochi-fill); color: var(--mochi-on-fill); }
 .studio-links a:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 2px; }
 .studio-links__count { margin-left: auto; font: var(--mochi-text-caption); font-variant-numeric: tabular-nums; opacity: 0.6; }
@@ -53,7 +54,7 @@
   color: var(--mochi-on-canvas-muted);
   text-decoration: none;
 }
-.studio-back:hover { color: var(--mochi-on-canvas); }
+@media (hover: hover) { .studio-back:hover { color: var(--mochi-on-canvas); } }
 .studio-back:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 3px; }
 .studio-back__icon { transform: rotate(180deg); }
 .studio-small { font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); }
@@ -155,6 +156,8 @@
 
 .studio-accordion p { margin: 0; }
 .studio-share { width: 280px; max-width: 100%; }
+/* en móvil el panel es una hoja: ocupa su ancho */
+.mochi-dialog .studio-share { width: auto; }
 .studio-share__link { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border-radius: 9999px; background: var(--mochi-canvas); }
 .studio-share__url { flex: 1; min-width: 0; overflow: hidden; font: var(--mochi-text-label); text-overflow: ellipsis; white-space: nowrap; }
 

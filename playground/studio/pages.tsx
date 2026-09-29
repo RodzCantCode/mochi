@@ -46,7 +46,7 @@ import {
   type MenuEntry,
 } from "../../src/index.js";
 import { wait } from "../demos.js";
-import { GENRES, PLAYS, STATUS_LABEL, ago, cover, newId, type Project, type Status } from "./data.js";
+import { GENRES, STATUS_LABEL, ago, cover, newId, playsFor, type PlaysRange, type Project, type Status } from "./data.js";
 import { go, useStudio } from "./state.js";
 
 // ---------------------------------------------------------------------------------------
@@ -357,8 +357,8 @@ const ACTIVITY = [
 const COMMENTS: Record<Project["comments"], string> = { everyone: "Anyone with the link", team: "Only the team", nobody: "Nobody" };
 
 function Overview({ p }: { p: Project }) {
-  const [range, setRange] = useState<keyof typeof PLAYS>("week");
-  const series = PLAYS[range];
+  const [range, setRange] = useState<PlaysRange>("week");
+  const series = playsFor(p.id, range);
   const length = p.tracks.reduce((n, t) => n + t.seconds, 0);
   return (
     <div className="studio-overview">
@@ -369,7 +369,7 @@ function Overview({ p }: { p: Project }) {
         delta={series.delta}
         data={series.data}
         range={range}
-        onRangeChange={r => setRange(r as keyof typeof PLAYS)}
+        onRangeChange={r => setRange(r as PlaysRange)}
         ranges={[
           { value: "day", label: "Day" },
           { value: "week", label: "Week" },
