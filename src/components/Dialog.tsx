@@ -126,8 +126,10 @@ function Panel({
   const to: Rect = sheet
     ? { x: EDGE, y: viewTop + viewH - EDGE - H, w: W, h: H, r: RADIUS }
     : { x: Math.round((vp.w - W) / 2), y: viewTop + Math.max(24, Math.round((viewH - H) * 0.44)), w: W, h: H, r: RADIUS };
+  // la hoja sale y entra por debajo de la pantalla entera, no de la parte que deja el teclado:
+  // si se cierra con el teclado abierto, baja hasta salir aunque el teclado se vaya después
   const from: Rect = sheet
-    ? { ...to, y: viewTop + viewH + EDGE }
+    ? { ...to, y: Math.max(viewTop + viewH, vp.h) + EDGE }
     : grows
       ? originNow!.rect
       : { x: to.x + to.w * 0.02, y: to.y + 10, w: to.w * 0.96, h: to.h * 0.96, r: RADIUS };
@@ -152,6 +154,8 @@ function Panel({
   const surfaceColor = useRef<string | null>(null);
   const toRef = useRef(to);
   toRef.current = to;
+  // la ventana ya llegó a su sitio desde el botón (a partir de ahí el contenido va con la forma)
+  const reached = useRef(false);
 
   const handle = useSprings<keyof Values>(
     {
@@ -180,11 +184,17 @@ function Panel({
     const el = shape.current;
     if (!el || !measured) return;
     const T = toRef.current;
+    if (!open) reached.current = false;
+    else if (nearRect(v, T)) reached.current = true;
+    // el contenido: mientras crece desde el botón se queda en su sitio final y la forma lo va
+    // descubriendo; en el resto (la hoja, y la ventana ya abierta que se recoloca porque sale el
+    // teclado o cambia lo de dentro) va pegado a la forma, arriba y centrado, y no salta
+    const anchor = grows && !reached.current ? T : { ...T, x: v.x + (v.w - T.w) / 2, y: v.y };
     // cuánto ha crecido (0 = botón, 1 = ventana): la sombra grande aparece con él
     const q = grows ? clamp01((v.w - from.w) / Math.max(1, T.w - from.w)) : 1;
     const tint = grows && origin?.background && origin.background !== surfaceColor.current ? origin.background : null;
     paintGrow({ shape: el, shadow: shadow.current, reveal: reveal.current, ghost: ghostBox.current, content: contentEl }, v, {
-      to: T,
+      to: anchor,
       tint,
       shadow: sheet ? 1 : grows ? q : clamp01(v.o),
       fadeContent: !sheet,

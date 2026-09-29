@@ -7,8 +7,10 @@
 > independientes, y panel flotante, panel lateral y lista que se reordena, hechos y probados;
 > todo subido a GitHub. Después, Studio, una app de demostración en el sitio de pruebas que los
 > usa todos juntos; todo subido a GitHub. Tras probarlo el usuario, tres arreglos de
-> movimiento y el selector de tema movido a la navegación; todo subido. Sigue la pasada final de
-> repaso y pulido (ver «Próximos pasos»). Lo pendiente de la librería en general está en el
+> movimiento y el selector de tema movido a la navegación; todo subido. Después, un repaso en
+> el simulador de iOS (iPhone y iPad, claro y oscuro, grabado) con sus hallazgos en «Bloqueos»,
+> que se arreglan uno a uno; hecho y subido el grupo de hoja y teclado. Sigue la pasada final
+> de repaso y pulido (ver «Próximos pasos»). Lo pendiente de la librería en general está en el
 > [README](../../../README.md#pendiente); aquí solo lo de esta tarea.
 
 ## Objetivo
@@ -108,6 +110,18 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   mientras queda negro, en todo lo que crece desde un botón de otro tono (ventana, panel
   flotante, menú y selector). Además, las páginas de Studio cambian con `Swap` (la vieja sale
   y la nueva entra con desenfoque), como pidió el usuario.
+- **Hoja y teclado (hecho y subido, 2026-09-29):** cuatro fallos encontrados en el simulador
+  de iOS, con una causa común: el contenido de `Dialog` se colocaba en su sitio final y la forma
+  lo iba descubriendo, también en la hoja y al recolocarse por el teclado, así que al salir el
+  teclado el contenido saltaba y volvía, y al cerrar con el teclado abierto se quedaba un panel
+  vacío que desaparecía a media pantalla. Ahora el contenido va pegado a la forma salvo mientras
+  la ventana crece desde el botón; la hoja sale por debajo de la pantalla entera (no de lo que
+  deja el teclado); la cabecera y los botones no se desplazan y `.mochi-dialog__body` se
+  desplaza si no cabe (antes se desplazaba todo y los botones quedaban fuera y asomando); y
+  `useScrollLock` devuelve la página a donde estaba al soltar (Safari de iOS la mueve con el
+  teclado aunque esté bloqueada; antes quedaba unos 200 puntos más abajo). Efecto visible
+  además: la hoja sube, se arrastra y baja con su contenido (antes el contenido se quedaba
+  quieto y la hoja lo descubría).
 - **Selector de tema en la navegación (hecho y subido, 2026-09-29):** a petición del usuario
   («molesta tan a la vista»), sale de la barra superior. En escritorio va abajo del todo de la
   columna lateral, fijo aunque la lista se desplace; en móvil, abajo del panel lateral, que
@@ -228,7 +242,13 @@ El 2026-09-29, tras el último cambio de código:
 - `npm run typecheck`: sin errores.
 - `npm test`: 80/80 (además de lo anterior: renderizado en servidor de casilla, radio,
   progreso, esqueleto, paneles y lista, con sus roles, estados y valores de formulario).
-- `npm run test:e2e`: 230/230 en Chromium. Cuatro, del selector de tema: abajo de la columna
+- `npm run test:e2e`: 234/234 en Chromium. Cuatro, de hoja y teclado (con el teclado simulado
+  cambiando la parte visible de la pantalla): el título va a la misma distancia del borde de la
+  hoja en cada fotograma, título y botones quedan dentro con lo de en medio desplazable, al
+  cerrar baja hasta salir por abajo, y la página vuelve a su sitio. Comprobado además en el
+  simulador de iOS (iPhone 17, grabado a 60 fotogramas por segundo): sube entera con el
+  teclado, sin salto, y al cerrar baja entera; la página queda donde estaba. Y grabado en
+  escritorio: la ventana sigue creciendo desde el botón igual que antes. Cuatro, del selector de tema: abajo de la columna
   lateral y fuera de la barra en escritorio; en móvil, en «Lista», sin tira de enlaces, el menú
   abre el panel con los componentes y el tema abajo, y elegir uno lo abre y cierra el panel (la
   prueba del menú táctil pulsa ahora el logo, porque la tira ya no está). Capturas de la
@@ -280,7 +300,45 @@ componentes nuevos.
 
 ## Bloqueos
 
-Esperan decisión del usuario:
+Esperan decisión del usuario (encontrado en el simulador de iOS, 2026-09-29):
+- **El contenido baja de golpe cuando la página es más corta que la pantalla (móvil).** En
+  pantalla estrecha, `.site` es una rejilla de dos filas con `min-height: 100vh`, y el sobrante
+  va a la fila de la cabecera. Caso: en WebKit a 402×874, un proyecto → «Settings» → cerrar
+  «General»: la fila de la cabecera mide 228 px y la cabecera 120; el contenido baja 108 px.
+  Arreglo propuesto: `align-content: start` en `.site` en pantalla estrecha.
+- **El efecto de pasar el ratón se queda pegado tras un toque en iPhone.** 7 de las 8 reglas
+  `:hover` de `components.css` no van dentro de `@media (hover: hover)` (cabecera del acordeón,
+  ver contraseña, controles del reproductor, X del panel lateral, asa de la lista, acción del
+  aviso); también las de los enlaces del sitio. Caso: en el simulador, tocar «General» lo deja
+  gris hasta tocar otra cosa. Arreglo propuesto: llevarlas a `@media (hover: hover)`.
+- **Un `Button` que cambia de variante se queda con el color de texto de la primera.** El texto
+  va en una capa de `Swap` que congela su color al crearse, y la capa solo se renueva al cambiar
+  `status`, no al cambiar de tono. Caso: en Studio, «Filters» pasa de `surface` a `solid` al
+  filtrar y su texto sigue en `on-surface`: negro sobre negro, sin texto ni icono a la vista.
+  Pasa en Chromium y WebKit, en móvil y escritorio. Arreglo propuesto: que la capa viva siga
+  al tono actual (solo las que salen conservan el suyo).
+- **La paleta ⌘K en táctil enseña teclas que no hay:** «esc» junto al buscador y «↵» en el
+  resultado marcado, y el botón «Search ⌘K» de Studio también enseña ⌘K. Además, el buscador no
+  lleva `autoCapitalize="off"` ni `autoCorrect="off"`: iOS pone la primera en mayúscula y
+  propone correcciones. Visto en el simulador.
+- **Studio (del sitio, no de la librería): la caja de «Share project» mide 280 px fijos** y en
+  la hoja de móvil deja un hueco grande a la derecha; debería ocupar el ancho de la hoja.
+- **Modo oscuro, para decidir (no es un fallo):** dentro de una hoja o ventana, el botón
+  principal («Done», «Create») es `solid` #262624 sobre `surface` #1B1B1A: el texto se lee,
+  pero la forma del botón casi no se distingue del fondo. Visto en el simulador.
+- **Sitio: al cambiar de tema en el iPhone, las franjas de Safari (arriba, tras la hora, y
+  abajo, tras su barra) se quedan del tema anterior** hasta que te mueves por la página. No hay
+  `<meta name="theme-color">`; ponerlo y cambiarlo con el tema lo arreglaría.
+- **Studio: todos los proyectos enseñan las mismas estadísticas** (8,912 escuchas, +11.8 %):
+  los datos de ejemplo no dependen del proyecto.
+- **Tableta en vertical (iPad Air 11", 820 puntos):** usa la estructura de móvil (el corte está
+  en 860 px), así que el selector «Lista | Demo» se estira 820 puntos y, con la página corta,
+  el hueco del primer punto se ve aún mayor (unos 150 puntos). Propuesta: bajar el corte para
+  que la tableta en vertical tenga columna lateral, o limitar el ancho del selector. En
+  horizontal (1180×820, comprobado con WebKit en Playwright, no en el simulador) va con columna
+  lateral y sin fallos a la vista; en el simulador girado, en modo oscuro y grabado, lo
+  mismo: panel de filtros, cambio de página, pestañas y acordeón sin cortes ni saltos (salvo
+  lo del teclado, arriba).
 - Si subir la versión a 0.2.0 antes de subirlo.
 - **Filo de la casilla y el radio sin marcar.** El planteamiento pedía `surface-border-strong`,
   y así está, pero no llega a 3:1 (WCAG 1.4.11): 1,4:1 en claro y 1,8:1 en oscuro. Propuesta:

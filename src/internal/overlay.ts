@@ -8,7 +8,7 @@ import { useIsoLayoutEffect } from "./useIsoLayoutEffect.js";
 // Desplazamiento bloqueado (con contador: varias capas a la vez)
 
 let locks = 0;
-let saved: { overflow: string; paddingRight: string } | null = null;
+let saved: { overflow: string; paddingRight: string; x: number; y: number } | null = null;
 
 export function useScrollLock(active: boolean) {
   useEffect(() => {
@@ -17,7 +17,7 @@ export function useScrollLock(active: boolean) {
     if (locks++ === 0) {
       // sin barra de desplazamiento la página se ensancharía: se compensa su hueco
       const bar = window.innerWidth - root.clientWidth;
-      saved = { overflow: root.style.overflow, paddingRight: root.style.paddingRight };
+      saved = { overflow: root.style.overflow, paddingRight: root.style.paddingRight, x: window.scrollX, y: window.scrollY };
       root.style.overflow = "hidden";
       if (bar > 0) root.style.paddingRight = `${bar}px`;
     }
@@ -25,6 +25,9 @@ export function useScrollLock(active: boolean) {
       if (--locks === 0 && saved) {
         root.style.overflow = saved.overflow;
         root.style.paddingRight = saved.paddingRight;
+        // Safari de iOS desplaza la página al sacar el teclado aunque esté bloqueada: al soltar,
+        // vuelve a donde estaba
+        if (window.scrollX !== saved.x || window.scrollY !== saved.y) window.scrollTo(saved.x, saved.y);
         saved = null;
       }
     };

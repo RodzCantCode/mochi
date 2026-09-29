@@ -1143,7 +1143,59 @@ try {
   await sleep(900);
   const rs2 = await box(rn.getByRole("dialog", { name: "Rename project" }));
   check("hoja: al irse el teclado vuelve abajo", Math.abs(rs2.y + rs2.height - 772) < 1, `acaba en ${(rs2.y + rs2.height).toFixed(0)}`);
+  await rn.keyboard.press("Escape");
+  await sleep(900);
   await rn.context().close();
+
+  // teclado en Studio: el título va pegado al borde de arriba de la hoja en cada fotograma (no
+  // salta) y, si no cabe, título y botones quedan dentro y se desplaza lo de en medio
+  const kb = await withVisual();
+  await kb.goto(URL_ + "#/demo");
+  await sleep(1800);
+  await kb.getByRole("button", { name: "New project" }).first().click();
+  await sleep(1000);
+  const titleGap = () => kb.evaluate(() => {
+    const d = document.querySelector('[role="dialog"]').getBoundingClientRect();
+    return document.querySelector('[role="dialog"] .mochi-dialog__title').getBoundingClientRect().top - d.top;
+  });
+  const gap0 = await titleGap();
+  const gaps = sampleFrames(kb, () => {
+    const d = document.querySelector('[role="dialog"]').getBoundingClientRect();
+    return document.querySelector('[role="dialog"] .mochi-dialog__title').getBoundingClientRect().top - d.top;
+  }, 700);
+  await setVisual(kb, 0, 360);
+  const gs = await gaps;
+  check("hoja con teclado: el contenido sube con la hoja, sin saltos", gs.every(g => Math.abs(g - gap0) < 1), `título a ${Math.min(...gs).toFixed(0)}–${Math.max(...gs).toFixed(0)} px del borde (en reposo ${gap0.toFixed(0)})`);
+  await sleep(600);
+  const kbInside = await kb.evaluate(() => {
+    const d = document.querySelector('[role="dialog"]').getBoundingClientRect();
+    const all = [...document.querySelectorAll('[role="dialog"] .mochi-dialog__title, [role="dialog"] .mochi-dialog__actions button')].map(e => e.getBoundingClientRect());
+    const body = document.querySelector('[role="dialog"] .mochi-dialog__body');
+    return all.every(b => b.top >= d.top - 0.5 && b.bottom <= d.bottom + 0.5) && d.bottom <= 360.5 && body.scrollHeight > body.clientHeight;
+  });
+  check("hoja con teclado: título y botones a la vista; se desplaza lo de en medio", kbInside);
+  // se cierra con el teclado abierto: baja entera hasta salir por abajo de la pantalla
+  const exits = sampleFrames(kb, () => { const d = document.querySelector('[role="dialog"]'); return d ? d.getBoundingClientRect().top : null; }, 900);
+  await kb.getByRole("button", { name: "Cancel" }).click();
+  await sleep(80);
+  await setVisual(kb, 0, 780);
+  const ex = (await exits).filter(y => y !== null);
+  check("hoja con teclado: al cerrar baja hasta salir por abajo", ex.length > 2 && ex[ex.length - 1] >= 770, `último borde de arriba en ${ex[ex.length - 1]?.toFixed(0)}`);
+  await kb.context().close();
+
+  // iOS desplaza la página con el teclado aunque esté bloqueada: al cerrar vuelve a su sitio
+  const sc = await open({ viewport: { width: 390, height: 780 } });
+  await sc.goto(URL_ + "#/dialog");
+  await sleep(600);
+  await sc.getByRole("button", { name: "Rename" }).click();
+  await sleep(800);
+  const scY0 = await sc.evaluate(() => window.scrollY);
+  await sc.evaluate(y => window.scrollTo(0, y + 260), scY0);
+  await sc.keyboard.press("Escape");
+  await sleep(900);
+  const scY1 = await sc.evaluate(() => window.scrollY);
+  check("hoja: al cerrarse, la página vuelve a donde estaba", scY1 === scY0, `${scY0} → ${scY1}`);
+  await sc.context().close();
 
   // --- hoja en pantalla de móvil
   const mob = await open({ viewport: { width: 390, height: 780 }, hasTouch: true, isMobile: true });
