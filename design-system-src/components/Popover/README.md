@@ -16,7 +16,7 @@ Para algo pequeño que se consulta o se ajusta sin salir de la página: filtros,
 ## Reglas
 
 - Panel `surface` con `radius-lg` y `shadow-overlay`; relleno de 18 × 20 px. Dentro, lo que sería superficie blanca (campos, botones `surface`) va en el tono del lienzo, como en el diálogo.
-- Al abrir, la forma del botón crece hasta el panel con `morph`; si el botón era de otro tono, el nuevo crece desde el centro (sin pasar por gris); el contenido entra 80 ms después con `fadeIn` y desenfoque. Mientras está abierto, el botón se oculta: el panel es él. Al cerrar, vuelve a encogerse en el botón.
+- Al abrir, la forma del botón crece hasta el panel con `morph`; si el botón era de otro tono, el nuevo crece desde el centro (sin pasar por gris) con la forma ligeramente desenfocada hasta que lo cubre; el contenido entra 80 ms después con `fadeIn` y desenfoque. Mientras está abierto, el botón se oculta: el panel es él. Al cerrar, vuelve a encogerse en el botón.
 - Se coloca junto al botón (6 px) en el lado pedido y se da la vuelta si no cabe; si es más alto que el espacio, se desplaza dentro.
 - No es modal: el foco entra en el primer control; Tab al salir por el final lo cierra y sigue por la página, y Mayús+Tab al salir por el principio vuelve al botón. Esc o un toque fuera lo cierran (sin que el toque atraviese a lo de debajo) y el foco vuelve al botón.
 - En pantallas de menos de 640 px es la hoja de `Dialog`: sube desde abajo y se cierra arrastrándola.

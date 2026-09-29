@@ -53,6 +53,18 @@ export function useLiveHeight(el: HTMLElement | null, onResize?: (height: number
   return h;
 }
 
+/**
+ * Marca de «un muelle está moviendo mi alto» (un desplegable que se abre, un AutoHeight que se
+ * adapta). Un AutoHeight de fuera que la ve dentro sigue ese crecimiento al momento en vez de
+ * animarlo otra vez: un segundo muelle iría detrás y recortaría lo de dentro (esquinas y sombras).
+ */
+export const SIZING_ATTR = "data-mochi-sizing";
+export function markSizing(el: HTMLElement, on: boolean) {
+  if (on === el.hasAttribute(SIZING_ATTR)) return;
+  if (on) el.setAttribute(SIZING_ATTR, "");
+  else el.removeAttribute(SIZING_ATTR);
+}
+
 /** Relleno y borde verticales de un elemento (con box-sizing: border-box, su alto los incluye). */
 export function verticalChrome(el: HTMLElement): number {
   const cs = getComputedStyle(el);

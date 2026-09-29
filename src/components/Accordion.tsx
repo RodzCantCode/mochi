@@ -19,7 +19,7 @@ import {
 import { useSprings } from "../motion/useSprings.js";
 import { springs, swap as SWAP } from "../tokens.js";
 import { useControllable } from "../internal/useControllable.js";
-import { useLiveHeight } from "../internal/useElementSize.js";
+import { markSizing, useLiveHeight } from "../internal/useElementSize.js";
 import { useIsoLayoutEffect } from "../internal/useIsoLayoutEffect.js";
 import { cx } from "../internal/cx.js";
 import { ChevronDownIcon } from "../icons/index.js";
@@ -89,9 +89,12 @@ function Section({ title, icon, open, onOpenChange, disabled, headingLevel, clas
         if (open && h !== null && Math.abs(hv - h) < 0.5) {
           rg.style.height = "";
           rg.style.overflow = "";
+          markSizing(rg, false);
         } else {
           rg.style.height = `${Math.max(0, hv).toFixed(2)}px`;
           rg.style.overflow = "hidden";
+          // cerrada y quieta no se mueve: solo se marca mientras abre o cierra
+          markSizing(rg, open || hv > 0.5);
         }
       }
       if (inner) {

@@ -274,6 +274,8 @@ export function paintGrow(
     e.style.borderRadius = `${r.toFixed(2)}px`;
   }
   shape.style.opacity = (opts.opacity ?? 1).toFixed(4);
+  const sb = opts.tint ? growBlur(v.p) : 0;
+  shape.style.filter = sb > 0.05 ? `blur(${sb.toFixed(2)}px)` : "";
   // un foco dentro antes de crecer (autoFocus) puede haber desplazado la forma, que recorta
   if (shape.scrollTop) shape.scrollTop = 0;
   if (shape.scrollLeft) shape.scrollLeft = 0;
@@ -308,6 +310,15 @@ export function paintGrow(
     ghost.style.filter = b > 0.05 ? `blur(${b.toFixed(2)}px)` : "";
   }
 }
+
+/**
+ * Desenfoque de la forma mientras crece desde un botón de otro tono (negro → blanco): sin él, el
+ * aro del tono viejo que rodea al nuevo tiene bordes muy marcados. Sigue a la copia del tono
+ * nuevo (p, de 0 a 1,06): nace en el botón sin desenfoque, sube deprisa y se va mientras el tono
+ * nuevo acaba de cubrirlo todo. Al cerrar, igual al revés.
+ */
+const GROW_BLUR = 6;
+const growBlur = (p: number) => GROW_BLUR * Math.min(1, Math.max(0, p) / 0.15) * clamp01((1.06 - p) / 0.26);
 
 export const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 export const nearRect = (v: { x: number; y: number; w: number; h: number }, r: Rect, eps = 0.5) =>

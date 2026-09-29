@@ -7,7 +7,6 @@
 .mode-switch .mochi-seg { width: 100%; }
 
 .bar .studio-bar { display: flex; align-items: center; gap: 10px; margin-right: auto; }
-.studio-bar__menu { display: none; }
 
 .studio-links { display: flex; flex-direction: column; gap: 18px; }
 .studio-links__group { display: flex; flex-direction: column; gap: 2px; }
@@ -220,9 +219,7 @@
 @media (max-width: 860px) {
   .mode-switch { margin: 0 0 10px; }
   .nav[data-mode="demo"] .studio-links { display: none; }
-  .bar:has(.studio-bar) { flex-wrap: wrap; gap: 10px; }
   .bar .studio-bar { flex: 1; }
-  .studio-bar__menu { display: inline-flex; }
   .studio-dock { left: 0; }
 }
 @media (max-width: 480px) {

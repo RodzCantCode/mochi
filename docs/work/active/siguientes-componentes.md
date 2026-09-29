@@ -6,8 +6,9 @@
 > barra y anillo de progreso y esqueleto de carga, con las correcciones de tres revisiones
 > independientes, y panel flotante, panel lateral y lista que se reordena, hechos y probados;
 > todo subido a GitHub. Después, Studio, una app de demostración en el sitio de pruebas que los
-> usa todos juntos; todo subido a GitHub. Sigue la pasada final de repaso y pulido (ver
-> «Próximos pasos»). Lo pendiente de la librería en general está en el
+> usa todos juntos; todo subido a GitHub. Tras probarlo el usuario, tres arreglos de
+> movimiento y el selector de tema movido a la navegación; todo subido. Sigue la pasada final de
+> repaso y pulido (ver «Próximos pasos»). Lo pendiente de la librería en general está en el
 > [README](../../../README.md#pendiente); aquí solo lo de esta tarea.
 
 ## Objetivo
@@ -96,6 +97,23 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   ancho de la pantalla (el usuario lo pidió el 2026-09-29): en «Lista», más tarjetas por fila y
   las secciones de cada componente lado a lado si caben; en Studio, desde 1200 px, la lista de
   proyectos en columnas, el resumen y la ayuda a dos columnas y los ajustes en rejilla.
+- **Arreglos de movimiento tras probar Studio (hechos y subidos, 2026-09-29):** el usuario
+  mandó un vídeo con dos fallos. (1) Al abrir una sección del acordeón de ajustes, dentro de
+  unas pestañas, la tarjeta perdía por abajo las esquinas redondas y la sombra: el contenedor
+  de las pestañas (`AutoHeight`) volvía a animar ese crecimiento con su propio muelle, iba
+  detrás y recortaba. Ahora lo que anima su alto (acordeón, `AutoHeight`, mensaje del campo de
+  texto) lleva la marca `data-mochi-sizing` mientras se mueve, y un `AutoHeight` que la ve
+  dentro sigue el cambio al momento. (2) La ventana «New project», al crecer desde el botón
+  negro, tenía un aro negro de bordes muy marcados; ahora la forma va desenfocada (hasta 6 px)
+  mientras queda negro, en todo lo que crece desde un botón de otro tono (ventana, panel
+  flotante, menú y selector). Además, las páginas de Studio cambian con `Swap` (la vieja sale
+  y la nueva entra con desenfoque), como pidió el usuario.
+- **Selector de tema en la navegación (hecho y subido, 2026-09-29):** a petición del usuario
+  («molesta tan a la vista»), sale de la barra superior. En escritorio va abajo del todo de la
+  columna lateral, fijo aunque la lista se desplace; en móvil, abajo del panel lateral, que
+  ahora abre el botón de menú en los dos modos (en «Lista» sustituye a la tira horizontal de
+  enlaces; lo eligió el usuario). El panel lateral y el menú son del sitio (`playground/main.tsx`),
+  no de Studio.
 - **Tercera revisión independiente** (dos revisores con contexto limpio: comportamiento con
   React 18.2, 18.3 y 19, y accesibilidad, estilos y documentación): 18 fallos distintos con caso
   reproducible (dos los encontraron los dos), todos corregidos salvo el contraste del filo (ver
@@ -113,6 +131,14 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   funcionan.
 
 ## Decisiones tomadas
+
+- **Motores y dispositivos (el usuario, 2026-09-29):** se prueba en Chromium (Chrome, Edge,
+  Android) y WebKit (Safari y todo el iPhone), no en Firefox, y en los tres tamaños: teléfono,
+  tableta y ordenador. Lo que un motor no permite se deja estar, sin inventos para forzarlo:
+  por ejemplo, en Safari de escritorio `Dialog` sin `origin` aparece con un fundido en vez de
+  crecer desde el botón, porque Safari no enfoca el botón al pulsarlo (en WebKit la ventana
+  está a su ancho final, 423 px, dos fotogramas después del clic; en Chromium, a 206 px y
+  creciendo).
 
 - Radix se decide pieza a pieza, con su peso delante; por defecto, componentes propios. El menú
   se hizo propio. Pesos (minificado y comprimido, sin React):
@@ -202,7 +228,19 @@ El 2026-09-29, tras el último cambio de código:
 - `npm run typecheck`: sin errores.
 - `npm test`: 80/80 (además de lo anterior: renderizado en servidor de casilla, radio,
   progreso, esqueleto, paneles y lista, con sus roles, estados y valores de formulario).
-- `npm run test:e2e`: 223/223 en Chromium. De Studio: el selector de modo, el esqueleto al
+- `npm run test:e2e`: 230/230 en Chromium. Cuatro, del selector de tema: abajo de la columna
+  lateral y fuera de la barra en escritorio; en móvil, en «Lista», sin tira de enlaces, el menú
+  abre el panel con los componentes y el tema abajo, y elegir uno lo abre y cierra el panel (la
+  prueba del menú táctil pulsa ahora el logo, porque la tira ya no está). Capturas de la
+  estructura nueva en Chromium y WebKit, escritorio y móvil, claro y oscuro. Tres, de los
+  arreglos de movimiento:
+  «New project» crece con los bordes desenfocados y llega nítido, abrir una sección de los
+  ajustes no recorta la tarjeta y cambiar de página funde una en otra. Además se grabaron
+  fotograma a fotograma (reloj falso de Playwright, una captura cada 1/60 s) la apertura y el
+  cierre del acordeón y de la ventana, el cambio de pestaña y el de página: sin recortes y sin
+  aro nítido en Chromium; en WebKit (el motor de Safari, instalado para Playwright el
+  2026-09-29), el acordeón y el cambio de página igual, y la ventana entra con un fundido (ver
+  «Decisiones tomadas»). La batería de pruebas sigue corriendo solo en Chromium. De Studio: el selector de modo, el esqueleto al
   cargar, buscar, filtrar, renombrar, borrar y deshacer, crear desde ⌘K, abrir un proyecto,
   reproducir, reordenar pistas, subir con progreso, compartir, editar en el panel lateral, la
   validación de los ajustes, la ayuda, volver a «Lista», la navegación en móvil sin desplazamiento
@@ -254,8 +292,11 @@ Esperan decisión del usuario:
 ## Próximos pasos
 
 1. Que el usuario pruebe en su iPhone el panel lateral (arrastre), la lista (asa en táctil),
-   Studio y el punto del check del anillo (ya arreglado).
-2. Pasada final de repaso y pulido (acordada con el usuario el 2026-09-29): una revisión
+   Studio con el menú nuevo y el punto del check del anillo (ya arreglado), y en Safari los
+   arreglos de movimiento.
+2. Pasada final de repaso y pulido (acordada con el usuario el 2026-09-29): pasar la batería de
+   pruebas en Chromium y WebKit y en teléfono, tableta y ordenador (hoy corre en Chromium, con
+   pantallas de ordenador y de teléfono; falta la de tableta); una revisión
    independiente con contexto limpio de los componentes sin revisar (panel flotante, panel
    lateral, lista) y de Studio como uso conjunto, probando también React 18 (las tres anteriores
    encontraron 13, 18 y 18 fallos reales); el filo de la casilla y el radio; las dos tareas

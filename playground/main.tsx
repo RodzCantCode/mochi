@@ -2,20 +2,23 @@
 // componente, con tema claro, oscuro o del sistema, y Studio, una app de demostración que los usa
 // juntos (selector «Lista | Demo»). `npm run dev` lo abre en http://localhost:5178. No forma
 // parte del paquete.
-import { StrictMode, useEffect, useRef, useState } from "react";
+import { StrictMode, useEffect, useRef, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import "../src/styles/tokens.css";
 import "../src/styles/components.css";
 import "./playground.css";
 import "./studio/studio.css";
 import {
+  Button,
   CommandPalette,
+  Drawer,
   FileIcon,
   PlusIcon,
   SaveIcon,
   SegmentedControl,
   SlidersIcon,
   Toaster,
+  Tooltip,
   UserPlusIcon,
   toast,
   useCommandK,
@@ -37,7 +40,8 @@ function readTheme() {
   }
 }
 
-function ThemePicker() {
+/** El tema elegido: se aplica a la página y se recuerda. */
+function useTheme() {
   const [theme, setTheme] = useState(readTheme);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -47,13 +51,18 @@ function ThemePicker() {
       /* sin almacenamiento: el tema no se recuerda */
     }
   }, [theme]);
+  return [theme, setTheme] as const;
+}
+
+/** «Light | Dark | System»: abajo de la columna lateral y, en móvil, abajo del panel lateral. */
+function ThemePicker({ theme, onChange }: { theme: string; onChange: (theme: string) => void }) {
   return (
     <div className="theme">
       <SegmentedControl
         aria-label="Theme"
         size="sm"
         value={theme}
-        onValueChange={setTheme}
+        onValueChange={onChange}
         options={[
           { value: "light", label: "Light" },
           { value: "dark", label: "Dark" },
@@ -79,7 +88,34 @@ function useRoute() {
   return r;
 }
 
-function Nav({ current, onMode }: { current: string; onMode: (demo: boolean) => void }) {
+/** Los componentes: en la columna lateral y, en móvil, dentro del panel lateral. */
+function ListLinks({ current, onNavigate }: { current: string; onNavigate?: () => void }) {
+  return (
+    <div className="nav__list">
+      <div className="nav__group">
+        <a href="#/" aria-current={current === "" ? "page" : undefined} onClick={onNavigate}>
+          Todos
+        </a>
+        <a href="#/colors" aria-current={current === "colors" ? "page" : undefined} onClick={onNavigate}>
+          Colores
+        </a>
+      </div>
+      {GROUPS.map(g => (
+        <div key={g} className="nav__group">
+          <span className="nav__title">{g}</span>
+          {PAGES.filter(p => p.group === g).map(p => (
+            <a key={p.id} href={`#/${p.id}`} aria-current={current === p.id ? "page" : undefined} onClick={onNavigate}>
+              {p.name}
+              {p.isNew ? <span className="nav__new">nuevo</span> : null}
+            </a>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Nav({ current, onMode, theme }: { current: string; onMode: (demo: boolean) => void; theme: ReactNode }) {
   const demo = isDemoRoute(current);
   return (
     <nav className="nav" aria-label={demo ? "Studio" : "Components"} data-mode={demo ? "demo" : "list"}>
@@ -88,31 +124,9 @@ function Nav({ current, onMode }: { current: string; onMode: (demo: boolean) => 
         Mochi
       </a>
       <ModeSwitch demo={demo} onChange={onMode} />
-      {demo ? (
-        <StudioLinks route={current} />
-      ) : (
-      <div className="nav__list">
-        <div className="nav__group">
-          <a href="#/" aria-current={current === "" ? "page" : undefined}>
-            Todos
-          </a>
-          <a href="#/colors" aria-current={current === "colors" ? "page" : undefined}>
-            Colores
-          </a>
-        </div>
-        {GROUPS.map(g => (
-          <div key={g} className="nav__group">
-            <span className="nav__title">{g}</span>
-            {PAGES.filter(p => p.group === g).map(p => (
-              <a key={p.id} href={`#/${p.id}`} aria-current={current === p.id ? "page" : undefined}>
-                {p.name}
-                {p.isNew ? <span className="nav__new">nuevo</span> : null}
-              </a>
-            ))}
-          </div>
-        ))}
-      </div>
-      )}
+      {demo ? <StudioLinks route={current} /> : <ListLinks current={current} />}
+      {/* abajo del todo y siempre a la vista, aunque la lista se desplace */}
+      <div className="nav__theme">{theme}</div>
     </nav>
   );
 }
@@ -170,7 +184,11 @@ function App() {
   const current = useRoute();
   const demo = isDemoRoute(current);
   const studio = useStudio();
+  const [theme, setTheme] = useTheme();
   const [open, setOpen] = useState(false);
+  // la navegación en móvil: un panel lateral con los enlaces y el tema abajo
+  const [navOpen, setNavOpen] = useState(false);
+  const closeNav = () => setNavOpen(false);
   // en «Demo», ⌘K abre la paleta de Studio
   useCommandK(() => !demo && setOpen(o => !o));
   // al cambiar de modo se vuelve a la última página de cada uno
@@ -190,11 +208,21 @@ function App() {
   ];
   return (
     <div className="site">
-      <Nav current={current} onMode={d => (location.hash = `#/${d ? lastDemo.current : lastList.current}`)} />
+      <Nav
+        current={current}
+        onMode={d => (location.hash = `#/${d ? lastDemo.current : lastList.current}`)}
+        theme={<ThemePicker theme={theme} onChange={setTheme} />}
+      />
       <main className="main">
-        <div className="bar">
+        <div className="bar" data-mode={demo ? "demo" : "list"}>
+          <Tooltip content="Menu">
+            <Button variant="surface" iconOnly aria-label="Open navigation" className="site-menu" onClick={() => setNavOpen(true)}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" aria-hidden="true">
+                <path d="M4.5 7.5h15M4.5 12h15M4.5 16.5h15" />
+              </svg>
+            </Button>
+          </Tooltip>
           {demo ? <StudioBar /> : null}
-          <ThemePicker />
         </div>
         {demo ? (
           <StudioMain route={current} />
@@ -208,6 +236,26 @@ function App() {
           <ComponentPage key={current} id={current} ctx={ctx} />
         )}
       </main>
+      <Drawer
+        open={navOpen}
+        onOpenChange={setNavOpen}
+        side="left"
+        width={300}
+        title={demo ? "Studio" : "Componentes"}
+        actions={
+          <div className="nav-panel__theme">
+            <ThemePicker theme={theme} onChange={setTheme} />
+          </div>
+        }
+      >
+        {demo ? (
+          <StudioLinks route={current} onNavigate={closeNav} />
+        ) : (
+          <div className="nav-panel">
+            <ListLinks current={current} onNavigate={closeNav} />
+          </div>
+        )}
+      </Drawer>
       {demo ? null : <CommandPalette open={open} onOpenChange={setOpen} commands={commands} />}
       {/* con el reproductor abajo, los avisos salen por encima de él */}
       <Toaster offset={demo && studio.playing ? 96 : 24} />

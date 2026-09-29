@@ -17,7 +17,7 @@ import {
 import { useSprings } from "../motion/useSprings.js";
 import { springs } from "../tokens.js";
 import { useControllable } from "../internal/useControllable.js";
-import { useElementSize } from "../internal/useElementSize.js";
+import { markSizing, useElementSize } from "../internal/useElementSize.js";
 import { mergeRefs } from "../internal/refs.js";
 import { cx } from "../internal/cx.js";
 import { AlertIcon, EyeIcon, EyeOffIcon } from "../icons/index.js";
@@ -106,7 +106,10 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
   const msgBox = useRef<HTMLDivElement>(null);
   const hasMessage = message !== undefined && message !== null && message !== false && message !== "";
   useSprings({ h: msgSize?.height ?? 0 }, springs.morph, ({ h }) => {
-    if (msgBox.current) msgBox.current.style.height = `${Math.max(0, h).toFixed(2)}px`;
+    const box = msgBox.current;
+    if (!box) return;
+    box.style.height = `${Math.max(0, h).toFixed(2)}px`;
+    markSizing(box, Math.abs(h - (msgSize?.height ?? 0)) >= 0.5);
   });
   const msgKey = !hasMessage ? "none" : showsError ? `e:${typeof error === "string" ? error : "node"}` : `d:${typeof description === "string" ? description : "node"}`;
 

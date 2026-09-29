@@ -144,7 +144,7 @@ Para cambiar un valor: edita el JSON y ejecuta `npm run build`. No edites `src/t
 - La forma cambia con `morph`; lo pequeño (soltar, un punto que aparece) con `snappy`; hundirse al pulsar con `press`.
 - En lo que se desplaza (indicador, bolita), el borde que va delante usa `lead` y el de detrás `trail`: así se estira.
 - El contenido sale con `fadeOut` y entra 60 ms después con `fadeIn`, con desenfoque: nunca se solapan dos textos.
-- Negro ↔ blanco no se funde (pasaría por gris): una copia de la forma en el tono nuevo crece desde su centro.
+- Negro ↔ blanco no se funde (pasaría por gris): una copia de la forma en el tono nuevo crece desde su centro. Si una ventana o un panel crece así desde un botón, va algo desenfocado mientras dura el borde del tono viejo.
 
 ## Sistema de diseño en Claude Design
 

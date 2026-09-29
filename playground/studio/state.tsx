@@ -1,5 +1,5 @@
 // Estado de Studio: los proyectos, lo que suena, y lo que se abre desde cualquier sitio (el
-// diálogo de proyecto nuevo, la navegación en móvil, la paleta ⌘K). Está por encima de la barra
+// diálogo de proyecto nuevo y la paleta ⌘K). Está por encima de la barra
 // lateral y del contenido, porque los dos lo usan.
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "../../src/index.js";
@@ -34,8 +34,6 @@ interface StudioState {
   step: (dir: 1 | -1) => void;
   newOpen: boolean;
   setNewOpen: (open: boolean) => void;
-  navOpen: boolean;
-  setNavOpen: (open: boolean) => void;
   paletteOpen: boolean;
   setPaletteOpen: (open: boolean) => void;
 }
@@ -61,7 +59,6 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [time, setTime] = useState(0);
   const [newOpen, setNewOpen] = useState(false);
-  const [navOpen, setNavOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const projectsRef = useRef(projects);
   projectsRef.current = projects;
@@ -172,8 +169,6 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     step,
     newOpen,
     setNewOpen,
-    navOpen,
-    setNavOpen,
     paletteOpen,
     setPaletteOpen,
   };

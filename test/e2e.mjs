@@ -897,6 +897,16 @@ try {
   await page.getByRole("button", { name: "Undo" }).click();
   await sleep(1000);
   check("demo: deshacer lo devuelve", (await page.locator(".studio-project", { hasText: "Kernel Panic" }).count()) === 1);
+  // desde el botón negro, la ventana crece desenfocada mientras queda negro y llega nítida
+  const growBlurs = sampleFrames(page, () => {
+    const f = document.querySelector('[role="dialog"]')?.style.filter ?? "";
+    return f ? parseFloat(f.slice(5)) : 0;
+  }, 900);
+  await page.getByRole("button", { name: "New project" }).first().click();
+  const gb = await growBlurs;
+  check("demo: «New project» crece desde el botón negro con los bordes desenfocados y acaba nítido", Math.max(...gb) > 3 && gb[gb.length - 1] === 0, `máx ${Math.max(...gb).toFixed(1)}px, final ${gb[gb.length - 1]}`);
+  await page.keyboard.press("Escape");
+  await sleep(900);
   await page.keyboard.press("Control+k");
   await sleep(500);
   await page.keyboard.type("new pro");
@@ -940,8 +950,22 @@ try {
   await page.getByRole("button", { name: "Save" }).click();
   await sleep(900);
   check("demo: el panel lateral edita los detalles", (await page.getByRole("heading", { name: "Night Drive (Remix)", level: 1 }).count()) === 1);
+  // abrir una sección de los ajustes dentro de las pestañas: las pestañas siguen su alto sin
+  // recortar la tarjeta (esquinas y sombra enteras)
+  await page.getByRole("tab", { name: "Settings" }).click();
+  await sleep(900);
+  const tabClip = sampleFrames(page, () => {
+    const item = [...document.querySelectorAll(".studio .mochi-accordion__item")].find(e => e.textContent.startsWith("Delete project"));
+    return [document.querySelector(".studio .mochi-tabs__panels").style.overflow, item.querySelector(".mochi-accordion__region").offsetHeight];
+  }, 700);
+  await page.getByRole("button", { name: "Delete project" }).first().click();
+  const tc = await tabClip;
+  check("demo: abrir una sección de los ajustes no recorta la tarjeta", new Set(tc.map(x => x[1])).size > 4 && tc.every(x => x[0] !== "hidden"), `${tc.filter(x => x[0] === "hidden").length} fotogramas recortados de ${tc.length}`);
+  // cambiar de página: la vieja sale y la nueva entra (dos capas un momento, luego una)
+  const pageLayers = sampleFrames(page, () => document.querySelectorAll(".studio > .mochi-swap > .mochi-swap__layer").length, 800);
   await page.getByRole("link", { name: "Settings" }).click();
-  await sleep(600);
+  const layersSeen = await pageLayers;
+  check("demo: al cambiar de página, la vieja se funde en la nueva", Math.max(...layersSeen) === 2 && layersSeen[layersSeen.length - 1] === 1, layersSeen.join(""));
   const emailField = page.getByRole("textbox", { name: "Email" });
   await emailField.fill("ada@");
   await page.getByRole("button", { name: "Save changes" }).click();
@@ -1018,6 +1042,9 @@ try {
   // --- tema oscuro
   await page.goto(URL_ + "#/");
   await sleep(500);
+  const themeBox = await box(page.getByRole("tablist", { name: "Theme" }));
+  const vh = page.viewportSize().height;
+  check("tema: el selector va abajo de la columna lateral, no en la barra", themeBox.x < 240 && vh - (themeBox.y + themeBox.height) < 40 && !(await page.locator(".bar").isVisible()), `x ${themeBox.x.toFixed(0)}, a ${(vh - themeBox.y - themeBox.height).toFixed(0)} px del borde`);
   await page.getByRole("tab", { name: "Dark" }).click();
   await sleep(600);
   const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
@@ -1164,6 +1191,19 @@ try {
   await sleep(900);
   const mobNav = await box(mob.getByRole("dialog", { name: "Mochi" }));
   check("panel lateral: en móvil deja ver 48 px de página", Math.abs(mobNav.x - 8) < 1 && Math.abs(mobNav.width - 320) < 1 && Math.abs(mobNav.height - 764) < 1, `x ${mobNav.x} ancho ${mobNav.width} alto ${mobNav.height}`);
+  // «Lista» en móvil: los enlaces y el tema van en el panel lateral
+  await mob.goto(URL_ + "#/");
+  await sleep(600);
+  check("lista en móvil: sin tira de enlaces ni tema a la vista", !(await mob.locator(".nav .nav__list").isVisible()) && !(await mob.getByRole("tablist", { name: "Theme" }).first().isVisible()));
+  await mob.getByRole("button", { name: "Open navigation" }).tap();
+  await sleep(900);
+  const listPanel = mob.getByRole("dialog", { name: "Componentes" });
+  const themeInPanel = await box(listPanel.getByRole("tablist", { name: "Theme" }));
+  const listBox = await box(listPanel);
+  check("lista en móvil: el menú abre el panel con los componentes y el tema abajo del todo", (await listPanel.getByRole("link", { name: "Button" }).count()) === 1 && listBox.y + listBox.height - (themeInPanel.y + themeInPanel.height) < 40, `tema a ${(listBox.y + listBox.height - themeInPanel.y - themeInPanel.height).toFixed(0)} px del borde`);
+  await listPanel.getByRole("link", { name: "Button" }).tap();
+  await sleep(900);
+  check("lista en móvil: elegir un componente lo abre y cierra el panel", (await mob.evaluate(() => location.hash)) === "#/button" && (await mob.getByRole("dialog").count()) === 0);
   await mob.goto(URL_ + "#/demo");
   await sleep(1500);
   check("demo en móvil: sin desplazamiento horizontal", await mob.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth));
@@ -1191,7 +1231,7 @@ try {
   await sleep(600);
   await mob.getByRole("button", { name: "Project actions" }).first().tap();
   await sleep(700);
-  const home = await box(mob.getByRole("link", { name: "Todos" }));
+  const home = await box(mob.locator(".nav__brand"));
   await mob.touchscreen.tap(home.x + home.width / 2, home.y + home.height / 2);
   await sleep(700);
   check("menú táctil: tocar fuera lo cierra sin pulsar lo de debajo", (await mob.locator(".mochi-menu-root").count()) === 0 && (await mob.evaluate(() => location.hash)) === "#/menu");

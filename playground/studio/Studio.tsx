@@ -1,14 +1,13 @@
 // Studio: la app de demostración del sitio de pruebas. Un gestor de proyectos musicales que usa
 // los componentes de Mochi juntos, como en un proyecto de verdad. En el sitio se elige con el
-// selector «Lista | Demo»; en «Demo», la columna lateral es su navegación (en móvil, un panel
-// lateral) y el contenido son sus páginas.
+// selector «Lista | Demo»; en «Demo», la columna lateral es su navegación (en móvil, el panel
+// lateral del sitio) y el contenido son sus páginas.
 import { useState } from "react";
 import {
   Button,
   CommandPalette,
   CommandPaletteTrigger,
   Dialog,
-  Drawer,
   FileIcon,
   MediaPlayer,
   PlusIcon,
@@ -17,8 +16,8 @@ import {
   SearchIcon,
   SegmentedControl,
   SlidersIcon,
+  Swap,
   TextField,
-  Tooltip,
   toast,
   useButtonStatus,
   useCommandK,
@@ -81,18 +80,11 @@ export function StudioLinks({ route, onNavigate }: { route: string; onNavigate?:
   );
 }
 
-/** Lo que va arriba a la izquierda de la barra del sitio en «Demo»: el menú (móvil) y ⌘K. */
+/** Lo que va arriba a la izquierda de la barra del sitio en «Demo»: la búsqueda (⌘K). */
 export function StudioBar() {
   const s = useStudio();
   return (
     <div className="studio-bar">
-      <Tooltip content="Menu">
-        <Button variant="surface" iconOnly aria-label="Open navigation" className="studio-bar__menu" onClick={() => s.setNavOpen(true)}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" aria-hidden="true">
-            <path d="M4.5 7.5h15M4.5 12h15M4.5 16.5h15" />
-          </svg>
-        </Button>
-      </Tooltip>
       <CommandPaletteTrigger onClick={() => s.setPaletteOpen(true)}>Search</CommandPaletteTrigger>
     </div>
   );
@@ -195,6 +187,8 @@ export function StudioMain({ route }: { route: string }) {
   const [, section, id] = route.split("/");
   const page =
     section === "p" && id ? <ProjectPage key={id} id={id} /> : section === "settings" ? <SettingsPage /> : section === "help" ? <HelpPage /> : <ProjectsPage />;
+  // al cambiar de página, la vieja sale y la nueva entra con desenfoque (como las pestañas)
+  const pageKey = section === "p" && id ? `p/${id}` : section || "projects";
 
   const now = findTrack(s.projects, s.playing);
   const commands: Command[] = [
@@ -208,11 +202,10 @@ export function StudioMain({ route }: { route: string }) {
 
   return (
     <div className="studio">
-      {page}
+      <Swap id={pageKey} align="start" enterScale={1} blur={8}>
+        {page}
+      </Swap>
       <NewProjectDialog />
-      <Drawer open={s.navOpen} onOpenChange={s.setNavOpen} side="left" width={300} title="Studio">
-        <StudioLinks route={route} onNavigate={() => s.setNavOpen(false)} />
-      </Drawer>
       <CommandPalette open={s.paletteOpen} onOpenChange={s.setPaletteOpen} commands={commands} />
       <PlayerDock />
     </div>
