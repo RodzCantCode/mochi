@@ -187,11 +187,20 @@ function ProjectRow({ p, onRename, onDelete }: { p: Project; onRename: (p: Proje
           <span className="studio-project__text">
             <b>{p.name}</b>
             <span className="studio-small">
-              {p.artist} · {ago(p.edited)}
+              {p.artist}
+              {/* en pantallas estrechas no hay columna de edición: va aquí */}
+              <span className="studio-narrow"> · {ago(p.edited)}</span>
             </span>
           </span>
         </a>
-        <StatusChip status={p.status} />
+        <span className="studio-col studio-col--wide">{p.genre}</span>
+        <span className="studio-col studio-col--wide">
+          {p.tracks.length} track{p.tracks.length === 1 ? "" : "s"}
+        </span>
+        <span className="studio-col studio-col--status">
+          <StatusChip status={p.status} />
+        </span>
+        <span className="studio-col studio-col--wide">{ago(p.edited)}</span>
         <Tooltip content="More actions">
           <Menu items={actions} placement="bottom-end">
             <Button variant="surface" size="sm" iconOnly aria-label={`Actions for ${p.name}`}>
@@ -295,11 +304,22 @@ export function ProjectsPage() {
       </div>
       <SkeletonSwap loading={loading} skeleton={<ProjectsSkeleton />} loadingLabel="Loading projects">
         {visible.length ? (
+          <>
+          {/* cabecera de las columnas (solo en pantallas anchas) */}
+          <div className="studio-projects-head" aria-hidden="true">
+            <span>Name</span>
+            <span>Genre</span>
+            <span>Tracks</span>
+            <span>Status</span>
+            <span>Edited</span>
+            <span />
+          </div>
           <PresenceGroup as="ul" itemAs="li" className="studio-projects" aria-label="Projects">
             {visible.map(p => (
               <ProjectRow key={p.id} p={p} onRename={setRenaming} onDelete={setDeleting} />
             ))}
           </PresenceGroup>
+          </>
         ) : (
           <div className="studio-empty">
             <p>No projects match.</p>
@@ -334,9 +354,12 @@ const ACTIVITY = [
   "Soft Machines exported a mix",
 ];
 
+const COMMENTS: Record<Project["comments"], string> = { everyone: "Anyone with the link", team: "Only the team", nobody: "Nobody" };
+
 function Overview({ p }: { p: Project }) {
   const [range, setRange] = useState<keyof typeof PLAYS>("week");
   const series = PLAYS[range];
+  const length = p.tracks.reduce((n, t) => n + t.seconds, 0);
   return (
     <div className="studio-overview">
       <ChartCard
@@ -353,13 +376,46 @@ function Overview({ p }: { p: Project }) {
           { value: "month", label: "Month" },
         ]}
       />
-      <Collapsible title="Recent activity" variant="plain" defaultOpen>
-        <ul className="studio-activity">
-          {ACTIVITY.map(a => (
-            <li key={a}>{a}</li>
-          ))}
-        </ul>
-      </Collapsible>
+      <div className="studio-overview__side">
+        <section className="studio-card">
+          <h2>Details</h2>
+          <dl className="studio-details">
+            <div>
+              <dt>Status</dt>
+              <dd>
+                <StatusChip status={p.status} />
+              </dd>
+            </div>
+            <div>
+              <dt>Genre</dt>
+              <dd>{p.genre}</dd>
+            </div>
+            <div>
+              <dt>Tracks</dt>
+              <dd>
+                {p.tracks.length} · {formatTime(length)}
+              </dd>
+            </div>
+            <div>
+              <dt>Public link</dt>
+              <dd>{p.publicLink ? "On" : "Off"}</dd>
+            </div>
+            <div>
+              <dt>Comments</dt>
+              <dd>{COMMENTS[p.comments]}</dd>
+            </div>
+          </dl>
+        </section>
+        <section className="studio-card">
+          <Collapsible title="Recent activity" variant="plain" defaultOpen>
+            <ul className="studio-activity">
+              {ACTIVITY.map(a => (
+                <li key={a}>{a}</li>
+              ))}
+            </ul>
+          </Collapsible>
+        </section>
+      </div>
     </div>
   );
 }
@@ -443,7 +499,7 @@ function ProjectSettings({ p, onDelete }: { p: Project; onDelete: () => void }) 
   return (
     <Accordion multiple defaultValue={["general"]} className="studio-accordion">
       <AccordionItem value="general" title="General">
-        <div className="studio-form">
+        <div className="studio-form studio-form--split">
           <TextField label="Project name" value={p.name} onValueChange={name => name.trim() && s.update(p.id, { name })} />
           <Select label="Genre" value={p.genre} onValueChange={genre => s.update(p.id, { genre })} options={GENRES.map(g => ({ value: g, label: g }))} />
           <Select
@@ -455,7 +511,7 @@ function ProjectSettings({ p, onDelete }: { p: Project; onDelete: () => void }) 
         </div>
       </AccordionItem>
       <AccordionItem value="sharing" title="Sharing">
-        <div className="studio-form">
+        <div className="studio-form studio-form--split">
           <label className="setting-row">
             <span>Public link</span>
             <Switch size="sm" checked={p.publicLink} onCheckedChange={publicLink => s.update(p.id, { publicLink })} aria-label="Public link" />
@@ -748,16 +804,19 @@ export function HelpPage() {
           <p>Answers to the questions we hear most.</p>
         </div>
       </header>
-      <Accordion defaultValue={["stems"]} className="studio-accordion">
-        {FAQ.map(f => (
-          <AccordionItem key={f.value} value={f.value} title={f.title}>
-            <p>{f.body}</p>
-          </AccordionItem>
-        ))}
-      </Accordion>
-      <div className="studio-card studio-help">
-        <p>Looking for something else? Jump anywhere with the command palette.</p>
-        <CommandPaletteTrigger onClick={() => s.setPaletteOpen(true)}>Search Studio</CommandPaletteTrigger>
+      <div className="studio-help-layout">
+        <Accordion defaultValue={["stems"]} className="studio-accordion">
+          {FAQ.map(f => (
+            <AccordionItem key={f.value} value={f.value} title={f.title}>
+              <p>{f.body}</p>
+            </AccordionItem>
+          ))}
+        </Accordion>
+        <div className="studio-card studio-help">
+          <h2>Still looking?</h2>
+          <p>Jump to any project, page or action with the command palette.</p>
+          <CommandPaletteTrigger onClick={() => s.setPaletteOpen(true)}>Search Studio</CommandPaletteTrigger>
+        </div>
       </div>
     </div>
   );

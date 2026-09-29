@@ -38,7 +38,7 @@
 
 /* ---------------------------------------------------------------- páginas */
 
-.studio-page { max-width: 760px; }
+.studio-page { min-width: 0; }
 .studio-head { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
 .studio-head__text { flex: 1; min-width: 0; }
 .studio-head h1 { margin: 0; font: var(--mochi-text-display); letter-spacing: -0.025em; overflow-wrap: anywhere; }
@@ -97,6 +97,9 @@
 .studio-project__main:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 3px; }
 .studio-project__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .studio-project__text b { overflow: hidden; font: var(--mochi-text-body); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.studio-col { min-width: 0; overflow: hidden; font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); text-overflow: ellipsis; white-space: nowrap; }
+.studio-col--wide,
+.studio-projects-head { display: none; }
 .studio-status { display: inline-flex; align-items: center; gap: 6px; font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); white-space: nowrap; }
 .studio-head .studio-status { color: inherit; }
 .studio-status__dot { width: 8px; height: 8px; border-radius: 50%; background: color-mix(in srgb, var(--mochi-on-surface) 30%, transparent); }
@@ -105,7 +108,15 @@
 
 /* ---------------------------------------------------------------- un proyecto */
 
-.studio-overview { display: flex; flex-direction: column; gap: 20px; }
+.studio-overview,
+.studio-overview__side { display: flex; flex-direction: column; gap: 16px; }
+.studio-overview { gap: 20px; }
+.studio-details { display: grid; gap: 12px; margin: 0; }
+.studio-details div { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.studio-details dt { font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); }
+.studio-details dd { margin: 0; text-align: right; }
+.studio-card .mochi-accordion[data-variant="plain"] { border-bottom: 0; }
+.studio-card .mochi-accordion[data-variant="plain"] .mochi-accordion__item:first-child::before { display: none; }
 .studio-activity { margin: 0; padding: 0; list-style: none; }
 .studio-activity li { padding: 10px 0; border-top: 1px solid color-mix(in srgb, var(--mochi-on-canvas) 8%, transparent); }
 .studio-activity li:first-child { border-top: 0; }
@@ -142,7 +153,7 @@
 .studio-track__play:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: 2px; }
 .studio-track__title { flex: 1; min-width: 0; overflow: hidden; font: var(--mochi-text-body); text-overflow: ellipsis; white-space: nowrap; }
 .studio-track__time { font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); font-variant-numeric: tabular-nums; }
-.studio-accordion { max-width: 640px; }
+
 .studio-accordion p { margin: 0; }
 .studio-share { width: 280px; max-width: 100%; }
 .studio-share__link { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border-radius: 9999px; background: var(--mochi-canvas); }
@@ -150,11 +161,14 @@
 
 /* ---------------------------------------------------------------- ajustes y ayuda */
 
-.studio-settings { display: flex; flex-direction: column; gap: 16px; max-width: 560px; }
+.studio-settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); align-items: start; gap: 16px; }
+.studio-settings > .studio-form__actions { grid-column: 1 / -1; }
 .studio-indent { display: flex; flex-direction: column; gap: 12px; padding-left: 34px; }
 .studio-field-label { margin: 4px 0 -4px; font: var(--mochi-text-label); color: var(--mochi-on-surface-muted); }
-.studio-help { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; max-width: 640px; margin-top: 20px; }
-.studio-help p { margin: 0; }
+.studio-help-layout { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 20px; }
+.studio-help { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.studio-help h2 { margin: 0; }
+.studio-help p { margin: 0; color: var(--mochi-on-surface-muted); }
 
 /* ---------------------------------------------------------------- reproductor abajo */
 
@@ -171,6 +185,35 @@
 }
 .studio-dock__inner { width: 100%; max-width: 344px; pointer-events: auto; }
 .studio-dock__art { display: block; width: 100%; height: 100%; }
+
+/* ---------------------------------------------------------------- pantallas anchas */
+
+/* la lista de proyectos, en columnas; el resumen y la ayuda, a dos columnas; los formularios, en fila */
+@media (min-width: 1200px) {
+  .studio-projects-head,
+  .studio-project {
+    display: grid;
+    grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1fr) 36px;
+    align-items: center;
+    column-gap: 16px;
+  }
+  .studio-projects-head {
+    padding: 0 12px 8px 10px;
+    font: var(--mochi-text-caption);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--mochi-on-canvas-muted);
+  }
+  /* alineado con el nombre, tras la portada */
+  .studio-projects-head span:first-child { padding-left: 62px; }
+  .studio-col--wide { display: block; }
+  .studio-narrow { display: none; }
+  .studio-overview { display: grid; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); align-items: start; }
+  .studio-help-layout { grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); }
+}
+@media (min-width: 1000px) {
+  .studio-form--split { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); align-items: start; gap: 12px 16px; }
+}
 
 /* ---------------------------------------------------------------- pantallas estrechas */
 

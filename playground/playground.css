@@ -19,7 +19,7 @@ a { color: inherit; }
 /* ---------------------------------------------------------------- estructura */
 
 .site { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100vh; }
-.main { min-width: 0; max-width: 1080px; padding: 28px 40px 120px; }
+.main { min-width: 0; padding: 28px 40px 120px; }
 .bar { display: flex; justify-content: flex-end; margin-bottom: 28px; }
 .theme { width: 240px; }
 
@@ -89,7 +89,9 @@ a { color: inherit; }
 /* ---------------------------------------------------------------- tarjetas y escenarios */
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-.sections { display: flex; flex-direction: column; gap: 16px; }
+/* las secciones de un componente, lado a lado si caben; las anchas, de lado a lado */
+.sections { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 16px; }
+.sections .spec.wide { grid-column: 1 / -1; }
 .spec { display: flex; flex-direction: column; gap: 14px; min-height: 220px; padding: 18px; border-radius: 28px; background: color-mix(in srgb, var(--mochi-on-canvas) 4%, transparent); }
 .sections .spec { min-height: 280px; padding: 22px; }
 .spec.wide { grid-column: span 2; }

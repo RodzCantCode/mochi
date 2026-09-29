@@ -92,7 +92,10 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   suenan y se reordenan, subida con progreso, compartir, editar en panel lateral, ajustes en
   acordeón), ajustes de la cuenta y ayuda; ⌘K con su propia paleta y el reproductor flotando
   abajo mientras suena algo. El código está en `playground/studio/` (datos en memoria: recargar
-  lo devuelve a como empieza). No destapó fallos de la librería.
+  lo devuelve a como empieza). No destapó fallos de la librería. El sitio entero usa todo el
+  ancho de la pantalla (el usuario lo pidió el 2026-09-29): en «Lista», más tarjetas por fila y
+  las secciones de cada componente lado a lado si caben; en Studio, desde 1200 px, la lista de
+  proyectos en columnas, el resumen y la ayuda a dos columnas y los ajustes en rejilla.
 - **Tercera revisión independiente** (dos revisores con contexto limpio: comportamiento con
   React 18.2, 18.3 y 19, y accesibilidad, estilos y documentación): 18 fallos distintos con caso
   reproducible (dos los encontraron los dos), todos corregidos salvo el contraste del filo (ver
