@@ -1265,6 +1265,19 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
   margin-top: 24px;
 }
 .mochi-dialog__body + .mochi-dialog__actions { margin-top: 20px; }
+/* en oscuro, el botón principal dentro de una ventana, hoja o panel va invertido (claro con texto
+   oscuro): el `solid` oscuro casi no se distingue de la superficie oscura. Solo el del contenido,
+   no la copia del botón que crece al abrir */
+[data-theme="dark"] :is(.mochi-dialog__content, .mochi-drawer__content, .mochi-popover__content) .mochi-button[data-tone="solid"] {
+  --mochi-solid: var(--mochi-fill);
+  --mochi-on-solid: var(--mochi-on-fill);
+}
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] :is(.mochi-dialog__content, .mochi-drawer__content, .mochi-popover__content) .mochi-button[data-tone="solid"] {
+    --mochi-solid: var(--mochi-fill);
+    --mochi-on-solid: var(--mochi-on-fill);
+  }
+}
 /* dentro de la ventana, lo que sería superficie blanca va en el tono del lienzo */
 .mochi-dialog__body .mochi-field__box { background: var(--mochi-canvas); box-shadow: none; }
 .mochi-dialog .mochi-morph[data-tone="surface"],

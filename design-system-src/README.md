@@ -27,7 +27,8 @@ Mochi es un sistema de interfaz con una idea: **una sola forma que se transforma
 - `danger-strong` es el rojo del texto de error sobre el lienzo o la superficie: mensajes, etiquetas con error, opciones destructivas de un menú.
 - `focus-ring` marca el foco de teclado de todo lo interactivo: contorno de 2 px, separado 3 px. En un campo de texto es el anillo interior de 2 px mientras escribes.
 - El resaltado al pasar el ratón solo existe con ratón (`@media (hover: hover)`): en una pantalla táctil se quedaría pegado tras el toque. Lo que marca la página o la opción actual no cambia al pasar por encima.
-- En oscuro, `solid` y `surface` se separan de `canvas` con un filo (`solid-border`, `surface-border`); en claro ese filo es invisible.
+- En oscuro, `solid` y `surface` se separan de `canvas` con un filo (`solid-border`, `surface-border`); en claro ese filo es invisible. Dentro de una ventana, hoja o panel (sobre `surface`), el botón `solid` va invertido en oscuro: `fill` con texto `on-fill`, porque el `solid` oscuro casi no se distingue de la superficie.
+- Lo que se abre desde un botón (ventana, panel, menú) vuelve a él al cerrarse tal como está en ese momento: si el botón ha cambiado de texto, tono o ancho mientras estaba abierto, aterriza en su aspecto nuevo.
 - Negro y blanco no se funden nunca entre sí (pasarían por gris): una copia de la forma en el tono nuevo crece desde su centro y el tono viejo se queda en un borde que se estrecha. Cuando una ventana o un panel crece así desde un botón, la forma va ligeramente desenfocada mientras queda ese borde, y llega nítida.
 
 ## Tipografía

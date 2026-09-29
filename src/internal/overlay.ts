@@ -1,8 +1,9 @@
 // Piezas comunes de lo que se abre encima de la página (diálogo, hoja, menú): bloquear el
 // desplazamiento, cerrar con Esc solo la capa de arriba, retener el foco y leer de dónde sale
 // la forma (el botón que la abre) para crecer desde él.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { useIsoLayoutEffect } from "./useIsoLayoutEffect.js";
+import { useElementSize } from "./useElementSize.js";
 
 // ---------------------------------------------------------------------------------------
 // Desplazamiento bloqueado (con contador: varias capas a la vez)
@@ -127,7 +128,9 @@ export function readOrigin(el: HTMLElement | null | undefined): Origin | null {
   if (b.width < 1 || b.height < 1) return null;
   const cs = getComputedStyle(el);
   const r = Math.min(parseFloat(cs.borderTopLeftRadius) || 0, b.height / 2, b.width / 2);
-  const bg = cs.backgroundColor;
+  // un botón de Mochi que está cambiando de tono: manda el tono al que va (el de su copia que crece)
+  const toward = el.querySelector<HTMLElement>(":scope > .mochi-morph__reveal");
+  const bg = toward ? getComputedStyle(toward).backgroundColor : cs.backgroundColor;
   const transparent = !bg || bg === "transparent" || /rgba\([^)]*,\s*0\)$/.test(bg);
   return { el, rect: { x: b.left, y: b.top, w: b.width, h: b.height, r }, background: transparent ? null : bg };
 }
@@ -163,11 +166,39 @@ export function ghostOf(el: HTMLElement): HTMLElement {
   const g = el.cloneNode(true) as HTMLElement;
   g.removeAttribute("id");
   for (const n of Array.from(g.querySelectorAll("[id]"))) n.removeAttribute("id");
+  // si el botón está a medio cambiar, la copia es como va a quedar: sin el contenido que sale,
+  // sin su tono nuevo creciendo y con el contenido nuevo entero
+  for (const n of Array.from(g.querySelectorAll(".mochi-morph__reveal, [data-leaving]"))) n.remove();
+  for (const n of Array.from(g.querySelectorAll<HTMLElement>(".mochi-swap__layer"))) {
+    n.style.opacity = "";
+    n.style.filter = "";
+    n.style.transform = "";
+  }
   g.setAttribute("aria-hidden", "true");
   g.setAttribute("tabindex", "-1");
   g.setAttribute("inert", "");
   g.style.cssText += ";position:absolute;left:0;top:0;margin:0;opacity:1;transform:none;background:transparent;box-shadow:none;pointer-events:none;";
   return g;
+}
+
+/**
+ * Al cerrar, el botón puede haber cambiado (su texto, su tono o su ancho, p. ej. «Filters» →
+ * «Filters · 2»): la copia se rehace con su aspecto de ahora y, mientras cambie de tamaño, se
+ * vuelve a pintar para que la forma aterrice en él y no en como era al abrir.
+ */
+export function useOriginOnClose(open: boolean, origin: Origin | null, ghostBox: RefObject<HTMLDivElement | null>) {
+  // mientras vuelve, cada cambio de tamaño del botón repinta; la copia se rehace con él (con su
+  // ancho de ese momento, para que no se recorte)
+  const size = useElementSize(!open && origin ? origin.el : null);
+  const first = useRef(true);
+  useIsoLayoutEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    const gb = ghostBox.current;
+    if (gb && origin && origin.el.isConnected) gb.replaceChildren(ghostOf(origin.el));
+  }, [open, size]);
 }
 
 /**

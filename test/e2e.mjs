@@ -870,7 +870,14 @@ try {
   await page.getByRole("button", { name: "Filters" }).click();
   await sleep(600);
   await page.getByRole("checkbox", { name: "Draft" }).click();
+  // al cerrar, el panel vuelve al botón tal como queda (negro y «Filters · 2»), no como era
+  const landing = sampleFrames(page, () => {
+    const g = document.querySelector(".mochi-popover__ghost");
+    return g && parseFloat(getComputedStyle(g).opacity) > 0.01 ? g.textContent : null;
+  }, 500);
   await page.getByRole("button", { name: "Done" }).click();
+  const landed = (await landing).filter(t => t !== null);
+  check("panel flotante: al cerrar aterriza en el botón como ha quedado", landed.length > 3 && landed.every(t => t.includes("Filters · 2")), [...new Set(landed)].join(" | "));
   await sleep(900);
   check("demo: el panel de filtros filtra y el botón lo dice", (await rows.count()) === 3 && (await page.getByRole("button", { name: "Filters · 2" }).count()) === 1);
   // el botón pasa de surface a solid: su texto sigue al tono nuevo (antes, negro sobre negro)
@@ -1056,6 +1063,17 @@ try {
   const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   check("tema: oscuro cambia el lienzo", (await page.evaluate(() => document.documentElement.dataset.theme)) === "dark" && bg === "rgb(15, 15, 14)", bg);
   check("tema: las barras del navegador van del color del lienzo", (await page.evaluate(() => document.querySelector('meta[name="theme-color"]').content)) === bg);
+  // en oscuro, el botón principal dentro de una ventana va invertido (claro, texto oscuro)
+  await page.goto(URL_ + "#/demo");
+  await sleep(1500);
+  await page.getByRole("button", { name: "New project" }).first().click();
+  await sleep(1000);
+  const darkCreate = await page.getByRole("button", { name: "Create" }).evaluate(e => [getComputedStyle(e).backgroundColor, getComputedStyle(e.querySelector(".mochi-swap__layer:not([data-leaving])")).color]);
+  check("tema oscuro: el botón principal de una ventana va invertido", darkCreate[0] === "rgb(244, 242, 238)" && darkCreate[1] === "rgb(13, 13, 14)", darkCreate.join(" / "));
+  await page.keyboard.press("Escape");
+  await sleep(900);
+  await page.goto(URL_ + "#/");
+  await sleep(500);
   await page.mouse.move(10, 10);
   await sleep(3500); // que se vaya el aviso
   await page.screenshot({ path: `${OUT}/dark.png`, fullPage: true });
@@ -1203,6 +1221,20 @@ try {
   const scY1 = await sc.evaluate(() => window.scrollY);
   check("hoja: al cerrarse, la página vuelve a donde estaba", scY1 === scY0, `${scY0} → ${scY1}`);
   await sc.context().close();
+
+  // --- tableta en vertical (iPad, 820 puntos): columna lateral como en escritorio
+  const tab = await open({ viewport: { width: 820, height: 1180 }, hasTouch: true });
+  for (const h of ["#/", "#/demo"]) {
+    await tab.goto(URL_ + h);
+    await sleep(900);
+    const t = await tab.evaluate(() => ({
+      column: getComputedStyle(document.querySelector(".site")).gridTemplateColumns.split(" ").length === 2,
+      menu: document.querySelector(".site-menu").getClientRects().length > 0,
+      over: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    }));
+    check(`tableta en vertical (${h}): columna lateral, sin menú y sin salirse`, t.column && !t.menu && !t.over, JSON.stringify(t));
+  }
+  await tab.context().close();
 
   // --- hoja en pantalla de móvil
   const mob = await open({ viewport: { width: 390, height: 780 }, hasTouch: true, isMobile: true });

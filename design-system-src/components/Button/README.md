@@ -22,4 +22,5 @@ Para cualquier acción. Cuando la acción tarda (guardar, enviar, pagar), dale `
 - Al pulsar se hunde a escala 0,965 con `press` y vuelve con `snappy`.
 - Al cargar se encoge a círculo en su sitio: conserva su hueco, así que lo de alrededor no se mueve ni al encogerse ni al volver.
 - Si cambias su `variant` (p. ej. de `surface` a `solid` al activar un filtro), el tono nuevo crece desde el centro y el texto se funde a su color nuevo con desenfoque.
+- En oscuro, dentro de una ventana, hoja o panel lateral o flotante, `solid` va invertido (claro con texto oscuro) para destacar sobre la superficie.
 - No cambies el texto del botón para decir «Saving…»: el cambio de forma ya lo dice.

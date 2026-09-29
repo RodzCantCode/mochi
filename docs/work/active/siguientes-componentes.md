@@ -8,9 +8,9 @@
 > todo subido a GitHub. Después, Studio, una app de demostración en el sitio de pruebas que los
 > usa todos juntos; todo subido a GitHub. Tras probarlo el usuario, tres arreglos de
 > movimiento y el selector de tema movido a la navegación; todo subido. Después, un repaso en
-> el simulador de iOS (iPhone y iPad, claro y oscuro, grabado) con sus hallazgos en «Bloqueos»,
-> que se arreglan uno a uno; hecho y subido el grupo de hoja y teclado. Sigue la pasada final
-> de repaso y pulido (ver «Próximos pasos»). Lo pendiente de la librería en general está en el
+> el simulador de iOS (iPhone y iPad, claro y oscuro, grabado): sus 14 hallazgos, arreglados
+> y subidos; queda uno menor en «Bloqueos». Sigue la pasada final de repaso y
+> pulido (ver «Próximos pasos»). Lo pendiente de la librería en general está en el
 > [README](../../../README.md#pendiente); aquí solo lo de esta tarea.
 
 ## Objetivo
@@ -122,6 +122,16 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   teclado aunque esté bloqueada; antes quedaba unos 200 puntos más abajo). Efecto visible
   además: la hoja sube, se arrastra y baja con su contenido (antes el contenido se quedaba
   quieto y la hoja lo descubría).
+- **Aterrizaje en el botón, tableta en vertical y botón en oscuro (hecho y subido,
+  2026-09-29):** (14) al cerrar, el panel flotante, la ventana y los menús vuelven al botón tal
+  como está (`useOriginOnClose` en `src/internal/overlay.ts`: rehace la copia del botón y
+  repinta mientras cambia de ancho; `readOrigin` toma el tono al que va un botón a medio
+  cambiar), así «Filters» aterriza en el negro «Filters · 2» y el selector en «Name» sin
+  salto. (9) La estructura de móvil del sitio llega hasta 767 px (antes 860): el iPad en
+  vertical tiene columna lateral; y la tarjeta ancha de la portada ocupa la fila hasta que
+  caben tres columnas (con una sola, «span 2» sacaba la página por la derecha; ya pasaba entre
+  861 y ~975 px). (12) En oscuro, el botón `solid` dentro de ventanas, hojas y paneles va
+  invertido (`fill` con texto `on-fill`), decidido por el usuario.
 - **Sitio y Studio, ajustes del repaso en el simulador (hecho y subido, 2026-09-29):** en
   móvil, con la página más corta que la pantalla, el contenido ya no baja (`align-content:
   start` en `.site`); la caja de «Share project» ocupa el ancho de la hoja en móvil; cada
@@ -258,7 +268,12 @@ El 2026-09-29, tras el último cambio de código:
 - `npm run typecheck`: sin errores.
 - `npm test`: 80/80 (además de lo anterior: renderizado en servidor de casilla, radio,
   progreso, esqueleto, paneles y lista, con sus roles, estados y valores de formulario).
-- `npm run test:e2e`: 239/239 en Chromium. Dos, de los ajustes del sitio: el color de las barras
+- `npm run test:e2e`: 243/243 en Chromium. Cuatro, del último grupo: el panel de filtros
+  aterriza en «Filters · 2», el botón principal de una ventana va invertido en oscuro, y a 820
+  px la portada y Studio tienen columna lateral, sin menú y sin salirse. Además, grabados
+  fotograma a fotograma el cierre de «Filters» y el del selector de orden, y medido que el
+  sitio no se sale por la derecha a 390, 768, 820, 900, 1000, 1180, 1280, 1440 y 1920 px en
+  Chromium y WebKit (salvo «Colores» a 390 en WebKit, ver «Bloqueos»). Dos, de los ajustes del sitio: el color de las barras
   del navegador sigue al tema, y en móvil, con la página corta, la fila de la cabecera mide lo
   que la cabecera. Tres, del grupo anterior: el texto de «Filters · 2» es
   blanco sobre negro, en táctil la cabecera del acordeón no se queda resaltada y la paleta en
@@ -321,22 +336,10 @@ componentes nuevos.
 
 ## Bloqueos
 
-Esperan decisión del usuario (encontrado en el simulador de iOS, 2026-09-29):
-- **Modo oscuro, para decidir (no es un fallo):** dentro de una hoja o ventana, el botón
-  principal («Done», «Create») es `solid` #262624 sobre `surface` #1B1B1A: el texto se lee,
-  pero la forma del botón casi no se distingue del fondo. Visto en el simulador.
-- **Tableta en vertical (iPad Air 11", 820 puntos):** usa la estructura de móvil (el corte está
-  en 860 px), así que el selector «Lista | Demo» se estira 820 puntos. Propuesta: bajar el corte para
-  que la tableta en vertical tenga columna lateral, o limitar el ancho del selector. En
-  horizontal (1180×820, comprobado con WebKit en Playwright, no en el simulador) va con columna
-  lateral y sin fallos a la vista; en el simulador girado, en modo oscuro y grabado, lo
-  mismo: panel de filtros, cambio de página, pestañas y acordeón sin cortes ni saltos.
-- **Un panel que se cierra vuelve a la apariencia que tenía su botón al abrirse.** Caso: en
-  Studio, «Filters» (blanco) → marcar un estado → «Done»: el panel se encoge hasta un botón
-  blanco «Filters» y, al llegar, salta de golpe al negro «Filters · 2». Grabado fotograma a
-  fotograma en Chromium. La copia del botón (`ghostOf`) y su tono (`tint`) se leen al abrir;
-  al cerrar habría que leerlos otra vez. Afecta a `Popover`, `Dialog` y a los menús
-  (`listPopup`).
+Esperan decisión del usuario:
+- **La página «Colores» se sale 3 px por la derecha a 390 de ancho en WebKit** (los nombres de
+  las muestras, `.swatch__name` y `.swatch__value`). Ya pasaba antes de los arreglos del
+  2026-09-29; en Chromium no. Sin arreglar.
 - Si subir la versión a 0.2.0 antes de subirlo.
 - **Filo de la casilla y el radio sin marcar.** El planteamiento pedía `surface-border-strong`,
   y así está, pero no llega a 3:1 (WCAG 1.4.11): 1,4:1 en claro y 1,8:1 en oscuro. Propuesta:

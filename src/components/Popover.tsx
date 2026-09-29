@@ -39,6 +39,7 @@ import {
   readOrigin,
   showOrigin,
   useEscapeLayer,
+  useOriginOnClose,
   useScrollLock,
   useViewport,
   type Origin,
@@ -196,13 +197,15 @@ function Panel({ id, open, label, title, width, placement, trigger, onClose, onD
       if (!el || !measured) return;
       const T = toRef.current;
       const q = origin ? clamp01((v.w - from.w) / Math.max(1, T.w - from.w)) : clamp01(v.o);
-      const tint = origin?.background && origin.background !== surfaceColor.current ? origin.background : null;
+      // al cerrar vuelve al botón tal como está ahora (su tono puede haber cambiado)
+      const o = open ? origin : originNow;
+      const tint = o?.background && o.background !== surfaceColor.current ? o.background : null;
       paintGrow({ shape: el, shadow: shadow.current, reveal: reveal.current, ghost: ghostBox.current, content: contentEl }, v, {
         to: T,
         tint,
         shadow: q,
         fadeContent: true,
-        ghost: origin ? origin.rect : null,
+        ghost: o ? o.rect : null,
         blur: SWAP.blur,
       });
       if (!open && nearRect(v, from) && v.o < 0.002) onGone();
@@ -225,6 +228,7 @@ function Panel({ id, open, label, title, width, placement, trigger, onClose, onD
     gb.replaceChildren(ghostOf(origin.el));
     return () => gb.replaceChildren();
   }, []);
+  useOriginOnClose(open, origin, ghostBox);
 
   // foco: al abrir, al primer control de dentro (o al panel); si se cierra desde fuera con el
   // foco dentro, vuelve al botón

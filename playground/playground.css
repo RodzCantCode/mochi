@@ -116,6 +116,9 @@ a { color: inherit; }
 .spec { display: flex; flex-direction: column; gap: 14px; min-height: 220px; padding: 18px; border-radius: 28px; background: color-mix(in srgb, var(--mochi-on-canvas) 4%, transparent); }
 .sections .spec { min-height: 280px; padding: 22px; }
 .spec.wide { grid-column: span 2; }
+/* hasta que caben tres columnas (junto a la columna lateral), la ancha ocupa la fila: con una
+   sola columna, «span 2» crearía una segunda y la página se saldría por la derecha */
+@media (max-width: 1311px) { .spec.wide { grid-column: 1 / -1; } }
 .spec h2 { display: flex; align-items: center; gap: 8px; margin: 0; font: var(--mochi-text-label); color: var(--mochi-on-canvas-muted); }
 .spec h2 a { text-decoration: none; }
 @media (hover: hover) { .spec h2 a:hover { color: var(--mochi-on-canvas); text-decoration: underline; text-underline-offset: 3px; } }
@@ -218,7 +221,7 @@ a { color: inherit; }
 
 /* ---------------------------------------------------------------- pantallas estrechas */
 
-@media (max-width: 860px) {
+@media (max-width: 767px) {
   /* con la página más corta que la pantalla, el sobrante va abajo (no a la fila de la cabecera) */
   .site { grid-template-columns: minmax(0, 1fr); align-content: start; }
   .nav { position: static; height: auto; padding: 16px 16px 8px; border-right: 0; }

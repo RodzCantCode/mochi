@@ -25,6 +25,7 @@ import {
   showOrigin,
   trapTab,
   useEscapeLayer,
+  useOriginOnClose,
   useScrollLock,
   useViewport,
   useVisualViewport,
@@ -192,13 +193,15 @@ function Panel({
     const anchor = grows && !reached.current ? T : { ...T, x: v.x + (v.w - T.w) / 2, y: v.y };
     // cuánto ha crecido (0 = botón, 1 = ventana): la sombra grande aparece con él
     const q = grows ? clamp01((v.w - from.w) / Math.max(1, T.w - from.w)) : 1;
-    const tint = grows && origin?.background && origin.background !== surfaceColor.current ? origin.background : null;
+    // al cerrar vuelve al botón tal como está ahora (su tono puede haber cambiado)
+    const o = open ? origin : originNow;
+    const tint = grows && o?.background && o.background !== surfaceColor.current ? o.background : null;
     paintGrow({ shape: el, shadow: shadow.current, reveal: reveal.current, ghost: ghostBox.current, content: contentEl }, v, {
       to: anchor,
       tint,
       shadow: sheet ? 1 : grows ? q : clamp01(v.o),
       fadeContent: !sheet,
-      ghost: grows && origin ? origin.rect : null,
+      ghost: grows && o ? o.rect : null,
       blur: SWAP.blur,
       opacity: !sheet && !grows ? clamp01(v.o) : 1,
     });
@@ -229,6 +232,8 @@ function Panel({
     gb.replaceChildren(g);
     return () => gb.replaceChildren();
   }, [grows, origin?.el]);
+
+  useOriginOnClose(open, grows ? origin : null, ghostBox);
 
   useIsoLayoutEffect(() => {
     if (shape.current && surfaceColor.current === null) surfaceColor.current = classBackground(shape.current);
