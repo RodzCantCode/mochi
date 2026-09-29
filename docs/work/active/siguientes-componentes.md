@@ -9,8 +9,8 @@
 > usa todos juntos; todo subido a GitHub. Tras probarlo el usuario, tres arreglos de
 > movimiento y el selector de tema movido a la navegación; todo subido. Después, un repaso en
 > el simulador de iOS (iPhone y iPad, claro y oscuro, grabado): sus 14 hallazgos, arreglados
-> y subidos; queda uno menor en «Bloqueos». Sigue la pasada final de repaso y
-> pulido (ver «Próximos pasos»). Lo pendiente de la librería en general está en el
+> y subidos, y uno menor que salió al comprobarlos (la página «Colores» en móvil), también.
+> Sigue la pasada final de repaso y pulido (ver «Próximos pasos»). Lo pendiente de la librería en general está en el
 > [README](../../../README.md#pendiente); aquí solo lo de esta tarea.
 
 ## Objetivo
@@ -122,6 +122,9 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   teclado aunque esté bloqueada; antes quedaba unos 200 puntos más abajo). Efecto visible
   además: la hoja sube, se arrastra y baja con su contenido (antes el contenido se quedaba
   quieto y la hoja lo descubría).
+- **Página «Colores» en móvil (hecho y subido, 2026-09-29):** el texto de las muestras se
+  salía de su columna (en WebKit, 3 px fuera de la pantalla a 390 de ancho). Ahora la columna
+  de texto se estrecha, los nombres se parten por los guiones y los valores solo tras una coma.
 - **Aterrizaje en el botón, tableta en vertical y botón en oscuro (hecho y subido,
   2026-09-29):** (14) al cerrar, el panel flotante, la ventana y los menús vuelven al botón tal
   como está (`useOriginOnClose` en `src/internal/overlay.ts`: rehace la copia del botón y
@@ -273,7 +276,8 @@ El 2026-09-29, tras el último cambio de código:
   px la portada y Studio tienen columna lateral, sin menú y sin salirse. Además, grabados
   fotograma a fotograma el cierre de «Filters» y el del selector de orden, y medido que el
   sitio no se sale por la derecha a 390, 768, 820, 900, 1000, 1180, 1280, 1440 y 1920 px en
-  Chromium y WebKit (salvo «Colores» a 390 en WebKit, ver «Bloqueos»). Dos, de los ajustes del sitio: el color de las barras
+  Chromium y WebKit (luego también «Colores» a 390 en WebKit, arreglado después; con su
+  prueba, 244/244). Dos, de los ajustes del sitio: el color de las barras
   del navegador sigue al tema, y en móvil, con la página corta, la fila de la cabecera mide lo
   que la cabecera. Tres, del grupo anterior: el texto de «Filters · 2» es
   blanco sobre negro, en táctil la cabecera del acordeón no se queda resaltada y la paleta en
@@ -337,9 +341,6 @@ componentes nuevos.
 ## Bloqueos
 
 Esperan decisión del usuario:
-- **La página «Colores» se sale 3 px por la derecha a 390 de ancho en WebKit** (los nombres de
-  las muestras, `.swatch__name` y `.swatch__value`). Ya pasaba antes de los arreglos del
-  2026-09-29; en Chromium no. Sin arreglar.
 - Si subir la versión a 0.2.0 antes de subirlo.
 - **Filo de la casilla y el radio sin marcar.** El planteamiento pedía `surface-border-strong`,
   y así está, pero no llega a 3:1 (WCAG 1.4.11): 1,4:1 en claro y 1,8:1 en oscuro. Propuesta:

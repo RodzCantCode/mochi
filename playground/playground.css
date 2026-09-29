@@ -207,7 +207,9 @@ a { color: inherit; }
 .colors__group { margin-bottom: 20px; }
 .colors__group h3 { margin: 0 0 10px; font: var(--mochi-text-label); color: var(--mochi-on-canvas-muted); }
 .colors__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-.swatch { display: grid; grid-template-columns: 36px 1fr; column-gap: 10px; align-items: center; }
+/* el texto se estrecha con su columna (si no, en móvil se sale por la derecha) */
+.swatch { display: grid; grid-template-columns: 36px minmax(0, 1fr); column-gap: 10px; align-items: center; }
+.swatch__name, .swatch__value { overflow-wrap: break-word; }
 .swatch__chip { grid-row: span 2; width: 36px; height: 36px; border-radius: 12px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mochi-on-canvas) 12%, transparent); }
 .swatch__name { font: 540 13px/16px var(--mochi-font-sans); }
 .swatch__value { font: 450 11px/14px var(--mochi-font-mono); color: var(--mochi-on-canvas-muted); }

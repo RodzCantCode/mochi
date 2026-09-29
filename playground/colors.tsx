@@ -1,4 +1,5 @@
 // Página de colores: cada valor de los dos temas, uno al lado del otro, con su uso.
+import { Fragment } from "react";
 import { colors } from "../src/tokens.js";
 
 type ColorName = keyof (typeof colors)["light"];
@@ -27,7 +28,19 @@ export function ColorsPage() {
                   <div key={n} className="swatch">
                     <span className="swatch__chip" style={{ background: `var(--mochi-${n})` }} />
                     <span className="swatch__name">{n}</span>
-                    <span className="swatch__value">{colors[theme][n]}</span>
+                    {/* si no cabe, se parte solo tras una coma (no en mitad de un número) */}
+                    <span className="swatch__value">
+                      {colors[theme][n].split(",").map((part, i) => (
+                        <Fragment key={i}>
+                          {i > 0 ? (
+                            <>
+                              ,<wbr />
+                            </>
+                          ) : null}
+                          {part}
+                        </Fragment>
+                      ))}
+                    </span>
                   </div>
                 ))}
               </div>

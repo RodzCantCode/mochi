@@ -1335,6 +1335,11 @@ try {
   await mob.touchscreen.tap(home.x + home.width / 2, home.y + home.height / 2);
   await sleep(700);
   check("menú táctil: tocar fuera lo cierra sin pulsar lo de debajo", (await mob.locator(".mochi-menu-root").count()) === 0 && (await mob.evaluate(() => location.hash)) === "#/menu");
+  // colores en móvil: el texto de cada muestra no se sale de ella (se sacaba la página en WebKit)
+  await mob.goto(URL_ + "#/colors");
+  await sleep(700);
+  const swOut = await mob.evaluate(() => [...document.querySelectorAll(".swatch")].filter(sw => { const r = sw.getBoundingClientRect().right; return [...sw.children].some(c => c.getBoundingClientRect().right > r + 0.5); }).length);
+  check("colores en móvil: el texto de las muestras no se sale", swOut === 0, `${swOut} muestras con texto fuera`);
   // en táctil, el efecto de pasar el ratón no se queda pegado tras el toque
   await mob.goto(URL_ + "#/accordion");
   await sleep(600);
