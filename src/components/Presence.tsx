@@ -17,7 +17,7 @@ import {
 } from "react";
 import { useSprings } from "../motion/useSprings.js";
 import { springs, swap as SWAP } from "../tokens.js";
-import { useLiveHeight, verticalChrome } from "../internal/useElementSize.js";
+import { markSizing, useLiveHeight, verticalChrome } from "../internal/useElementSize.js";
 import { useIsoLayoutEffect } from "../internal/useIsoLayoutEffect.js";
 import { cx } from "../internal/cx.js";
 
@@ -78,12 +78,15 @@ export function Presence({ show, children, effect = "blur", collapse = false, ap
       e.style.transform =
         u > 0.999 ? "" : effect === "blur" ? `scale(${(0.97 + 0.03 * u).toFixed(4)})` : effect === "rise" ? `translateY(${((1 - u) * 8).toFixed(2)}px)` : "";
       if (collapse) {
+        // mientras abre o cierra su hueco lo marca: un AutoHeight de fuera lo sigue sin recortarlo
         if (show && h !== null && Math.abs(hv - h) < 0.5) {
           e.style.height = "";
           e.style.overflow = "";
+          markSizing(e, false);
         } else {
           e.style.height = `${(Math.max(0, hv) + chrome.current).toFixed(2)}px`;
           e.style.overflow = "hidden";
+          markSizing(e, true);
         }
       }
       resting.current = show && u > 0.999 && (!collapse || (h !== null && Math.abs(hv - h) < 0.5));

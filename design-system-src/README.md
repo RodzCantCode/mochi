@@ -69,7 +69,7 @@ No hay valores de movimiento en la tabla de tokens: viven en el código (`mochi-
 
 ## Temas
 
-Dos temas: `light` y `dark`. En código se eligen con `data-theme="light" | "dark" | "system"` en `<html>` o en cualquier contenedor; `system` sigue la preferencia del sistema operativo.
+Dos temas: `light` y `dark`. En código se eligen con `data-theme="light" | "dark" | "system"` en `<html>` (no en un contenedor: lo que se abre encima se pinta al final de `<body>` y no lo heredaría); `system` sigue la preferencia del sistema operativo.
 
 ## Iconografía
 

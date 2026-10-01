@@ -7,7 +7,8 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { useSprings, now } from "../motion/useSprings.js";
-import { rubberBand } from "../motion/spring.js";
+import { releaseVelocity, rubberBand } from "../motion/spring.js";
+import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springs, swap as SWAP } from "../tokens.js";
 import { useIsoLayoutEffect } from "../internal/useIsoLayoutEffect.js";
 import { useElementSize } from "../internal/useElementSize.js";
@@ -26,6 +27,7 @@ import {
   trapTab,
   useEscapeLayer,
   useOriginOnClose,
+  useInertWhileClosing,
   useScrollLock,
   useViewport,
   useVisualViewport,
@@ -260,6 +262,7 @@ function Panel({
       if (el && typeof el.focus === "function" && document.contains(el)) el.focus({ preventScroll: true });
     }
   }, [open, armed]);
+  useInertWhileClosing(open, shape);
 
   useScrollLock(open);
   useEscapeLayer(open, dismissible ? close : () => {});
@@ -296,11 +299,13 @@ function Panel({
     const t = now();
     const y = handle.springs.y.value(t);
     const dy = y - to.y;
-    handle.springs.y.setState(y, d.v, t);
+    const v = releaseVelocity(d.v, t - d.lastT);
+    handle.springs.y.setState(y, v, t);
     // vuelve con la velocidad que llevaba; si se cierra, React la redirige hacia abajo desde ahí
-    handle.springs.y.set(to.y, t, springs.back);
+    if (prefersReducedMotion()) handle.springs.y.jump(to.y, t);
+    else handle.springs.y.set(to.y, t, springs.back);
     handle.kick();
-    if (dy > H * 0.3 || (d.v > 900 && dy > 12)) close();
+    if (dy > H * 0.3 || (v > 900 && dy > 12)) close();
   };
 
   const downOnScrim = useRef(false);

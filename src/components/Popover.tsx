@@ -40,6 +40,7 @@ import {
   showOrigin,
   useEscapeLayer,
   useOriginOnClose,
+  useInertWhileClosing,
   useScrollLock,
   useViewport,
   type Origin,
@@ -242,6 +243,7 @@ function Panel({ id, open, label, title, width, placement, trigger, onClose, onD
       (already ?? c?.querySelector<HTMLElement>("[data-autofocus]") ?? (c ? focusables(c)[0] : undefined) ?? s)?.focus({ preventScroll: true });
     } else if (s?.contains(document.activeElement)) trigger.current?.focus({ preventScroll: true });
   }, [open, armed]);
+  useInertWhileClosing(open, shape);
 
   useScrollLock(open);
   useEscapeLayer(open, onClose);

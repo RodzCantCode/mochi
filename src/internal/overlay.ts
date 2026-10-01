@@ -9,7 +9,7 @@ import { useElementSize } from "./useElementSize.js";
 // Desplazamiento bloqueado (con contador: varias capas a la vez)
 
 let locks = 0;
-let saved: { overflow: string; paddingRight: string; x: number; y: number } | null = null;
+let saved: { overflow: string; paddingRight: string; release: () => void } | null = null;
 
 export function useScrollLock(active: boolean) {
   useEffect(() => {
@@ -18,7 +18,7 @@ export function useScrollLock(active: boolean) {
     if (locks++ === 0) {
       // sin barra de desplazamiento la página se ensancharía: se compensa su hueco
       const bar = window.innerWidth - root.clientWidth;
-      saved = { overflow: root.style.overflow, paddingRight: root.style.paddingRight, x: window.scrollX, y: window.scrollY };
+      saved = { overflow: root.style.overflow, paddingRight: root.style.paddingRight, release: watchKeyboardScroll() };
       root.style.overflow = "hidden";
       if (bar > 0) root.style.paddingRight = `${bar}px`;
     }
@@ -26,13 +26,50 @@ export function useScrollLock(active: boolean) {
       if (--locks === 0 && saved) {
         root.style.overflow = saved.overflow;
         root.style.paddingRight = saved.paddingRight;
-        // Safari de iOS desplaza la página al sacar el teclado aunque esté bloqueada: al soltar,
-        // vuelve a donde estaba
-        if (window.scrollX !== saved.x || window.scrollY !== saved.y) window.scrollTo(saved.x, saved.y);
+        saved.release();
         saved = null;
       }
     };
   }, [active]);
+}
+
+const EDITABLE = 'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]), textarea, select';
+const editableFocused = () => {
+  const a = document.activeElement;
+  return a instanceof HTMLElement && (a.isContentEditable || a.matches(EDITABLE));
+};
+
+/**
+ * Safari de iOS desplaza la página al sacar el teclado aunque esté bloqueada; al soltar, la
+ * página vuelve a donde la dejó la app. Solo se deshace lo del teclado: lo que se desplazó con
+ * un campo enfocado o mientras cambiaba la parte visible, y solo si la parte visible cambió (sin
+ * teclado no hay nada que deshacer). Lo que mueve la app (p. ej. `scrollIntoView()` al elegir
+ * una orden) se queda: también si lo hace justo antes de soltar, aún sin evento de scroll.
+ */
+function watchKeyboardScroll(): () => void {
+  const vv = window.visualViewport;
+  const pos = () => ({ x: window.scrollX, y: window.scrollY });
+  let target = pos();
+  let seen = target;
+  let resized = false;
+  let resizedAt = -Infinity;
+  const onResize = () => {
+    resized = true;
+    resizedAt = performance.now();
+  };
+  const onScroll = () => {
+    seen = pos();
+    if (!editableFocused() && performance.now() - resizedAt > 500) target = seen;
+  };
+  vv?.addEventListener("resize", onResize);
+  window.addEventListener("scroll", onScroll, { passive: true });
+  return () => {
+    vv?.removeEventListener("resize", onResize);
+    window.removeEventListener("scroll", onScroll);
+    const now = pos();
+    const unseen = now.x !== seen.x || now.y !== seen.y;
+    if (resized && !unseen && (now.x !== target.x || now.y !== target.y)) window.scrollTo(target.x, target.y);
+  };
 }
 
 // ---------------------------------------------------------------------------------------
@@ -102,6 +139,17 @@ export function trapTab(e: { key: string; shiftKey: boolean; preventDefault: () 
     return true;
   }
   return false;
+}
+
+/**
+ * Mientras se cierra (sale animada) no se puede usar: ni con Tab ni con un lector de pantalla.
+ * Va después del efecto que devuelve el foco: si lo tenía dentro, primero sale.
+ */
+export function useInertWhileClosing(open: boolean, el: RefObject<HTMLElement | null>) {
+  useIsoLayoutEffect(() => {
+    const e = el.current as (HTMLElement & { inert?: boolean }) | null;
+    if (e) e.inert = !open;
+  }, [open]);
 }
 
 // ---------------------------------------------------------------------------------------

@@ -124,3 +124,12 @@ export function rubberBand(overshoot: number, dimension: number, coefficient = 0
   const r = (1 - 1 / ((d * coefficient) / dimension + 1)) * dimension;
   return Math.sign(overshoot) * r;
 }
+
+/**
+ * Velocidad al soltar un arrastre: la del último movimiento, que se apaga si el dedo lleva quieto
+ * (`idle`, en segundos; a los 100 ms ya es 0). Si no, arrastrar deprisa, parar y soltar contaría
+ * como un lanzamiento.
+ */
+export function releaseVelocity(v: number, idle: number): number {
+  return v * Math.max(0, 1 - idle / 0.1);
+}

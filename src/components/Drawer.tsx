@@ -9,11 +9,12 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { useSprings, now } from "../motion/useSprings.js";
-import { rubberBand } from "../motion/spring.js";
+import { releaseVelocity, rubberBand } from "../motion/spring.js";
+import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springs, swap as SWAP } from "../tokens.js";
 import { useIsoLayoutEffect } from "../internal/useIsoLayoutEffect.js";
 import { cx } from "../internal/cx.js";
-import { clamp01, focusables, trapTab, useEscapeLayer, useScrollLock, useViewport, useVisualViewport } from "../internal/overlay.js";
+import { clamp01, focusables, trapTab, useEscapeLayer, useInertWhileClosing, useScrollLock, useViewport, useVisualViewport } from "../internal/overlay.js";
 import { CloseIcon } from "../icons/index.js";
 
 export interface DrawerProps {
@@ -95,12 +96,13 @@ function Panel({
   const scrim = useRef<HTMLDivElement>(null);
   // mientras se arrastra, la posición la manda el dedo (aunque React vuelva a pintar)
   const dragging = useRef(false);
+  const dragOff = useRef(0);
   const geo = useRef({ x, viewTop, out, dir });
   geo.current = { x, viewTop, out, dir };
 
   const handle = useSprings(
     // d: lo que se aparta de su sitio hacia su borde (0 = abierto); o: el contenido
-    { d: open ? 0 : out, o: open ? 1 : 0 },
+    { d: open ? (dragging.current ? dragOff.current : 0) : out, o: open ? 1 : 0 },
     (key, from, to) => (key === "o" ? (to > from ? { config: springs.fadeIn, delay: SWAP.enterDelay } : springs.fadeOut) : springs.morph),
     v => paint(v),
     { from: { d: out, o: 0 } },
@@ -150,6 +152,7 @@ function Panel({
       if (el && typeof el.focus === "function" && document.contains(el)) el.focus({ preventScroll: true });
     }
   }, [open]);
+  useInertWhileClosing(open, shape);
 
   useScrollLock(open);
   useEscapeLayer(open, dismissible ? close : () => {});
@@ -175,6 +178,7 @@ function Panel({
       }
       d.on = true;
       dragging.current = true;
+      dragOff.current = 0;
       e.currentTarget.setPointerCapture(e.pointerId);
       e.currentTarget.setAttribute("data-dragging", "");
       window.getSelection()?.removeAllRanges();
@@ -187,6 +191,7 @@ function Panel({
     d.lastT = t;
     const toward = dir * dx;
     const off = toward >= 0 ? toward : rubberBand(toward, W);
+    dragOff.current = off;
     handle.springs.d.jump(off, t);
     handle.kick();
   };
@@ -199,11 +204,13 @@ function Panel({
     e.currentTarget.removeAttribute("data-dragging");
     const t = now();
     const off = handle.springs.d.value(t);
-    handle.springs.d.setState(off, d.v, t);
+    const v = releaseVelocity(d.v, t - d.lastT);
+    handle.springs.d.setState(off, v, t);
     // vuelve con la velocidad que llevaba; si se cierra, React lo redirige hacia fuera desde ahí
-    handle.springs.d.set(0, t, springs.back);
+    if (prefersReducedMotion()) handle.springs.d.jump(0, t);
+    else handle.springs.d.set(0, t, springs.back);
     handle.kick();
-    if (off > W / 3 || (d.v > 900 && off > 12)) close();
+    if (off > W / 3 || (v > 900 && off > 12)) close();
   };
 
   const downOnScrim = useRef(false);

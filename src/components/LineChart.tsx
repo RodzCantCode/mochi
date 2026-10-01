@@ -3,6 +3,7 @@
 // el punto final aparece al terminar y un tooltip sigue al puntero o a las flechas del teclado.
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { useSprings, now } from "../motion/useSprings.js";
+import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springs } from "../tokens.js";
 import { useElementSize } from "../internal/useElementSize.js";
 import { cx } from "../internal/cx.js";
@@ -124,6 +125,8 @@ export function LineChart({ data, height = 150, formatValue = v => String(v), xT
       firstData.current = false;
       return;
     }
+    // con «reducir movimiento» la línea nueva aparece ya dibujada
+    if (prefersReducedMotion()) return;
     const t = now();
     handle.springs.p.jump(0, t);
     handle.springs.p.set(1, t);

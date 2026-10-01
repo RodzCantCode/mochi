@@ -1,7 +1,7 @@
 // Casos límite de las superposiciones para las pruebas de interacción (test/e2e.mjs). No salen
 // en el menú del sitio: se abren con #/_cases/<nombre>.
-import { useRef, useState, type ReactNode } from "react";
-import { Button, Checkbox, Dialog, Menu, Progress, ProgressRing, RadioGroup, SkeletonSwap, Skeleton, TextField, Tooltip } from "../src/index.js";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Button, Checkbox, Dialog, Menu, Progress, ProgressRing, RadioGroup, ReorderList, SkeletonSwap, Skeleton, TextField, Tooltip } from "../src/index.js";
 
 /** Un diálogo abierto dentro de otro; el de dentro puede no cerrarse con Esc. */
 function Nested({ innerDismissible }: { innerDismissible: boolean }) {
@@ -150,7 +150,37 @@ function SkeletonStale() {
   );
 }
 
+/** Lista que cambia desde fuera a mitad de un arrastre: `window.__reorder.append()` y `.remove(id)`. */
+function ReorderLive() {
+  const [items, setItems] = useState(() => Array.from({ length: 40 }, (_, i) => ({ id: `i${i}`, title: `Item ${i}` })));
+  const next = useRef(40);
+  useEffect(() => {
+    (window as unknown as { __reorder: unknown }).__reorder = {
+      append: () => setItems(l => [...l, { id: `i${next.current}`, title: `Item ${next.current++}` }]),
+      remove: (id: string) => setItems(l => l.filter(t => t.id !== id)),
+    };
+  }, []);
+  return (
+    <div className="stage col">
+      <ReorderList
+        aria-label="Live"
+        items={items}
+        getKey={t => t.id}
+        getLabel={t => t.title}
+        onReorder={setItems}
+        renderItem={(t, { handle }) => (
+          <div className="track">
+            {handle}
+            <span className="track__title">{t.title}</span>
+          </div>
+        )}
+      />
+    </div>
+  );
+}
+
 const CASES: Record<string, () => ReactNode> = {
+  "reorder-live": () => <ReorderLive />,
   "choice-forms": () => <ChoiceForms />,
   "progress-edges": () => <ProgressEdges />,
   "skeleton-stale": () => <SkeletonStale />,

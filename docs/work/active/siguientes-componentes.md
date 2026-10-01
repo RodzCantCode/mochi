@@ -1,6 +1,7 @@
 # Siguientes componentes de Mochi
 
-> **Actualizado:** 2026-09-29. Traspaso temporal: acento cambiado a matcha, rojo de error añadido
+> **Actualizado:** 2026-10-01. Los 11 fallos de la cuarta revisión y uno más del arrastre,
+> arreglados, probados y subidos (lista en «Estado actual»). Traspaso temporal: acento cambiado a matcha, rojo de error añadido
 > y componentes nuevos hechos y probados: campo de texto, diálogo y hoja, menú, selector y
 > tooltip, acordeón, pestañas con contenido y piezas de movimiento, y casilla y botón de opción,
 > barra y anillo de progreso y esqueleto de carga, con las correcciones de tres revisiones
@@ -168,6 +169,48 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   se enviaba; en alto contraste los radios y las barras no se veían. Uno estaba en `Swap`,
   anterior a esta tanda: la capa que sale enseñaba el contenido de cuando apareció, no el último
   (se veía al volver a cargar un `SkeletonSwap`).
+- **Cuarta revisión independiente (pasada final, 2026-09-30):** dos revisores con contexto
+  limpio (comportamiento con React 18.2, 18.3 y 19 y renderizado en servidor; accesibilidad,
+  estilos y documentación) sobre panel flotante, panel lateral, lista, Studio y lo cambiado
+  desde la tercera. 11 fallos distintos con caso reproducible, arreglados el 2026-10-01 (lo
+  aprobó el usuario), cada uno con su prueba de interacción:
+  1. `useScrollLock` devolvía la página a donde estaba al abrir aunque la app la hubiera
+     movido mientras tanto (una orden de la paleta con `scrollIntoView()` acababa en 0 en vez
+     de ~2500). Regresión del arreglo del teclado de iOS (b28c46d).
+  2. El destino del muelle de `Drawer` ignoraba el arrastre: cualquier render (en Studio,
+     con una pista sonando) lo devolvía a 0 bajo el dedo y no se cerraba.
+  3. `ReorderList`: mover con el teclado a una posición que no existía al levantar la fila
+     (se añade una mientras tanto) daba `NaN`: la fila se quedaba a escala 1,02 y el bucle de
+     animación no paraba.
+  4. `ReorderList`: si la fila arrastrada desaparecía de `items`, el desplazamiento automático
+     seguía solo (la página bajaba hasta el final).
+  5. `Presence` con `collapse` (y `PresenceGroup`) no ponía `data-mochi-sizing`: el
+     `AutoHeight` de fuera recortaba hasta 51 px durante ~450 ms («Upload stem» en Studio).
+  6. «Reducir movimiento» no se respetaba al mover una fila con el teclado, al soltar el panel
+     lateral sin cerrarlo y al soltar la hoja (llamadas directas al muelle).
+  7. La etiqueta y el texto de ejemplo del campo, sobre `canvas` dentro de ventanas, hojas y
+     paneles, en claro: 4,47:1 (mínimo 4,5:1). La prueba de contraste solo miraba `surface`.
+  8. Mientras se cierran, Popover, Drawer y Dialog no llevan `inert`: Tab puede entrar y el
+     foco acaba en `<body>` al desmontarse (Chromium).
+  9. Con colores forzados, el acordeón y el selector no enseñan el foco (lo marcan con
+     `box-shadow`, que desaparece).
+  10. Con `viewport-fit=cover`, el panel lateral y la hoja ignoran las zonas seguras laterales
+      y superior (título bajo la muesca en horizontal, X bajo la barra de estado).
+  11. `README.md` y `design-system-src/README.md` decían que `data-theme` vale en cualquier
+      contenedor; lo que se abre encima va en un portal en `<body>` y no lo hereda.
+
+  Del 1: al soltar el bloqueo, la página solo vuelve a su sitio si la parte visible cambió
+  durante el bloqueo (salió un teclado) y lo que la movió fue el teclado (un desplazamiento con
+  un campo enfocado o justo tras cambiar la parte visible); lo que mueve la app se queda,
+  también si lo hace justo antes de soltar (`watchKeyboardScroll` en `src/internal/overlay.ts`).
+  Al probarlos salió uno más, arreglado también (lo aprobó el usuario): arrastrar el panel
+  lateral deprisa, pararse y soltar lo cerraba como si se lanzara (guardaba la velocidad del
+  último movimiento aunque el dedo estuviera quieto). Ahora esa velocidad se apaga en 100 ms
+  quieto (`releaseVelocity` en `src/motion/spring.ts`), también en la hoja y en la lista.
+  Del 6 salió un cuarto caso, arreglado igual: `LineChart` volvía a dibujar la línea animada al
+  cambiar los datos. Del 9, además del acordeón y el selector, el campo de texto y el panel de
+  pestañas (también marcaban el foco con sombra). Para el 3 y el 4 hay un caso oculto nuevo,
+  `#/_cases/reorder-live`.
 - **Plan acordado:** pulir Mochi aquí antes de integrarlo en `phsport-app` (en una sesión aparte
   en esa carpeta; el mensaje para arrancarla se le dio al usuario en el chat).
 - El usuario probó en su iPhone (Safari) la paleta y la hoja de «Rename» tras los arreglos:
@@ -240,7 +283,9 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   usuario el 2026-09-29; está en el README, apartado «Desarrollo»).
 - Personalizar por proyecto se hace redefiniendo variables `--mochi-*` en el CSS del proyecto
   (en `:root`, en el contenedor de una página o en un componente con `className`). Probado en el
-  navegador el 2026-09-28: el cambio solo afecta a lo que queda dentro.
+  navegador el 2026-09-28: el cambio solo afecta a lo que queda dentro. Lo que se abre encima
+  (ventana, menú, panel, tooltip…) se pinta al final de `<body>`: un cambio en un contenedor
+  no le llega (igual que `data-theme`, que va en `<html>`).
 
 ## Intentos fallidos
 
@@ -266,6 +311,24 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   comprobador lo inserta ahora con una función.
 
 ## Verificación realizada
+
+El 2026-10-01, tras los arreglos de la cuarta revisión:
+- `npm run typecheck`: sin errores. `npm test`: 80/80. `npm run design-system`: 48/48 vistas
+  previas con React 18.3.
+- `npm run test:e2e`: 259/259 en Chromium. Quince son nuevas: una o dos por cada arreglo del 1
+  al 10, y dos del arrastre (deprisa, parado y soltado vuelve; lanzado se cierra). Pasadas también sobre el código anterior (d5dc40b, en una
+  copia aparte), antes del arreglo del arrastre: fallan las trece de entonces, cada una con el síntoma de los revisores (p. ej. 4,47:1,
+  recorte de 43 px, la página de 192 a 624 sola), y las otras 244 pasan.
+- Los casos de los revisores, repetidos tras los arreglos: con React 18.2 y 19, en Chromium y
+  WebKit, el desplazamiento al cerrar (ventana y menú) se queda donde lo deja la app, la fila
+  nueva a mitad de un arrastre con teclado ya no deja la animación en marcha y la fila quitada
+  a mitad de un arrastre la para; en Studio, «Upload stem» no recorta (0 de 61 fotogramas) y el
+  panel lateral sigue al dedo con una pista sonando; con «reducir movimiento», 2 posiciones en
+  vez de 25–36; con colores forzados, contorno de foco; contraste de las 5 ventanas en claro y
+  oscuro, sin nada por debajo; zonas seguras emuladas: título a 71 y 69 px (mínimo 47), X a
+  781 (máximo 797) y a 69 px de arriba.
+- Sin comprobar en un iPhone real: que el desplazamiento del teclado se siga deshaciendo (la
+  regla nueva se ha probado simulando el teclado) y las zonas seguras.
 
 El 2026-09-29, tras el último cambio de código:
 - `npm run typecheck`: sin errores.
@@ -354,16 +417,13 @@ Esperan decisión del usuario:
 1. Que el usuario pruebe en su iPhone el panel lateral (arrastre), la lista (asa en táctil),
    Studio con el menú nuevo y el punto del check del anillo (ya arreglado), y en Safari los
    arreglos de movimiento.
-2. Pasada final de repaso y pulido (acordada con el usuario el 2026-09-29): pasar la batería de
-   pruebas en Chromium y WebKit y en teléfono, tableta y ordenador (hoy corre en Chromium, con
-   pantallas de ordenador y de teléfono; falta la de tableta); una revisión
-   independiente con contexto limpio de los componentes sin revisar (panel flotante, panel
-   lateral, lista) y de Studio como uso conjunto, probando también React 18 (las tres anteriores
-   encontraron 13, 18 y 18 fallos reales); el filo de la casilla y el radio; las dos tareas
-   sueltas (botón que se queda hundido con Espacio y Tab; alto contraste del resto); el posible
-   punto del check del botón al terminar de cargar (`.mochi-checkmark`, mismo motivo que el del
-   anillo; sin comprobar en Safari); la versión 0.2.0; y publicar el sistema de diseño (con
-   `GripIcon`).
+2. Resto de la pasada final (acordada con el usuario el 2026-09-29; la revisión independiente
+   ya está hecha y arreglada); pasar la batería también en WebKit (hoy corre en Chromium, con
+   pantallas de teléfono, tableta y ordenador); el filo de la casilla y el radio; las dos
+   tareas sueltas (botón que se queda hundido con Espacio y Tab; alto contraste del resto); el
+   posible punto del check del botón al terminar de cargar (`.mochi-checkmark`, mismo motivo
+   que el del anillo; sin comprobar en Safari); la versión 0.2.0; y publicar el sistema de
+   diseño (con `GripIcon`).
 3. Integrar Mochi en `phsport-app` desde una sesión en esa carpeta.
 4. Al cerrar la tarea: retirar este traspaso y mover lo permanente (la receta, la política de
    Radix) a documentación estable.

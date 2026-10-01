@@ -1231,9 +1231,12 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
   overscroll-behavior: contain;
   padding: 26px var(--mochi-dialog-pad) 24px;
 }
+/* con `viewport-fit=cover`, lo que queda bajo la muesca o el borde redondeado (en horizontal) se
+   suma al relleno; la hoja ya está a 8 px del borde */
 .mochi-dialog-root[data-presentation="sheet"] .mochi-dialog__content {
   --mochi-dialog-pad: 22px;
-  padding: 10px var(--mochi-dialog-pad) calc(22px + env(safe-area-inset-bottom, 0px));
+  padding: 10px calc(var(--mochi-dialog-pad) + max(0px, env(safe-area-inset-right, 0px) - 8px)) calc(22px + env(safe-area-inset-bottom, 0px))
+    calc(var(--mochi-dialog-pad) + max(0px, env(safe-area-inset-left, 0px) - 8px));
 }
 .mochi-dialog__grab { flex: none; touch-action: none; user-select: none; }
 .mochi-dialog-root[data-presentation="center"] .mochi-dialog__grab { touch-action: auto; user-select: auto; }
@@ -1278,10 +1281,11 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
     --mochi-on-solid: var(--mochi-on-fill);
   }
 }
-/* dentro de la ventana, lo que sería superficie blanca va en el tono del lienzo */
-.mochi-dialog__body .mochi-field__box { background: var(--mochi-canvas); box-shadow: none; }
+/* dentro de la ventana, lo que sería superficie blanca va en el tono del lienzo, con su texto
+   atenuado (el de la superficie no llega a 4,5:1 sobre el lienzo claro) */
+.mochi-dialog__body .mochi-field__box { background: var(--mochi-canvas); box-shadow: none; --mochi-on-surface-muted: var(--mochi-on-canvas-muted); }
 .mochi-dialog .mochi-morph[data-tone="surface"],
-.mochi-dialog .mochi-morph__reveal[data-tone="surface"] { background: var(--mochi-canvas); box-shadow: none; }
+.mochi-dialog .mochi-morph__reveal[data-tone="surface"] { background: var(--mochi-canvas); box-shadow: none; --mochi-on-surface-muted: var(--mochi-on-canvas-muted); }
 
 /* ---------------------------------------------------------------- menú */
 
@@ -1428,7 +1432,7 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
 /* dentro del panel, lo que sería superficie blanca va en el tono del lienzo (como en el diálogo) */
 .mochi-popover .mochi-field__box,
 .mochi-popover .mochi-morph[data-tone="surface"],
-.mochi-popover .mochi-morph__reveal[data-tone="surface"] { background: var(--mochi-canvas); box-shadow: none; }
+.mochi-popover .mochi-morph__reveal[data-tone="surface"] { background: var(--mochi-canvas); box-shadow: none; --mochi-on-surface-muted: var(--mochi-on-canvas-muted); }
 
 /* ---------------------------------------------------------------- panel lateral */
 
@@ -1456,17 +1460,22 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
   touch-action: pan-y;
 }
 .mochi-drawer[data-dragging] { user-select: none; }
+/* con `viewport-fit=cover`, la barra de estado (arriba) y la muesca (en horizontal, del lado del
+   que sale) se suman al relleno; el panel ya está a 8 px de los bordes */
+.mochi-drawer { --mochi-drawer-l: 0px; --mochi-drawer-r: 0px; }
+.mochi-drawer-root[data-side="left"] .mochi-drawer { --mochi-drawer-l: max(0px, env(safe-area-inset-left, 0px) - 8px); }
+.mochi-drawer-root[data-side="right"] .mochi-drawer { --mochi-drawer-r: max(0px, env(safe-area-inset-right, 0px) - 8px); }
 .mochi-drawer__content {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 22px 0 0;
+  padding: calc(22px + max(0px, env(safe-area-inset-top, 0px) - 8px)) 0 0;
 }
 .mochi-drawer__head {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 0 16px 0 24px;
+  padding: 0 calc(16px + var(--mochi-drawer-r)) 0 calc(24px + var(--mochi-drawer-l));
 }
 .mochi-drawer__title { flex: 1; min-width: 0; margin: 6px 0 0; font: 620 20px/26px var(--mochi-font-sans); letter-spacing: -0.02em; }
 .mochi-drawer__close {
@@ -1487,12 +1496,12 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
 }
 @media (hover: hover) { .mochi-drawer__close:hover { background: var(--mochi-surface-border); color: var(--mochi-on-surface); } }
 .mochi-drawer__close:focus-visible { outline: 2px solid var(--mochi-focus-ring); outline-offset: -2px; }
-.mochi-drawer__desc { margin: 8px 0 0; padding: 0 24px; font: var(--mochi-text-body); color: var(--mochi-on-surface-muted); }
+.mochi-drawer__desc { margin: 8px 0 0; padding: 0 calc(24px + var(--mochi-drawer-r)) 0 calc(24px + var(--mochi-drawer-l)); font: var(--mochi-text-body); color: var(--mochi-on-surface-muted); }
 .mochi-drawer__body {
   flex: 1;
   min-height: 0;
   margin-top: 16px;
-  padding: 4px 24px 24px;
+  padding: 4px calc(24px + var(--mochi-drawer-r)) 24px calc(24px + var(--mochi-drawer-l));
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -1501,13 +1510,13 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
-  padding: 16px 24px calc(20px + env(safe-area-inset-bottom, 0px));
+  padding: 16px calc(24px + var(--mochi-drawer-r)) calc(20px + env(safe-area-inset-bottom, 0px)) calc(24px + var(--mochi-drawer-l));
   border-top: 1px solid var(--mochi-surface-border);
 }
 /* dentro del panel, lo que sería superficie blanca va en el tono del lienzo (como en el diálogo) */
 .mochi-drawer .mochi-field__box,
 .mochi-drawer .mochi-morph[data-tone="surface"],
-.mochi-drawer .mochi-morph__reveal[data-tone="surface"] { background: var(--mochi-canvas); box-shadow: none; }
+.mochi-drawer .mochi-morph__reveal[data-tone="surface"] { background: var(--mochi-canvas); box-shadow: none; --mochi-on-surface-muted: var(--mochi-on-canvas-muted); }
 
 /* ---------------------------------------------------------------- lista que se reordena */
 
@@ -1607,4 +1616,11 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
   .mochi-progress__track { border: 1px solid CanvasText; }
   .mochi-progress__bar { forced-color-adjust: none; background: Highlight; }
   .mochi-skeleton { border: 1px solid GrayText; }
+  /* el foco que se pinta con sombra (campo, selector, acordeón, panel de pestañas) se perdería:
+     pasa a contorno */
+  .mochi-field[data-focused] .mochi-field__box,
+  .mochi-select[data-native]:focus-within .mochi-field__box,
+  .mochi-select__trigger:focus-visible,
+  .mochi-accordion__trigger:focus-visible,
+  .mochi-tabs__panel:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
 }

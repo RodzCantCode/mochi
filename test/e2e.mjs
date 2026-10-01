@@ -59,7 +59,8 @@ const sampleFrames = (p, fn, ms) =>
   p.evaluate(([src, ms]) => new Promise(done => {
     const f = new Function(`return (${src})()`);
     const out = [], t0 = performance.now();
-    const tick = () => { out.push(f()); if (performance.now() - t0 < ms) requestAnimationFrame(tick); else done(out); };
+    // si algo falla (p. ej. el elemento ya no está), se apunta null en vez de quedarse colgada
+    const tick = () => { try { out.push(f()); } catch { out.push(null); } if (performance.now() - t0 < ms) requestAnimationFrame(tick); else done(out); };
     requestAnimationFrame(tick);
   }), [fn.toString(), ms]);
 
@@ -745,6 +746,17 @@ try {
   await sleep(700);
   check("panel flotante: el contenido puede cerrarlo (Apply)", (await page.getByRole("dialog").count()) === 0 && (await page.getByText("Mostrando: Videos").count()) === 1);
   await page.screenshot({ path: `${OUT}/popover.png` });
+  // mientras se cierra no se puede usar: Tab desde el botón (lo último de la página) no entra
+  await page.goto(URL_ + "#/popover");
+  await sleep(500);
+  await page.getByRole("button", { name: "Ada Lovelace" }).click();
+  await sleep(800);
+  await page.keyboard.press("Escape");
+  await sleep(40);
+  await page.keyboard.press("Tab");
+  await sleep(20);
+  check("panel flotante: mientras se cierra, Tab no entra en él", await page.evaluate(() => !document.activeElement?.closest(".mochi-popover-root") && document.querySelector(".mochi-popover").inert === true));
+  await sleep(800);
 
   // --- panel lateral
   await page.goto(URL_ + "#/drawer");
@@ -771,12 +783,28 @@ try {
   await sleep(900);
   const dwBack = await box(drawer);
   check("panel lateral: sigue al arrastre y, soltado pronto, vuelve", dwDrag.x - dwEnd.x > 40 && Math.abs(dwBack.x - dwEnd.x) < 1, `${dwEnd.x.toFixed(0)} → ${dwDrag.x.toFixed(0)} → ${dwBack.x.toFixed(0)}`);
+  // deprisa, quieto y soltar no es lanzarlo: vuelve (100 px no llegan al tercio)
+  await page.mouse.move(desc.x + 20, desc.y + desc.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(desc.x + 120, desc.y + desc.height / 2, { steps: 3 });
+  await sleep(400);
+  await page.mouse.up();
+  await sleep(900);
+  check("panel lateral: arrastrado deprisa, parado y soltado, vuelve", (await page.getByRole("dialog").count()) === 1 && Math.abs((await box(drawer)).x - dwEnd.x) < 1);
   await page.mouse.move(desc.x + 20, desc.y + desc.height / 2);
   await page.mouse.down();
   await page.mouse.move(desc.x + 260, desc.y + desc.height / 2, { steps: 4 });
   await page.mouse.up();
   await sleep(900);
   check("panel lateral: arrastrado hacia su borde se cierra y el foco vuelve", (await page.getByRole("dialog").count()) === 0 && (await focusedName(page)) === "Edit details");
+  await editDetails.click();
+  await sleep(900);
+  await page.mouse.move(desc.x + 20, desc.y + desc.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(desc.x + 120, desc.y + desc.height / 2, { steps: 3 });
+  await page.mouse.up();
+  await sleep(900);
+  check("panel lateral: lanzado hacia su borde se cierra aunque no llegue al tercio", (await page.getByRole("dialog").count()) === 0);
   await page.getByRole("button", { name: "Open menu" }).click();
   await sleep(800);
   const nav = await box(page.getByRole("dialog", { name: "Mochi" }));
@@ -850,6 +878,54 @@ try {
   await sleep(900);
   const smEnd = await box(rowOf("Afterglow"));
   check("reordenar: un cambio de orden desde fuera también se anima", Math.abs(smMid.y - sm0.y) > 4 && Math.abs(smMid.y - smEnd.y) > 4, `${sm0.y.toFixed(0)} → ${smMid.y.toFixed(0)} → ${smEnd.y.toFixed(0)}`);
+
+  // la lista cambia desde fuera a mitad de un arrastre
+  const rl = await open({ viewport: { width: 1000, height: 600 } });
+  await rl.goto(URL_ + "#/_cases/reorder-live");
+  await sleep(500);
+  const countFrames = () => rl.evaluate(() => {
+    window.__raf = 0;
+    if (!window.__rafWrapped) {
+      const r = window.requestAnimationFrame.bind(window);
+      window.requestAnimationFrame = cb => { window.__raf++; return r(cb); };
+      window.__rafWrapped = true;
+    }
+  });
+  await countFrames();
+  await rl.getByRole("button", { name: "Reorder Item 38" }).focus();
+  await rl.keyboard.press("Space");
+  await rl.evaluate(() => window.__reorder.append());
+  await sleep(200);
+  await rl.keyboard.press("ArrowDown");
+  await rl.keyboard.press("ArrowDown");
+  await sleep(600);
+  const rlT = await rl.locator(".mochi-reorder__item", { hasText: "Item 38" }).evaluate(e => e.style.transform);
+  await rl.keyboard.press("Space");
+  await sleep(1200);
+  await countFrames();
+  await sleep(500);
+  const rlTitles = await rl.locator(".track__title").allTextContents();
+  check("reordenar: con una fila nueva a mitad, el teclado la lleva hasta la nueva última y todo se para", !/NaN/.test(rlT) && rlTitles.slice(-2).join(",") === "Item 40,Item 38" && (await rl.evaluate(() => window.__raf)) === 0, `${rlT} · ${rlTitles.slice(-3).join(",")}`);
+  await rl.reload();
+  await sleep(500);
+  // sin selección de texto: con el botón pulsado junto al borde, el navegador desplaza la página
+  // él solo al seleccionar, y aquí se mide solo lo que desplaza la lista
+  await rl.evaluate(() => { document.body.style.userSelect = "none"; window.scrollTo(0, 0); });
+  const i2 = await box(rl.getByRole("button", { name: "Reorder Item 2", exact: true }));
+  await rl.mouse.move(i2.x + i2.width / 2, i2.y + i2.height / 2);
+  await rl.mouse.down();
+  // junto al borde de abajo se desplaza sola mientras se arrastra (la lista es más larga que la
+  // pantalla): al quitar la fila tiene que parar
+  await rl.mouse.move(i2.x + i2.width / 2, 590, { steps: 6 });
+  await sleep(150);
+  await rl.evaluate(() => window.__reorder.remove("i2"));
+  await sleep(100);
+  const rlY0 = await rl.evaluate(() => window.scrollY);
+  await sleep(600);
+  const rlY1 = await rl.evaluate(() => window.scrollY);
+  await rl.mouse.up();
+  check("reordenar: si la fila arrastrada desaparece, la página deja de desplazarse sola", rlY1 === rlY0, `${rlY0} → ${rlY1}`);
+  await rl.context().close();
 
   // --- Studio, la app de demostración: los componentes juntos, como en un proyecto
   await page.goto(URL_ + "#/");
@@ -945,8 +1021,20 @@ try {
   await page.keyboard.press("Space");
   await sleep(800);
   check("demo: las pistas se reordenan", (await page.locator(".studio-track__title").allTextContents()).slice(0, 2).join(",") === "Glass Harbour,Night Drive");
+  const uploadCut = page.evaluate(() => new Promise(done => {
+    const out = [], t0 = performance.now();
+    const f = () => {
+      const panels = document.querySelector(".mochi-tabs__panels");
+      const rows = document.querySelectorAll(".studio-track");
+      const last = rows[rows.length - 1];
+      if (panels && last && getComputedStyle(panels).overflow === "hidden") out.push(last.getBoundingClientRect().bottom - panels.getBoundingClientRect().bottom);
+      if (performance.now() - t0 < 700) requestAnimationFrame(f); else done(out);
+    };
+    requestAnimationFrame(f);
+  }));
   await page.getByRole("button", { name: "Upload stem" }).click();
-  await sleep(300);
+  const cuts = await uploadCut;
+  check("demo: la subida abre su hueco sin que las pestañas recorten la última pista", cuts.every(c => c <= 0.5), `hasta ${Math.max(0, ...cuts).toFixed(0)} px en ${cuts.length} fotogramas`);
   check("demo: subir enseña el progreso sin valor mientras prepara", (await page.getByRole("progressbar", { name: "Preparing stem…" }).getAttribute("aria-valuenow")) === null);
   await page.waitForFunction(() => [...document.querySelectorAll(".studio-track__title")].some(e => e.textContent === "Stem 6"), null, { timeout: 12000 });
   check("demo: y al terminar añade la pista", (await page.locator(".studio-track__title").count()) === 6);
@@ -958,6 +1046,25 @@ try {
   check("demo: copiar el enlace lo cierra y avisa", (await page.getByRole("dialog").count()) === 0 && (await page.getByText("Link copied").count()) === 1);
   await page.getByRole("button", { name: "Edit details" }).click();
   await sleep(900);
+  // con una pista sonando, Studio vuelve a pintar varias veces por segundo: el panel sigue al dedo
+  const playing = (await page.locator(".studio-dock .mochi-player-host").count()) === 1;
+  const edPanel = page.getByRole("dialog", { name: "Edit details" });
+  const ed0 = await box(edPanel);
+  const edDesc = await box(edPanel.locator(".mochi-drawer__desc"));
+  await page.mouse.move(edDesc.x + 20, edDesc.y + edDesc.height / 2);
+  await page.mouse.down();
+  for (let i = 1; i <= 10; i++) {
+    await page.mouse.move(edDesc.x + 20 + i * 10, edDesc.y + edDesc.height / 2);
+    await sleep(16);
+  }
+  const held = [];
+  for (let i = 0; i < 5; i++) {
+    await sleep(150);
+    held.push((await box(edPanel)).x - ed0.x);
+  }
+  await page.mouse.up();
+  await sleep(900);
+  check("demo: con una pista sonando, el panel lateral se queda donde lo lleva el dedo", playing && held.every(d => Math.abs(d - 100) < 2) && Math.abs((await box(edPanel)).x - ed0.x) < 1, `${playing ? "sonando" : "en silencio"}; ${held.map(d => d.toFixed(0)).join(",")}`);
   const editName = page.getByRole("dialog", { name: "Edit details" }).getByRole("textbox", { name: "Name" });
   await editName.fill("Night Drive (Remix)");
   await page.getByRole("button", { name: "Save" }).click();
@@ -1104,6 +1211,33 @@ try {
   await rm.goto(URL_ + "#/skeleton");
   await sleep(300);
   check("movimiento reducido: el esqueleto no brilla", (await rm.locator(".mochi-skeleton").first().evaluate(e => getComputedStyle(e).animationName)) === "none");
+  const transforms = (sel, ms) => sampleFrames(rm, new Function(`return getComputedStyle(document.querySelector(${JSON.stringify(sel)})).transform`), ms);
+  await rm.goto(URL_ + "#/reorder");
+  await sleep(500);
+  await rm.getByRole("button", { name: "Reorder Night Drive" }).focus();
+  await rm.keyboard.press("Space");
+  await sleep(300);
+  const rmRow = transforms(".mochi-reorder__item[data-dragging]", 400);
+  await rm.keyboard.press("ArrowDown");
+  const rmSteps = new Set(await rmRow).size;
+  await rm.keyboard.press("Escape");
+  check("movimiento reducido: la fila movida con el teclado salta a su hueco", rmSteps <= 2, `${rmSteps} posiciones distintas`);
+  await rm.goto(URL_ + "#/drawer");
+  await sleep(500);
+  await rm.getByRole("button", { name: "Edit details" }).click();
+  await sleep(500);
+  const rmDesc = await box(rm.locator(".mochi-drawer__desc"));
+  await rm.mouse.move(rmDesc.x + 20, rmDesc.y + 4);
+  await rm.mouse.down();
+  for (let i = 1; i <= 8; i++) {
+    await rm.mouse.move(rmDesc.x + 20 + i * 10, rmDesc.y + 4);
+    await sleep(16);
+  }
+  await sleep(100);
+  const rmBack = transforms(".mochi-drawer", 400);
+  await rm.mouse.up();
+  const rmDrawer = new Set(await rmBack).size;
+  check("movimiento reducido: el panel lateral soltado vuelve de golpe", rmDrawer <= 2, `${rmDrawer} posiciones distintas`);
   await rm.context().close();
 
   // --- alto contraste (colores forzados): el estado se sigue viendo
@@ -1116,6 +1250,17 @@ try {
   await sleep(500);
   const fcBar = await fc.getByRole("progressbar", { name: "Storage" }).locator(".mochi-progress__bar").evaluate(e => getComputedStyle(e).backgroundColor);
   const fcTrack = await fc.getByRole("progressbar", { name: "Storage" }).evaluate(e => getComputedStyle(e).backgroundColor);
+  const fcFocus = async (hash, sel) => {
+    await fc.goto(URL_ + hash);
+    await sleep(400);
+    await fc.locator(sel).first().focus();
+    await fc.keyboard.press("Shift+Tab");
+    await fc.keyboard.press("Tab");
+    return fc.evaluate(() => getComputedStyle(document.activeElement).outlineStyle);
+  };
+  const fcAcc = await fcFocus("#/accordion", ".mochi-accordion__trigger");
+  const fcSel = await fcFocus("#/select", ".mochi-select__trigger");
+  check("alto contraste: el foco del acordeón y del selector se ve", fcAcc === "solid" && fcSel === "solid", `${fcAcc} · ${fcSel}`);
   check("alto contraste: la opción elegida, el filo y la barra se ven", fcFill !== "rgba(0, 0, 0, 0)" && /^solid (1|1\.5)px$/.test(fcRing) && fcBar !== fcTrack, `${fcFill} · ${fcRing} · ${fcBar} sobre ${fcTrack}`);
   await fc.context().close();
 
@@ -1209,18 +1354,99 @@ try {
   await kb.context().close();
 
   // iOS desplaza la página con el teclado aunque esté bloqueada: al cerrar vuelve a su sitio
-  const sc = await open({ viewport: { width: 390, height: 780 } });
+  const sc = await withVisual();
   await sc.goto(URL_ + "#/dialog");
   await sleep(600);
   await sc.getByRole("button", { name: "Rename" }).click();
   await sleep(800);
   const scY0 = await sc.evaluate(() => window.scrollY);
+  await setVisual(sc, 0, 440);
   await sc.evaluate(y => window.scrollTo(0, y + 260), scY0);
+  await sleep(100);
+  await setVisual(sc, 0, 780);
   await sc.keyboard.press("Escape");
   await sleep(900);
   const scY1 = await sc.evaluate(() => window.scrollY);
   check("hoja: al cerrarse, la página vuelve a donde estaba", scY1 === scY0, `${scY0} → ${scY1}`);
+  // con el teclado fuera, la app cierra y lleva la página a otro sitio en el mismo gesto: se queda
+  await sc.getByRole("button", { name: "Rename" }).click();
+  await sleep(800);
+  await setVisual(sc, 0, 440);
+  await sc.evaluate(y => window.scrollTo(0, y + 260), scY0);
+  await sleep(100);
+  await sc.evaluate(() => {
+    window.scrollTo(0, 40);
+    document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  });
+  await sleep(900);
+  check("hoja: si la app desplaza la página al cerrar, no se deshace", (await sc.evaluate(() => window.scrollY)) === 40, `${await sc.evaluate(() => window.scrollY)}`);
   await sc.context().close();
+  // sin teclado (ordenador): lo que desplaza la app con algo abierto se queda al cerrar
+  const sd = await open({ viewport: { width: 1280, height: 500 } });
+  await sd.goto(URL_ + "#/dialog");
+  await sleep(600);
+  await sd.getByRole("button", { name: "Rename" }).click();
+  await sleep(800);
+  await sd.evaluate(() => window.scrollTo(0, 300));
+  await sleep(100);
+  await sd.keyboard.press("Escape");
+  await sleep(900);
+  check("ventana: lo que desplaza la app mientras está abierta se queda al cerrar", (await sd.evaluate(() => window.scrollY)) === 300, `${await sd.evaluate(() => window.scrollY)}`);
+  await sd.context().close();
+
+  // la etiqueta del campo sobre el lienzo, dentro de la ventana, en claro: 4,5:1 como mínimo
+  const ct = await open();
+  await ct.goto(URL_ + "#/dialog");
+  await sleep(500);
+  await ct.getByRole("button", { name: "Rename" }).click();
+  await sleep(900);
+  const labelRatio = await ct.evaluate(() => {
+    const rgb = c => c.match(/[\d.]+/g).map(Number);
+    const lin = v => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+    const L = ([r, g, b]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    const boxEl = document.querySelector('[role="dialog"] .mochi-field__box');
+    const bg = rgb(getComputedStyle(boxEl).backgroundColor);
+    const fg = rgb(getComputedStyle(boxEl.querySelector(".mochi-field__label")).color);
+    const a = fg[3] ?? 1;
+    const [x, y] = [L([0, 1, 2].map(i => fg[i] * a + bg[i] * (1 - a))), L(bg)].sort((p, q) => q - p);
+    return (x + 0.05) / (y + 0.05);
+  });
+  check("ventana: la etiqueta del campo se lee (4,5:1) sobre el lienzo", labelRatio >= 4.5, labelRatio.toFixed(2));
+  await ct.context().close();
+
+  // con viewport-fit=cover (zonas seguras emuladas: muesca a los lados en horizontal, barra de
+  // estado arriba en vertical), el contenido de los paneles y de la hoja queda fuera de ellas
+  const safeAt = async (viewport, insets, hash) => {
+    const pg = await open({ viewport, hasTouch: true, isMobile: true });
+    const cdp = await pg.context().newCDPSession(pg);
+    await cdp.send("Emulation.setSafeAreaInsetsOverride", { insets });
+    await pg.goto(URL_ + hash);
+    await pg.evaluate(() => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1, viewport-fit=cover"));
+    await sleep(500);
+    return pg;
+  };
+  const sa = await safeAt({ width: 844, height: 390 }, { top: 0, left: 47, right: 47, bottom: 21 }, "#/drawer");
+  const saBoxes = [];
+  for (const name of ["Open menu", "Edit details"]) {
+    await sa.getByRole("button", { name }).first().click();
+    await sleep(1000);
+    saBoxes.push({ title: await box(sa.locator(".mochi-drawer__title")), close: await box(sa.getByRole("button", { name: "Close", exact: true })) });
+    await sa.keyboard.press("Escape");
+    await sleep(900);
+  }
+  await sa.goto(URL_ + "#/dialog");
+  await sleep(500);
+  await sa.getByRole("button", { name: "Open sheet" }).first().click();
+  await sleep(1000);
+  const saSheet = await box(sa.locator(".mochi-dialog__title"));
+  check("zonas seguras en horizontal: panel lateral y hoja quedan fuera de la muesca", saBoxes[0].title.x >= 47 && saBoxes[1].close.x + saBoxes[1].close.width <= 797 && saSheet.x >= 47 && saSheet.x + saSheet.width <= 797, `izquierdo ${saBoxes[0].title.x.toFixed(0)}, derecho ${(saBoxes[1].close.x + saBoxes[1].close.width).toFixed(0)}, hoja ${saSheet.x.toFixed(0)}`);
+  await sa.context().close();
+  const sp = await safeAt({ width: 390, height: 844 }, { top: 47, left: 0, right: 0, bottom: 34 }, "#/drawer");
+  await sp.getByRole("button", { name: "Edit details" }).first().click();
+  await sleep(1000);
+  const spClose = await box(sp.getByRole("button", { name: "Close", exact: true }));
+  check("zonas seguras en vertical: la X del panel lateral queda bajo la barra de estado", spClose.y >= 47, `y ${spClose.y.toFixed(0)}`);
+  await sp.context().close();
 
   // --- tableta en vertical (iPad, 820 puntos): columna lateral como en escritorio
   const tab = await open({ viewport: { width: 820, height: 1180 }, hasTouch: true });

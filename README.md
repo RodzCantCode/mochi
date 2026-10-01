@@ -117,7 +117,7 @@ El sitio de pruebas (`npm run dev`, ver «Desarrollo») tiene una página por co
 
 ## Temas
 
-Pon `data-theme` en `<html>` (o en cualquier contenedor):
+Pon `data-theme` en `<html>`. En un contenedor no basta: lo que se abre encima (ventanas, hojas, menús, paneles, tooltips, avisos y la paleta) se pinta al final de `<body>`, fuera del contenedor, y saldría con el tema de la página.
 
 - `data-theme="light"`: claro (también es lo que sale sin atributo).
 - `data-theme="dark"`: oscuro.
@@ -179,5 +179,5 @@ La carpeta `reel/` es el prototipo del vídeo con el que nació el sistema (una 
 
 - **Distribución para despliegues**: el código está en GitHub (`RodzCantCode/mochi`, público, rama `main`). Falta probar en un proyecto real la instalación con `npm install github:RodzCantCode/mochi`: al instalarse desde Git, npm debe compilarlo (`prepare`). Otra opción es un registro de npm.
 - **App móvil**: cuando se elija la tecnología, los valores (`mochi-ui/tokens`) sirven tal cual; los componentes habrá que rehacerlos para esa plataforma.
-- **Alto contraste**: solo la casilla, el radio, el progreso y el esqueleto tienen reglas para los colores forzados del sistema (`forced-colors`); en el resto (Switch, SegmentedControl, Slider…) el estado puede no verse con el alto contraste de Windows.
+- **Alto contraste**: solo la casilla, el radio, el progreso y el esqueleto tienen reglas para los colores forzados del sistema (`forced-colors`), además del foco del campo, el selector, el acordeón y el panel de pestañas (pasa a contorno); en el resto (Switch, SegmentedControl, Slider, el borde de ventanas y paneles…) el estado puede no verse con el alto contraste de Windows.
 - **Colores de estado**: hay rojo de error (`danger`, `danger-strong`) y «correcto» usa el matcha profundo (`accent-strong`). No hay color de aviso (ámbar); se añadirá si algún componente lo necesita.

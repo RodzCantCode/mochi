@@ -7,7 +7,8 @@
 // (también desde fuera) se anima: cada fila parte de donde se veía.
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { useSprings, now, type SpringsHandle } from "../motion/useSprings.js";
-import { rubberBand } from "../motion/spring.js";
+import { releaseVelocity, rubberBand } from "../motion/spring.js";
+import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springs } from "../tokens.js";
 import { useIsoLayoutEffect } from "../internal/useIsoLayoutEffect.js";
 import { cx } from "../internal/cx.js";
@@ -183,6 +184,11 @@ export function ReorderList<T>({ items, getKey, getLabel, onReorder, renderItem,
   const autoScroll = () => {
     const p = pointer.current;
     if (!p) return;
+    // la fila que se arrastraba ya no está (se quitó desde fuera): se acaba aquí
+    if (!dragRef.current) {
+      pointer.current = null;
+      return;
+    }
     const r = p.container ? p.container.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
     const k = p.lastY < r.top + EDGE ? -(1 - (p.lastY - r.top) / EDGE) : p.lastY > r.bottom - EDGE ? 1 - (r.bottom - p.lastY) / EDGE : 0;
     if (k) {
@@ -223,7 +229,7 @@ export function ReorderList<T>({ items, getKey, getLabel, onReorder, renderItem,
     if (row) {
       const t = now();
       const sp = row.springs.springs.y;
-      sp.setState(sp.value(t), p.v, t);
+      sp.setState(sp.value(t), releaseVelocity(p.v, t - p.lastT), t);
     }
     finish(d, commit);
   };
@@ -248,11 +254,7 @@ export function ReorderList<T>({ items, getKey, getLabel, onReorder, renderItem,
       if (over === d.over) return;
       setDrag({ ...d, over });
       setAnnounce(m.moved(labelOf(key), over + 1, n));
-      const row = rows.current.get(key);
-      if (row) {
-        row.springs.springs.y.set(slotY(d.from, over), now(), springs.morph);
-        row.springs.kick();
-      }
+      moveTo(key, slotY(d.from, over));
     } else if (e.key === " " || e.key === "Enter") {
       e.preventDefault();
       focusAfter.current = key;
@@ -279,8 +281,30 @@ export function ReorderList<T>({ items, getKey, getLabel, onReorder, renderItem,
     return () => window.removeEventListener("keydown", onKey, true);
   }, [drag?.key, drag?.keyboard]);
 
+  // la fila que se mueve con el teclado va a su hueco con un muelle (o salta, con «reducir movimiento»)
+  const moveTo = (key: string, y: number) => {
+    const row = rows.current.get(key);
+    if (!row) return;
+    const sp = row.springs.springs.y;
+    if (prefersReducedMotion()) sp.jump(y, now());
+    else sp.set(y, now(), springs.morph);
+    row.springs.kick();
+  };
+
   // si los elementos cambian a mitad de un arrastre (desde fuera), se suelta sin cambiar nada
   if (drag && keys[drag.from] !== drag.key) setDrag(null);
+  // si llegan o se van otras filas sin mover la que se arrastra, se vuelve a medir: los huecos
+  // son otros (y una fila nueva al final es un sitio más al que llevarla)
+  const keysSig = keys.join("\n");
+  useIsoLayoutEffect(() => {
+    const d = dragRef.current;
+    if (!d || keys[d.from] !== d.key) return;
+    measure(d.from);
+    const over = Math.min(d.over, keys.length - 1);
+    if (over !== d.over) setDrag({ ...d, over });
+    if (d.keyboard) moveTo(d.key, slotY(d.from, over));
+    else applyPointer();
+  }, [keysSig]);
 
   // al soltar con el teclado, el asa sigue enfocada aunque React haya movido su fila
   useIsoLayoutEffect(() => {
