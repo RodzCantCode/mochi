@@ -38,10 +38,10 @@ Todos se manejan con teclado y lector de pantalla, y respetan «reducir movimien
 Se instala desde GitHub, fijando una versión (una etiqueta del repositorio). Así el proyecto no cambia aunque Mochi siga avanzando, y se pasa a otra versión cuando se decide:
 
 ```bash
-npm install github:RodzCantCode/mochi#v0.2.0
+npm install github:RodzCantCode/mochi#v0.3.0
 ```
 
-Al instalarse, npm lo compila solo. Probado el 2026-10-01 en un proyecto vacío con React 18.3: se instala la 0.2.0 y los componentes se renderizan en el servidor.
+Al instalarse, npm lo compila solo. Probado el 2026-10-01 en un proyecto vacío con React 18.3: se instalan la 0.2.0 y la 0.3.0 y los componentes se renderizan en el servidor.
 
 Para probar cambios de Mochi en un proyecto antes de sacar versión, se instala desde esta carpeta (desde un proyecto en `~/Developer/<proyecto>`):
 
