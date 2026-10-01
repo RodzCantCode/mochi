@@ -691,6 +691,38 @@ try {
   await page.keyboard.up("Space");
   await sleep(500);
   check("casilla: con Espacio pulsado y el foco fuera, deja de estar hundida", heldScale < 0.95 && Math.abs((await scaleOf(page.locator("#c1"))) - 1) < 0.001, `${heldScale.toFixed(2)} → ${(await scaleOf(page.locator("#c1"))).toFixed(2)}`);
+  // botón que lleva a otra página: un enlace de verdad con la misma forma
+  await page.goto(URL_ + "#/button");
+  await sleep(600);
+  const seeMenu = page.locator('[data-demo="button-enlaces"]').getByRole("link", { name: "See the menu" });
+  check("botón-enlace: es un enlace con su dirección", (await seeMenu.evaluate(e => e.tagName)) === "A" && (await seeMenu.getAttribute("href")) === "#/menu");
+  // lo que sale del servidor (sin estilos en línea ni medida, antes de JavaScript) mide lo mismo
+  const staticSizes = await page.evaluate(() => {
+    const els = [...document.querySelectorAll('[data-demo="button-enlaces"] .mochi-button, [data-demo="button-estados"] .mochi-button')];
+    const box = document.createElement("div");
+    box.style.cssText = "position:fixed;left:0;top:0";
+    document.body.appendChild(box);
+    const out = els.map(e => {
+      const c = e.cloneNode(true);
+      c.removeAttribute("style");
+      c.removeAttribute("data-measured");
+      box.appendChild(c);
+      const a = e.getBoundingClientRect(), b = c.getBoundingClientRect();
+      return Math.abs(a.width - b.width) < 1 && Math.abs(a.height - b.height) < 1;
+    });
+    box.remove();
+    return out;
+  });
+  check("botón y botón-enlace: sin JavaScript miden lo mismo", staticSizes.length === 6 && staticSizes.every(Boolean), JSON.stringify(staticSizes));
+  await seeMenu.focus();
+  await page.keyboard.down("Space");
+  await sleep(200);
+  const linkSpace = await scaleOf(seeMenu);
+  await page.keyboard.up("Space");
+  await seeMenu.focus();
+  await page.keyboard.press("Enter");
+  await sleep(500);
+  check("botón-enlace: Espacio no lo hunde y Enter lo sigue", Math.abs(linkSpace - 1) < 0.001 && (await page.evaluate(() => location.hash)) === "#/menu", `${linkSpace.toFixed(3)} · ${await page.evaluate(() => location.hash)}`);
   // lo mismo en un botón (MorphBox): la tecla se suelta ya en otro sitio
   await page.goto(URL_ + "#/button");
   await sleep(500);

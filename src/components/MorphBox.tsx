@@ -181,7 +181,8 @@ export const MorphBox = forwardRef<HTMLElement, MorphBoxProps>(function MorphBox
         onPointerCancel?.(e);
       }}
       onKeyDown={(e: KeyboardEvent<HTMLElement>) => {
-        if (e.key === " " || e.key === "Enter") press(true);
+        // un enlace se sigue con Enter; Espacio desplaza la página, no lo pulsa
+        if (e.key === "Enter" || (e.key === " " && e.currentTarget.tagName !== "A")) press(true);
         onKeyDown?.(e);
       }}
       onKeyUp={(e: KeyboardEvent<HTMLElement>) => {

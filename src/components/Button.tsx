@@ -1,7 +1,19 @@
 "use client";
 // Botón de Mochi: normal → cargando (se encoge a círculo con un arco que gira) → hecho
-// (el check se dibuja) → normal. Todo es la misma forma que se transforma.
-import { forwardRef, useCallback, useEffect, useRef, useState, type ButtonHTMLAttributes, type MouseEvent, type ReactNode } from "react";
+// (el check se dibuja) → normal. Todo es la misma forma que se transforma. LinkButton es el
+// mismo botón cuando lleva a otra página: un enlace, sin estados de carga.
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type AnchorHTMLAttributes,
+  type ButtonHTMLAttributes,
+  type ElementType,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import { MorphBox } from "./MorphBox.js";
 import { cx } from "../internal/cx.js";
 
@@ -65,6 +77,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         holdSpace
         className={cx("mochi-button", className)}
         data-size={size}
+        data-icon-only={iconOnly || undefined}
         data-status={status}
         disabled={disabled}
         aria-busy={status === "loading" || undefined}
@@ -94,6 +107,53 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         {status === "loading" ? loadingLabel : status === "success" ? successLabel : ""}
       </span>
     </>
+  );
+});
+
+export interface LinkButtonProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "children"> {
+  href: string;
+  /** El componente de enlace del framework (p. ej. `Link` de Next.js); por defecto, `<a>`. */
+  as?: ElementType;
+  variant?: "solid" | "surface" | "accent" | "danger";
+  size?: "sm" | "md" | "lg";
+  /** Icono tras el texto (p. ej. <ArrowRightIcon />). */
+  icon?: ReactNode;
+  /** Solo un icono como contenido: el enlace es un círculo. Ponle `aria-label`. */
+  iconOnly?: boolean;
+  children: ReactNode;
+}
+
+/**
+ * El botón de Mochi cuando lleva a otra página: un enlace de verdad (se abre en otra pestaña, se
+ * copia, funciona sin JavaScript) con la misma forma, tamaños y pulsación que Button.
+ */
+export const LinkButton = forwardRef<HTMLAnchorElement, LinkButtonProps>(function LinkButton(
+  { as = "a", variant = "solid", size = "md", icon, iconOnly, children, className, ...rest },
+  ref,
+) {
+  const { h, px } = SIZES[size];
+  return (
+    <MorphBox
+      ref={ref}
+      as={as}
+      tone={variant}
+      radius="pill"
+      contentKey="idle"
+      height={h}
+      width={iconOnly ? h : undefined}
+      padding={iconOnly ? "0" : `0 ${px}px`}
+      pressScale={0.965}
+      className={cx("mochi-button", className)}
+      data-size={size}
+      data-icon-only={iconOnly || undefined}
+      accessory={iconOnly ? undefined : <span className="mochi-sr">{children}</span>}
+      {...rest}
+    >
+      <span className="mochi-button__label" aria-hidden="true">
+        {children}
+        {icon}
+      </span>
+    </MorphBox>
   );
 });
 

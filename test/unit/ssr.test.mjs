@@ -9,6 +9,7 @@ const data = [1, 3, 2, 5].map((value, i) => ({ label: `D${i}`, value }));
 const cases = {
   Button: h(M.Button, null, "Get started"),
   "Button cargando": h(M.Button, { status: "loading" }, "Save"),
+  LinkButton: h(M.LinkButton, { href: "/plans" }, "See plans"),
   Switch: h(M.Switch, { defaultChecked: true, "aria-label": "Wi-Fi" }),
   SegmentedControl: h(M.SegmentedControl, { "aria-label": "Range", options: [{ value: "a", label: "A" }, { value: "b", label: "B" }] }),
   Slider: h(M.Slider, { "aria-label": "Volume", defaultValue: 30, icon: f => h(M.VolumeIcon, { level: f }) }),
@@ -58,6 +59,18 @@ for (const [name, el] of Object.entries(cases)) {
 test("SSR: el nombre accesible del botón está en el HTML del servidor", () => {
   const html = renderToString(h(M.Button, null, "Get started"));
   assert.match(html, /class="mochi-sr"[^>]*>Get started</);
+});
+
+test("SSR: LinkButton es un enlace con la forma del botón y su nombre", () => {
+  const html = renderToString(h(M.LinkButton, { href: "/plans", size: "lg" }, "See plans"));
+  assert.match(html, /^<a [^>]*href="\/plans"/);
+  assert.match(html, /class="mochi-morph mochi-button"/);
+  assert.match(html, /data-size="lg"/);
+  assert.doesNotMatch(html, /type="button"/);
+  assert.match(html, /class="mochi-sr"[^>]*>See plans</);
+  // con el enlace del framework (p. ej. Link de Next.js)
+  const Link = props => h("a", { ...props, "data-framework": "" });
+  assert.match(renderToString(h(M.LinkButton, { href: "/x", as: Link }, "Go")), /^<a [^>]*data-framework=""/);
 });
 
 test("SSR: el campo lleva su etiqueta y el error enlazado", () => {

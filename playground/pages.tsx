@@ -4,6 +4,7 @@ import { MorphBox, SearchIcon, Swap, TextField } from "../src/index.js";
 import { useState } from "react";
 import {
   ButtonDemo,
+  LinkButtonDemo,
   ChartDemo,
   CheckboxDemo,
   ChoiceFormDemo,
@@ -98,10 +99,11 @@ export const PAGES: Page[] = [
     name: "Button",
     group: "Acciones",
     summary: "Normal → cargando (se encoge a círculo) → hecho (el check se dibuja). useButtonStatus lo gestiona solo.",
-    imports: "Button, useButtonStatus",
+    imports: "Button, LinkButton, useButtonStatus",
     overview: () => <ButtonDemo />,
     sections: [
       { title: "Estados", hint: "Pulsa «Get started» o «Save»: cargan, terminan y vuelven.", render: () => <ButtonDemo /> },
+      { title: "Enlaces", hint: "LinkButton lleva a otra página: la misma forma, pero es un enlace (se abre en otra pestaña, se sigue con Enter).", render: () => <LinkButtonDemo /> },
     ],
   },
   {

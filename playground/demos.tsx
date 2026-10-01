@@ -18,6 +18,7 @@ import {
   UserPlusIcon,
   ArrowRightIcon,
   Button,
+  LinkButton,
   ChartCard,
   Checkbox,
   Drawer,
@@ -86,6 +87,23 @@ export function ButtonDemo() {
       <Button variant="accent" size="sm">
         Upgrade
       </Button>
+    </div>
+  );
+}
+
+/** Botones que llevan a otra página: enlaces de verdad con la forma del botón. */
+export function LinkButtonDemo() {
+  return (
+    <div className="stage">
+      <LinkButton href="#/menu" size="lg" icon={<ArrowRightIcon size={20} />}>
+        See the menu
+      </LinkButton>
+      <LinkButton href="#/dialog" variant="surface">
+        Dialogs
+      </LinkButton>
+      <LinkButton href="https://github.com/RodzCantCode/mochi" target="_blank" rel="noreferrer" variant="accent" size="sm">
+        GitHub
+      </LinkButton>
     </div>
   );
 }

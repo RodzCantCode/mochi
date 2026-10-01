@@ -106,7 +106,9 @@
   top: 50%;
   transform: translate(-50%, -50%);
 }
-button.mochi-morph { cursor: pointer; }
+button.mochi-morph,
+a.mochi-morph { cursor: pointer; }
+a.mochi-morph { text-decoration: none; }
 button.mochi-morph[aria-disabled="true"] { cursor: default; }
 .mochi-morph:disabled { opacity: 0.45; cursor: default; }
 .mochi-morph:focus-visible {
@@ -116,6 +118,14 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
 
 /* ---------------------------------------------------------------- botón */
 
+/* su alto (y el ancho del círculo de solo icono) ya desde el HTML del servidor: antes de que cargue
+   JavaScript, o si nunca carga (un enlace en una página estática), mide lo mismo */
+.mochi-button { height: 44px; }
+.mochi-button[data-size="sm"] { height: 36px; }
+.mochi-button[data-size="lg"] { height: 56px; }
+.mochi-button[data-icon-only] { width: 44px; }
+.mochi-button[data-icon-only][data-size="sm"] { width: 36px; }
+.mochi-button[data-icon-only][data-size="lg"] { width: 56px; }
 .mochi-button[data-size="sm"] { font: var(--mochi-text-label); }
 .mochi-button[data-size="lg"] { font: 520 17px/22px var(--mochi-font-sans); }
 .mochi-button__label {

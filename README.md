@@ -7,6 +7,7 @@ Funciona en **Next.js** y **Astro** (como isla de React). Solo depende de React 
 | Componente | Qué hace |
 | --- | --- |
 | `Button` | Normal → cargando (se encoge a círculo en su sitio, sin mover lo de al lado) → hecho (el check se dibuja). `useButtonStatus` lo gestiona solo. `variant="danger"` para acciones destructivas; `iconOnly` para un botón redondo con solo un icono. |
+| `LinkButton` | El mismo botón cuando lleva a otra página: un enlace de verdad (`href`), con la misma forma y pulsación. Con `as`, el enlace del framework (p. ej. `Link` de Next.js). Sin JavaScript (Astro sin isla) ya se ve y mide igual. |
 | `Menu`, `ContextMenu` | El botón «…» se transforma en el menú; también con clic derecho o pulsación larga. Se coloca solo para no salirse de la ventana. |
 | `Switch` | Interruptor cuya bolita se estira al cambiar: cada borde va en su propio muelle. |
 | `Checkbox`, `RadioGroup` | Casilla y botones de opción: al marcar, el negro crece desde el centro y el check se dibuja; el estado mixto es una raya. Las flechas mueven y eligen en el grupo. |

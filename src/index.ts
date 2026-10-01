@@ -3,7 +3,7 @@ export * from "./motion/index.js";
 export * from "./icons/index.js";
 export { Swap, type SwapProps } from "./components/Swap.js";
 export { MorphBox, type MorphBoxProps, type Tone } from "./components/MorphBox.js";
-export { Button, Spinner, CheckMark, useButtonStatus, type ButtonProps, type ButtonStatus } from "./components/Button.js";
+export { Button, LinkButton, Spinner, CheckMark, useButtonStatus, type ButtonProps, type LinkButtonProps, type ButtonStatus } from "./components/Button.js";
 export { Switch, type SwitchProps } from "./components/Switch.js";
 export { Checkbox, type CheckboxProps, type CheckedState } from "./components/Checkbox.js";
 export { RadioGroup, type RadioGroupProps, type RadioOption } from "./components/RadioGroup.js";

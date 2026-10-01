@@ -212,6 +212,13 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   cambiar los datos. Del 9, además del acordeón y el selector, el campo de texto y el panel de
   pestañas (también marcaban el foco con sombra). Para el 3 y el 4 hay un caso oculto nuevo,
   `#/_cases/reorder-live`.
+- **LinkButton (2026-10-01, versión 0.3.0, etiqueta `v0.3.0`):** el botón cuando lleva a otra página, pedido al
+  empezar a usar Mochi en `ph-sport-web` (allí casi todos los botones son enlaces). Es un `<a>`
+  (o el enlace del framework con `as`, p. ej. `Link` de Next.js) con la forma, tamaños,
+  variantes y pulsación de `Button`, sin estados de carga; Enter lo sigue y Espacio no lo hunde.
+  Además, `Button` y `LinkButton` llevan su alto (y el ancho de `iconOnly`) en el CSS: el HTML
+  del servidor mide lo mismo antes de JavaScript (antes, ~20 px de alto hasta medirse), así que
+  en Astro un `LinkButton` puede ir sin isla.
 - **Versión 0.2.0 (2026-10-01):** etiqueta `v0.2.0` en GitHub. Instalada desde GitHub en un
   proyecto vacío con React 18.3 (`npm install github:RodzCantCode/mochi#v0.2.0`): npm la compila
   al instalarla y el botón se renderiza en el servidor. Los proyectos instalan una versión fija
@@ -338,6 +345,13 @@ interacción en verde y su ficha publicada en el sistema de diseño.
 
 ## Verificación realizada
 
+El 2026-10-01, tras LinkButton: `npm test` 82/82 (dos nuevas: LinkButton en el servidor, también
+con `as`); `npm run test:e2e` 264/264 en Chromium y 259/259 en WebKit (tres nuevas: es un enlace,
+sin JavaScript mide lo mismo que el botón vivo, Espacio no lo hunde y Enter lo sigue);
+`npm run design-system` 48/48. El HTML del servidor de tres LinkButton y un Button, abierto sin JavaScript en
+Chromium y WebKit, mide lo mismo que en la página viva (56, 44 y 36 px de alto). Comprobado a
+mano en los dos motores: es un `<a>` con su `href`, Espacio no lo hunde y Enter lo sigue.
+
 El 2026-10-01, tras el resto de la pasada final (WebKit, botón hundido, alto contraste):
 - `npm run typecheck`: sin errores. `npm test`: 80/80. `npm run design-system`: 48/48.
 - `npm run test:e2e`: 261/261 en Chromium; `E2E_BROWSER=webkit npm run test:e2e`: 256/256 (las
@@ -455,9 +469,13 @@ Esperan decisión del usuario:
    Studio con el menú nuevo y el punto del check del anillo (ya arreglado), y en Safari los
    arreglos de movimiento.
 2. Resto de la pasada final, a la espera del usuario (ver «Bloqueos»): publicar el sistema de
-   diseño (con `GripIcon`).
-3. Integrar Mochi en `phsport-app` desde una sesión en esa carpeta.
-4. Al cerrar la tarea: retirar este traspaso y mover lo permanente (la receta, la política de
+   diseño (con `GripIcon`; ahora la ficha de Button incluye LinkButton).
+3. Usar Mochi en `ph-sport-web` (Astro, sin React) en una sesión abierta en esa carpeta: rama
+   aparte, repaso de las animaciones (el movimiento solo responde al usuario), tema de marca con
+   las variables `--mochi-*` y la portada primero con `LinkButton`, midiendo el peso. Lo que
+   falte en Mochi se apunta y se hace aquí.
+4. Integrar Mochi en `phsport-app` desde una sesión en esa carpeta.
+5. Al cerrar la tarea: retirar este traspaso y mover lo permanente (la receta, la política de
    Radix) a documentación estable.
 
 ## Cosas que conviene saber
