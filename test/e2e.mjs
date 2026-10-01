@@ -714,6 +714,27 @@ try {
     return out;
   });
   check("botón y botón-enlace: sin JavaScript miden lo mismo", staticSizes.length === 6 && staticSizes.every(Boolean), JSON.stringify(staticSizes));
+  // sin JavaScript (el HTML del servidor) la pulsación se imita con CSS
+  await page.evaluate(() => {
+    const c = document.querySelector('[data-demo="button-enlaces"] a.mochi-button').cloneNode(true);
+    c.removeAttribute("style");
+    c.removeAttribute("data-measured");
+    c.removeAttribute("href");
+    c.id = "static-link";
+    c.style.cssText = "position:fixed;left:20px;top:20px;z-index:9999";
+    document.body.appendChild(c);
+  });
+  const staticLink = page.locator("#static-link");
+  const slBox = await box(staticLink);
+  await page.mouse.move(slBox.x + slBox.width / 2, slBox.y + slBox.height / 2);
+  await page.mouse.down();
+  await sleep(300);
+  const slDown = await scaleOf(staticLink);
+  await page.mouse.up();
+  await sleep(500);
+  const slUp = await scaleOf(staticLink);
+  check("botón-enlace sin JavaScript: se hunde al pulsarlo y vuelve", Math.abs(slDown - 0.965) < 0.003 && Math.abs(slUp - 1) < 0.001, `${slDown.toFixed(3)} → ${slUp.toFixed(3)}`);
+  await page.evaluate(() => document.getElementById("static-link").remove());
   await seeMenu.focus();
   await page.keyboard.down("Space");
   await sleep(200);

@@ -34,4 +34,4 @@ Cuando el botón lleva a otra página («See plans», «Contact»), usa `LinkBut
 - `variant`, `size`, `icon` e `iconOnly`, como en `Button`.
 - `as`: el componente de enlace del framework, p. ej. `Link` de Next.js para navegar sin recargar; por defecto, `<a>`.
 - Se sigue con Enter, como cualquier enlace; Espacio no lo pulsa (desplaza la página).
-- En una página de Astro puede ir sin isla (sin `client:`): sale con su forma y su tamaño, y solo pierde la pulsación animada.
+- En una página de Astro puede ir sin isla (sin `client:`): sale con su forma y su tamaño, y la pulsación se imita con CSS con las mismas curvas (se hunde a 0,965 y vuelve). Lo mismo vale para `Button` antes de que cargue JavaScript.

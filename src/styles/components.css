@@ -126,6 +126,15 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
 .mochi-button[data-icon-only] { width: 44px; }
 .mochi-button[data-icon-only][data-size="sm"] { width: 36px; }
 .mochi-button[data-icon-only][data-size="lg"] { width: 56px; }
+/* sin JavaScript (un LinkButton en una página estática de Astro) no hay muelles: la pulsación se
+   imita con CSS, con las mismas curvas (`press` al hundirse, `snappy` al volver). Con JavaScript
+   la forma ya está medida y manda el muelle */
+.mochi-button:not([data-measured]) { transition: transform var(--mochi-duration-snappy) var(--mochi-ease-snappy); }
+.mochi-button:not([data-measured]):not(:disabled, [aria-disabled="true"]):active {
+  transform: scale(0.965);
+  transition-duration: var(--mochi-duration-press);
+  transition-timing-function: var(--mochi-ease-press);
+}
 .mochi-button[data-size="sm"] { font: var(--mochi-text-label); }
 .mochi-button[data-size="lg"] { font: 520 17px/22px var(--mochi-font-sans); }
 .mochi-button__label {
@@ -1606,6 +1615,7 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
   .mochi-spinner circle { animation: none; stroke-dasharray: 40 100; }
   .mochi-checkmark path { animation: none; stroke-dashoffset: 0; }
   .mochi-player__ctl { transition: none; }
+  .mochi-button:not([data-measured]) { transition: none; }
   .mochi-skeleton { animation: none; background-image: none; }
   /* lo indeterminado se queda quieto y respira */
   .mochi-progress[data-state="indeterminate"] .mochi-progress__bar,

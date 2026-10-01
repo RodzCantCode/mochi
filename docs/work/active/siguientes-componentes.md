@@ -218,7 +218,9 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   variantes y pulsación de `Button`, sin estados de carga; Enter lo sigue y Espacio no lo hunde.
   Además, `Button` y `LinkButton` llevan su alto (y el ancho de `iconOnly`) en el CSS: el HTML
   del servidor mide lo mismo antes de JavaScript (antes, ~20 px de alto hasta medirse), así que
-  en Astro un `LinkButton` puede ir sin isla.
+  en Astro un `LinkButton` puede ir sin isla. En la 0.3.1, sin JavaScript (sin `data-measured`)
+  la pulsación se imita con CSS (`press` al hundirse, `snappy` al volver; nada con «reducir
+  movimiento»): el usuario eligió para `ph-sport-web` React solo al construir, sin islas.
 - **Versión 0.2.0 (2026-10-01):** etiqueta `v0.2.0` en GitHub. Instalada desde GitHub en un
   proyecto vacío con React 18.3 (`npm install github:RodzCantCode/mochi#v0.2.0`): npm la compila
   al instalarla y el botón se renderiza en el servidor. Los proyectos instalan una versión fija
@@ -344,6 +346,11 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   comprobador lo inserta ahora con una función.
 
 ## Verificación realizada
+
+El 2026-10-01, tras la pulsación con CSS (0.3.1): `npm run test:e2e` 265/265 en Chromium y
+260/260 en WebKit (nueva: el HTML del servidor, sin JavaScript, se hunde a 0,965 al pulsarlo y
+vuelve); `npm test` 82/82; `npm run design-system` 48/48. Además, el HTML de `renderToString`
+abierto con JavaScript desactivado, en Chromium y WebKit: pulsado 0,965, suelto 1.
 
 El 2026-10-01, tras LinkButton: `npm test` 82/82 (dos nuevas: LinkButton en el servidor, también
 con `as`); `npm run test:e2e` 264/264 en Chromium y 259/259 en WebKit (tres nuevas: es un enlace,
