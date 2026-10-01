@@ -212,6 +212,10 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   cambiar los datos. Del 9, además del acordeón y el selector, el campo de texto y el panel de
   pestañas (también marcaban el foco con sombra). Para el 3 y el 4 hay un caso oculto nuevo,
   `#/_cases/reorder-live`.
+- **Versión 0.2.0 (2026-10-01):** etiqueta `v0.2.0` en GitHub. Instalada desde GitHub en un
+  proyecto vacío con React 18.3 (`npm install github:RodzCantCode/mochi#v0.2.0`): npm la compila
+  al instalarla y el botón se renderiza en el servidor. Los proyectos instalan una versión fija
+  (README, «Instalar en un proyecto»).
 - **Resto de la pasada final (hecho y subido, 2026-10-01):**
   - La batería de interacción corre también en WebKit (`E2E_BROWSER=webkit npm run test:e2e`;
     cómo, en el README, «Desarrollo»). Lo que solo Chromium emula (colores forzados, zonas
@@ -441,7 +445,6 @@ componentes nuevos.
 ## Bloqueos
 
 Esperan decisión del usuario:
-- Si subir la versión a 0.2.0 antes de subirlo.
 - Publicar el sistema de diseño con las seis fichas nuevas (está generado en
   `design-system/project/`, sin publicar). Hay un icono nuevo, `GripIcon`: al publicar hay que
   subirlo y apuntar su id en `design-system-src/uploads.json`.
@@ -451,8 +454,8 @@ Esperan decisión del usuario:
 1. Que el usuario pruebe en su iPhone el panel lateral (arrastre), la lista (asa en táctil),
    Studio con el menú nuevo y el punto del check del anillo (ya arreglado), y en Safari los
    arreglos de movimiento.
-2. Resto de la pasada final, a la espera del usuario (ver «Bloqueos»): la versión 0.2.0 y
-   publicar el sistema de diseño (con `GripIcon`).
+2. Resto de la pasada final, a la espera del usuario (ver «Bloqueos»): publicar el sistema de
+   diseño (con `GripIcon`).
 3. Integrar Mochi en `phsport-app` desde una sesión en esa carpeta.
 4. Al cerrar la tarea: retirar este traspaso y mover lo permanente (la receta, la política de
    Radix) a documentación estable.

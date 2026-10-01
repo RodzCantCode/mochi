@@ -34,15 +34,21 @@ Todos se manejan con teclado y lector de pantalla, y respetan «reducir movimien
 
 ## Instalar en un proyecto
 
-Mientras el paquete no esté publicado, se instala desde esta carpeta (desde un proyecto en `~/Developer/<proyecto>`):
+Se instala desde GitHub, fijando una versión (una etiqueta del repositorio). Así el proyecto no cambia aunque Mochi siga avanzando, y se pasa a otra versión cuando se decide:
+
+```bash
+npm install github:RodzCantCode/mochi#v0.2.0
+```
+
+Al instalarse, npm lo compila solo. Probado el 2026-10-01 en un proyecto vacío con React 18.3: se instala la 0.2.0 y los componentes se renderizan en el servidor.
+
+Para probar cambios de Mochi en un proyecto antes de sacar versión, se instala desde esta carpeta (desde un proyecto en `~/Developer/<proyecto>`):
 
 ```bash
 npm install ../mochi --install-links
 ```
 
-`--install-links` copia el paquete ya compilado en vez de enlazar la carpeta. Sin él, el proyecto cargaría el React de Mochi además del suyo y los componentes fallarían. Para recoger cambios de Mochi, vuelve a ejecutar el mismo comando.
-
-Para un proyecto que se despliega (Vercel u otro servidor), la carpeta local no sirve: el paquete está en GitHub y se instala con `npm install github:RodzCantCode/mochi` (sin probar todavía; ver «Pendiente» al final).
+`--install-links` copia el paquete ya compilado en vez de enlazar la carpeta. Sin él, el proyecto cargaría el React de Mochi además del suyo y los componentes fallarían. Para recoger cambios de Mochi, vuelve a ejecutar el mismo comando. Esto es solo para probar en local: un proyecto que se despliega (Vercel u otro servidor) instala una versión de GitHub.
 
 Importa los estilos **una vez** y pon la fuente Geist.
 
@@ -180,7 +186,7 @@ La carpeta `reel/` es el prototipo del vídeo con el que nació el sistema (una 
 
 ## Pendiente
 
-- **Distribución para despliegues**: el código está en GitHub (`RodzCantCode/mochi`, público, rama `main`). Falta probar en un proyecto real la instalación con `npm install github:RodzCantCode/mochi`: al instalarse desde Git, npm debe compilarlo (`prepare`). Otra opción es un registro de npm.
+- **Distribución**: se instala por versión desde GitHub (ver «Instalar en un proyecto»). Falta verlo en un despliegue real (Vercel), no solo en local. Si algún día hace falta, la otra opción es publicarlo en npm.
 - **App móvil**: cuando se elija la tecnología, los valores (`mochi-ui/tokens`) sirven tal cual; los componentes habrá que rehacerlos para esa plataforma.
 - **Alto contraste**: todos los componentes tienen reglas para los colores forzados del sistema (`forced-colors`, el alto contraste de Windows): lo que era sombra pasa a contorno y lo encendido, elegido o resaltado toma los colores de resaltado del sistema. Comprobado solo emulado en Chromium, no en un Windows real.
 - **Colores de estado**: hay rojo de error (`danger`, `danger-strong`) y «correcto» usa el matcha profundo (`accent-strong`). No hay color de aviso (ámbar); se añadirá si algún componente lo necesita.
