@@ -1616,6 +1616,59 @@ button.mochi-morph[aria-disabled="true"] { cursor: default; }
   .mochi-progress__track { border: 1px solid CanvasText; }
   .mochi-progress__bar { forced-color-adjust: none; background: Highlight; }
   .mochi-skeleton { border: 1px solid GrayText; }
+  /* los bordes que eran sombra (botones, campos, controles y todo lo que se abre encima) pasan a
+     contorno; dentro, por si la forma recorta */
+  button.mochi-morph,
+  .mochi-switch__track,
+  .mochi-seg,
+  .mochi-slider__shape,
+  .mochi-field__box,
+  .mochi-tooltip,
+  .mochi-cmdk,
+  .mochi-dialog,
+  .mochi-menu,
+  .mochi-popover,
+  .mochi-drawer,
+  .mochi-toast { outline: 1px solid CanvasText; outline-offset: -1px; }
+  /* reproductor y gráfica: lo que solo era fondo o trazo de color (portada, disco, ecualizador,
+     barra de avance, línea) pasa a contorno o al color del texto */
+  .mochi-player,
+  .mochi-player__art,
+  .mochi-scrubber__bar,
+  .mochi-card,
+  .mochi-chart__tip { outline: 1px solid CanvasText; outline-offset: -1px; }
+  .mochi-player__disc,
+  .mochi-player__bar,
+  .mochi-scrubber__fill { forced-color-adjust: none; background: CanvasText; }
+  .mochi-player__disc::after { forced-color-adjust: none; background: Canvas; }
+  .mochi-chart__line { stroke: CanvasText; }
+  .mochi-chart__end,
+  .mochi-chart__dot { fill: CanvasText; stroke: Canvas; }
+  .mochi-chart__grid { stroke: GrayText; }
+  /* lo encendido, lo elegido y lo resaltado, en los colores de resaltado del sistema (el fondo
+     del interruptor lo pone el muelle en línea: hace falta !important) */
+  .mochi-switch__knob { forced-color-adjust: none; background: CanvasText; }
+  .mochi-switch[data-state="on"] .mochi-switch__track { forced-color-adjust: none; background: Highlight !important; }
+  .mochi-switch[data-state="on"] .mochi-switch__knob { background: HighlightText; }
+  .mochi-seg__indicator,
+  .mochi-slider__fill,
+  .mochi-menu__highlight,
+  .mochi-cmdk__highlight { forced-color-adjust: none; background: Highlight; }
+  /* el sistema pone una placa detrás del texto: la de lo que queda debajo del resaltado asomaría
+     como un recuadro. En menús y paleta el resaltado pasa por encima de las opciones; en las
+     pestañas no (taparía el foco de la elegida), así que su texto va sin placa */
+  .mochi-menu__highlight { z-index: 1; pointer-events: none; }
+  .mochi-menu__hi { z-index: 2; }
+  .mochi-cmdk__highlight { z-index: 2; pointer-events: none; }
+  .mochi-cmdk__hi { z-index: 3; }
+  .mochi-menu__highlight[data-destructive] { background: Highlight; }
+  .mochi-menu .mochi-menu__hi .mochi-menu__item:is([data-selected], [data-destructive]) :is(.mochi-menu__icon, .mochi-menu__sc) { color: HighlightText; }
+  .mochi-seg > .mochi-seg__tab { forced-color-adjust: none; color: CanvasText; }
+  .mochi-seg > .mochi-seg__tab:focus-visible { outline-color: CanvasText; }
+  .mochi-seg__hi .mochi-seg__tab,
+  .mochi-slider__icon[data-layer="hi"],
+  .mochi-menu__hi :is(.mochi-menu__item, .mochi-menu__icon, .mochi-menu__sc),
+  .mochi-cmdk__hi :is(.mochi-cmdk__row, .mochi-cmdk__icon, .mochi-cmdk__sc) { forced-color-adjust: none; color: HighlightText; }
   /* el foco que se pinta con sombra (campo, selector, acordeón, panel de pestañas) se perdería:
      pasa a contorno */
   .mochi-field[data-focused] .mochi-field__box,

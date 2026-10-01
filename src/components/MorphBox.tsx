@@ -10,6 +10,7 @@ import {
   type HTMLAttributes,
   type PointerEvent,
   type KeyboardEvent,
+  type FocusEvent,
   type ReactNode,
 } from "react";
 import { useSprings, now } from "../motion/useSprings.js";
@@ -77,6 +78,7 @@ export const MorphBox = forwardRef<HTMLElement, MorphBoxProps>(function MorphBox
     onPointerCancel,
     onKeyDown,
     onKeyUp,
+    onBlur,
     ...rest
   } = props as MorphBoxProps & Record<string, never>;
 
@@ -185,6 +187,11 @@ export const MorphBox = forwardRef<HTMLElement, MorphBoxProps>(function MorphBox
       onKeyUp={(e: KeyboardEvent<HTMLElement>) => {
         press(false);
         onKeyUp?.(e);
+      }}
+      // Espacio pulsado y Tab: la tecla se suelta ya en otro sitio y no llega aquí
+      onBlur={(e: FocusEvent<HTMLElement>) => {
+        press(false);
+        onBlur?.(e);
       }}
       {...rest}
     >

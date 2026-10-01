@@ -165,9 +165,12 @@ npm install
 npm run dev        # sitio de pruebas en http://localhost:5178: una página por componente y la de colores
 npm test           # compila y pasa las pruebas unitarias (muelles, contrastes, filtro, colocación del menú, SSR)
 npm run test:e2e   # pruebas de interacción con Playwright (compilado y en modo desarrollo); capturas en test/out/
+E2E_BROWSER=webkit npm run test:e2e   # las mismas en WebKit, el motor de Safari; capturas en test/out/webkit/
 npm run typecheck
 npm run design-system  # regenera y comprueba el sistema de diseño
 ```
+
+Las pruebas de interacción se pasan en Chromium y en WebKit, con pantallas de teléfono, tableta y ordenador. En WebKit se salta lo que solo Chromium sabe emular (colores forzados y zonas seguras), se navega con Opción+Tab (en Safari de Mac, Tab solo salta entre campos) y lo que abre una capa desde un botón se pulsa con el teclado, porque Safari no enfoca un botón al pulsarlo con el ratón.
 
 Para publicar el sitio de pruebas (por ejemplo en Vercel, para verlo en el móvil), la orden de compilación es `npx vite build` y la carpeta que se sirve, `playground-dist`. La compilación por defecto (`npm run build`) solo compila la librería.
 
@@ -179,5 +182,5 @@ La carpeta `reel/` es el prototipo del vídeo con el que nació el sistema (una 
 
 - **Distribución para despliegues**: el código está en GitHub (`RodzCantCode/mochi`, público, rama `main`). Falta probar en un proyecto real la instalación con `npm install github:RodzCantCode/mochi`: al instalarse desde Git, npm debe compilarlo (`prepare`). Otra opción es un registro de npm.
 - **App móvil**: cuando se elija la tecnología, los valores (`mochi-ui/tokens`) sirven tal cual; los componentes habrá que rehacerlos para esa plataforma.
-- **Alto contraste**: solo la casilla, el radio, el progreso y el esqueleto tienen reglas para los colores forzados del sistema (`forced-colors`), además del foco del campo, el selector, el acordeón y el panel de pestañas (pasa a contorno); en el resto (Switch, SegmentedControl, Slider, el borde de ventanas y paneles…) el estado puede no verse con el alto contraste de Windows.
+- **Alto contraste**: todos los componentes tienen reglas para los colores forzados del sistema (`forced-colors`, el alto contraste de Windows): lo que era sombra pasa a contorno y lo encendido, elegido o resaltado toma los colores de resaltado del sistema. Comprobado solo emulado en Chromium, no en un Windows real.
 - **Colores de estado**: hay rojo de error (`danger`, `danger-strong`) y «correcto» usa el matcha profundo (`accent-strong`). No hay color de aviso (ámbar); se añadirá si algún componente lo necesita.

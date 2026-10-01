@@ -1,7 +1,8 @@
 # Siguientes componentes de Mochi
 
 > **Actualizado:** 2026-10-01. Los 11 fallos de la cuarta revisión y uno más del arrastre,
-> arreglados, probados y subidos (lista en «Estado actual»). Traspaso temporal: acento cambiado a matcha, rojo de error añadido
+> arreglados y subidos; después, la batería también en WebKit, el botón hundido y el alto
+> contraste de todos los componentes, también subidos. Traspaso temporal: acento cambiado a matcha, rojo de error añadido
 > y componentes nuevos hechos y probados: campo de texto, diálogo y hoja, menú, selector y
 > tooltip, acordeón, pestañas con contenido y piezas de movimiento, y casilla y botón de opción,
 > barra y anillo de progreso y esqueleto de carga, con las correcciones de tres revisiones
@@ -160,8 +161,8 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   no de Studio.
 - **Tercera revisión independiente** (dos revisores con contexto limpio: comportamiento con
   React 18.2, 18.3 y 19, y accesibilidad, estilos y documentación): 18 fallos distintos con caso
-  reproducible (dos los encontraron los dos), todos corregidos salvo el contraste del filo (ver
-  «Bloqueos»). Los de código tienen prueba, menos el rendimiento (medido aparte) y el aviso de
+  reproducible (dos los encontraron los dos), todos corregidos salvo el contraste del filo (se
+  queda así por decisión del usuario; ver «Decisiones tomadas»). Los de código tienen prueba, menos el rendimiento (medido aparte) y el aviso de
   error de una casilla sin etiqueta (sin lector de pantalla con que probarlo). Los
   que más importaban: un valor `NaN` (p. ej. `0/0` al empezar una subida) dejaba la barra
   congelada y pidiendo fotogramas sin fin; marcar 300 casillas forzaba 300 recálculos de la
@@ -211,6 +212,20 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   cambiar los datos. Del 9, además del acordeón y el selector, el campo de texto y el panel de
   pestañas (también marcaban el foco con sombra). Para el 3 y el 4 hay un caso oculto nuevo,
   `#/_cases/reorder-live`.
+- **Resto de la pasada final (hecho y subido, 2026-10-01):**
+  - La batería de interacción corre también en WebKit (`E2E_BROWSER=webkit npm run test:e2e`;
+    cómo, en el README, «Desarrollo»). Lo que solo Chromium emula (colores forzados, zonas
+    seguras) se salta; se navega con Opción+Tab; lo que abre una capa desde un botón se pulsa
+    con el teclado (`focusClick`), porque Safari no enfoca el botón con el ratón. Las pruebas
+    que en WebKit fallaban por tiempos (arrastrar 70 px en un instante es lanzarlo; medir
+    desde fuera llega tarde) ahora arrastran a ritmo de dedo y miden dentro de la página. No
+    salió ningún fallo de la librería propio de WebKit.
+  - El botón (MorphBox) ya no se queda hundido con Espacio pulsado y Tab: se suelta al perder
+    el foco.
+  - El punto del check del botón al terminar de cargar no existe: en Safari del simulador de
+    iOS, un trazo con `stroke-dashoffset` 1 no pinta nada; el punto sale solo con un trazo casi
+    sin dibujar (0,999), que era el caso del anillo, ya arreglado.
+  - Alto contraste en todos los componentes (ver «Decisiones tomadas»).
 - **Plan acordado:** pulir Mochi aquí antes de integrarlo en `phsport-app` (en una sesión aparte
   en esa carpeta; el mensaje para arrancarla se le dio al usuario en el chat).
 - El usuario probó en su iPhone (Safari) la paleta y la hoja de «Rename» tras los arreglos:
@@ -255,6 +270,10 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   el botón se oculta con un contador, porque un menú y el diálogo que abre pueden salir del mismo
   botón. Al elegir una opción del menú, el foco vuelve al botón antes de ejecutarla, así el
   diálogo que abra sale de ese botón.
+- **Filo de la casilla y el radio sin marcar (el usuario, 2026-10-01):** se queda en
+  `surface-border-strong`, sutil, aunque no llega a 3:1 (WCAG 1.4.11): 1,4:1 en claro y 1,7:1
+  en oscuro. Lo eligió viendo en capturas la alternativa (`on-surface` al 50 %: 3,47 y 4,89;
+  al 45 % no llega en claro, 2,99). Si algún proyecto necesita cumplir 3:1, es ese cambio.
 - Casilla y radio: marcados son `solid` con la marca en `on-solid` (el punto del radio también),
   no `accent`: así se ven en oscuro, donde `solid` casi no se separa de la superficie. En
   formularios se portan como los nativos: lo desactivado no viaja y al reiniciar el formulario
@@ -267,8 +286,11 @@ interacción en verde y su ficha publicada en el sistema de diseño.
 - El brillo del esqueleto va fijado a la ventana (`background-attachment: fixed`), así una sola
   pasada recorre todas las formas. En Safari de iOS eso no existe: cada forma tendrá su pasada,
   a la misma velocidad.
-- Alto contraste (`forced-colors`): solo lo tienen los tres componentes nuevos; lo que falta
-  del resto está en el [README](../../../README.md#pendiente).
+- Alto contraste (`forced-colors`, 2026-10-01): todos los componentes tienen reglas (al final de
+  `src/styles/components.css`). Donde una capa resaltada copia el texto de debajo (pestañas,
+  menús, paleta), el sistema pinta una placa detrás del texto que asomaría como un recuadro: en
+  menús y paleta el resaltado pasa por encima de las opciones; en las pestañas, su texto va sin
+  placa (`forced-color-adjust: none`), porque el resaltado taparía el foco de la elegida.
 - `Popover` sigue al menú: un fondo invisible recoge el toque de fuera (sin que atraviese) y la
   página no se desplaza mientras está abierto; no es modal para el foco (Tab puede salir y
   entonces se cierra). En pantallas de menos de 640 px es la hoja de `Dialog`.
@@ -311,6 +333,20 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   comprobador lo inserta ahora con una función.
 
 ## Verificación realizada
+
+El 2026-10-01, tras el resto de la pasada final (WebKit, botón hundido, alto contraste):
+- `npm run typecheck`: sin errores. `npm test`: 80/80. `npm run design-system`: 48/48.
+- `npm run test:e2e`: 261/261 en Chromium; `E2E_BROWSER=webkit npm run test:e2e`: 256/256 (las
+  5 de colores forzados y zonas seguras solo van en Chromium). Nuevas: el botón deja de estar
+  hundido (también comprobado a mano en WebKit) y, con colores forzados, interruptor encendido,
+  pestaña elegida, borde de los botones y disco del reproductor con los colores del sistema.
+- Alto contraste revisado a ojo en capturas (emulado en Chromium): portada, control
+  segmentado, slider, menú (con la opción destructiva resaltada), selector (con la marca de
+  la elegida), paleta, ventana con campo enfocado, reproductor cerrado y abierto, y gráfica con
+  su tooltip. Sin comprobar en un Windows real.
+- Antes de cambiar las pruebas por tiempos, cada una se repitió aparte seis veces en WebKit
+  midiendo dentro de la página: el orden desde fuera anima (22–23 posiciones) y el acordeón
+  de Studio no recorta (0 fotogramas).
 
 El 2026-10-01, tras los arreglos de la cuarta revisión:
 - `npm run typecheck`: sin errores. `npm test`: 80/80. `npm run design-system`: 48/48 vistas
@@ -363,7 +399,7 @@ El 2026-09-29, tras el último cambio de código:
   cierre del acordeón y de la ventana, el cambio de pestaña y el de página: sin recortes y sin
   aro nítido en Chromium; en WebKit (el motor de Safari, instalado para Playwright el
   2026-09-29), el acordeón y el cambio de página igual, y la ventana entra con un fundido (ver
-  «Decisiones tomadas»). La batería de pruebas sigue corriendo solo en Chromium. De Studio: el selector de modo, el esqueleto al
+  «Decisiones tomadas»). De Studio: el selector de modo, el esqueleto al
   cargar, buscar, filtrar, renombrar, borrar y deshacer, crear desde ⌘K, abrir un proyecto,
   reproducir, reordenar pistas, subir con progreso, compartir, editar en el panel lateral, la
   validación de los ajustes, la ayuda, volver a «Lista», la navegación en móvil sin desplazamiento
@@ -396,7 +432,8 @@ El 2026-09-29, tras el último cambio de código:
   dibuja, también en la casilla. Comprobado en Chromium que queda oculto; en Safari, pendiente de
   que lo vea el usuario.
 
-Sin comprobar: Safari (y el brillo del esqueleto en iOS), Firefox, pantallas táctiles reales,
+Sin comprobar: Safari de escritorio real (sí WebKit con Playwright y Safari del simulador de
+iOS) y el brillo del esqueleto en iOS, Firefox, pantallas táctiles reales,
 lectores de pantalla reales, alto contraste real de Windows (solo emulado en Chromium), la
 página del sistema de diseño vista dentro de claude.ai y los proyectos Next.js y Astro con los
 componentes nuevos.
@@ -405,9 +442,6 @@ componentes nuevos.
 
 Esperan decisión del usuario:
 - Si subir la versión a 0.2.0 antes de subirlo.
-- **Filo de la casilla y el radio sin marcar.** El planteamiento pedía `surface-border-strong`,
-  y así está, pero no llega a 3:1 (WCAG 1.4.11): 1,4:1 en claro y 1,8:1 en oscuro. Propuesta:
-  un filo de `on-surface` al 45–50 % (con `color-mix` o un token nuevo).
 - Publicar el sistema de diseño con las seis fichas nuevas (está generado en
   `design-system/project/`, sin publicar). Hay un icono nuevo, `GripIcon`: al publicar hay que
   subirlo y apuntar su id en `design-system-src/uploads.json`.
@@ -417,13 +451,8 @@ Esperan decisión del usuario:
 1. Que el usuario pruebe en su iPhone el panel lateral (arrastre), la lista (asa en táctil),
    Studio con el menú nuevo y el punto del check del anillo (ya arreglado), y en Safari los
    arreglos de movimiento.
-2. Resto de la pasada final (acordada con el usuario el 2026-09-29; la revisión independiente
-   ya está hecha y arreglada); pasar la batería también en WebKit (hoy corre en Chromium, con
-   pantallas de teléfono, tableta y ordenador); el filo de la casilla y el radio; las dos
-   tareas sueltas (botón que se queda hundido con Espacio y Tab; alto contraste del resto); el
-   posible punto del check del botón al terminar de cargar (`.mochi-checkmark`, mismo motivo
-   que el del anillo; sin comprobar en Safari); la versión 0.2.0; y publicar el sistema de
-   diseño (con `GripIcon`).
+2. Resto de la pasada final, a la espera del usuario (ver «Bloqueos»): la versión 0.2.0 y
+   publicar el sistema de diseño (con `GripIcon`).
 3. Integrar Mochi en `phsport-app` desde una sesión en esa carpeta.
 4. Al cerrar la tarea: retirar este traspaso y mover lo permanente (la receta, la política de
    Radix) a documentación estable.

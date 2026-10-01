@@ -1,21 +1,29 @@
 // Pruebas de interacción sobre el banco de pruebas compilado, con Playwright.
 // Uso: npm run test:e2e   (compila la librería y el banco, los sirve y los recorre)
+//      E2E_BROWSER=webkit npm run test:e2e   (lo mismo en WebKit, el motor de Safari)
 // Deja capturas en test/out/ para revisarlas a ojo.
-import { chromium } from "playwright";
+import { chromium, webkit } from "playwright";
 import { createServer } from "node:http";
 import { readFileSync, existsSync, mkdirSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
 import { execSync } from "node:child_process";
 
+const ENGINE = process.env.E2E_BROWSER === "webkit" ? "webkit" : "chromium";
+// colores forzados y zonas seguras solo se pueden emular en Chromium
+const CHROMIUM = ENGINE === "chromium";
+const OUT = CHROMIUM ? "test/out" : "test/out/webkit";
+// en Safari de Mac, Tab solo salta entre campos; Opción+Tab recorre también botones y enlaces
+const TAB = CHROMIUM ? "Tab" : "Alt+Tab";
+const SHIFT_TAB = CHROMIUM ? "Shift+Tab" : "Alt+Shift+Tab";
+
 execSync("npx vite build --logLevel error", { stdio: "inherit" });
 // también en modo desarrollo: ahí React renderiza dos veces seguidas (StrictMode) y salen fallos
 // que la versión compilada no enseña
-execSync("npx vite build --logLevel error --mode development --outDir ../test/out/dev --emptyOutDir", {
+execSync(`npx vite build --logLevel error --mode development --outDir ../${OUT}/dev --emptyOutDir`, {
   stdio: "inherit",
   env: { ...process.env, NODE_ENV: "development" },
 });
 const ROOT = "playground-dist";
-const OUT = "test/out";
 mkdirSync(OUT, { recursive: true });
 
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".woff2": "font/woff2", ".svg": "image/svg+xml" };
@@ -35,7 +43,7 @@ const results = [];
 const check = (name, ok, detail = "") => results.push({ name, ok: !!ok, detail });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-const browser = await chromium.launch();
+const browser = await (CHROMIUM ? chromium : webkit).launch();
 const errors = [];
 async function open(opts = {}) {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 1500 }, ...opts });
@@ -54,6 +62,12 @@ const focusedName = p => p.evaluate(() => { const a = document.activeElement; re
 const focusedLabel = p => p.evaluate(() => { const id = document.activeElement?.getAttribute("aria-labelledby"); return id ? document.getElementById(id)?.textContent : null; });
 // escala en x de un elemento transformado con scale()
 const scaleOf = loc => loc.evaluate(e => { const t = getComputedStyle(e).transform; return t === "none" ? 1 : new DOMMatrix(t).a; });
+// abrir con el teclado (foco e Intro). Safari no enfoca un botón al pulsarlo con el ratón (el clic
+// incluso le quita el foco): en WebKit no habría botón al que devolver el foco ni del que crecer
+const focusClick = async loc => {
+  await loc.focus();
+  await loc.press("Enter");
+};
 // muestras de algo en cada fotograma durante `ms` (se recogen en la página)
 const sampleFrames = (p, fn, ms) =>
   p.evaluate(([src, ms]) => new Promise(done => {
@@ -243,9 +257,9 @@ try {
   const db = await box(dlg);
   check("diálogo: crece desde el botón hasta la ventana", growing.width > ob.width - 1 && growing.width < db.width - 20 && db.width > 400, `botón ${ob.width.toFixed(0)}, a los 70 ms ${growing.width.toFixed(0)}, final ${db.width.toFixed(0)}`);
   check("diálogo: el foco entra en la ventana", (await focusedName(page)) === "Cancel");
-  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press(SHIFT_TAB);
   check("diálogo: Mayús+Tab desde el primero va al último", (await focusedName(page)) === "Delete");
-  for (let i = 0; i < 3; i++) await page.keyboard.press("Tab");
+  for (let i = 0; i < 3; i++) await page.keyboard.press(TAB);
   check("diálogo: Tab no se sale de la ventana", await page.evaluate(() => !!document.activeElement?.closest('[role="alertdialog"]')));
   await page.screenshot({ path: `${OUT}/dialog.png` });
   await page.keyboard.press("Escape");
@@ -322,8 +336,8 @@ try {
   await sleep(600);
   check("tooltip: al salir el ratón se va, y fuera del árbol de accesibilidad", (await page.locator('.mochi-tooltip[data-state="open"]').count()) === 0 && (await page.locator(".mochi-tooltip").getAttribute("aria-hidden")) === "true");
   await page.getByRole("button", { name: "Rename" }).first().focus();
-  await page.keyboard.press("Shift+Tab");
-  await page.keyboard.press("Tab");
+  await page.keyboard.press(SHIFT_TAB);
+  await page.keyboard.press(TAB);
   await sleep(300);
   check("tooltip: con el foco de teclado sale al momento", (await page.getByRole("tooltip").textContent()) === "Rename");
   await page.keyboard.press("Escape");
@@ -533,7 +547,7 @@ try {
   check("casilla: la desactivada no se puede pulsar", await page.getByRole("checkbox", { name: "Sync over mobile data" }).isDisabled());
 
   await page.getByRole("checkbox", { name: "Email me product updates" }).focus();
-  await page.keyboard.press("Tab");
+  await page.keyboard.press(TAB);
   check("radio: un solo Tab entra en el grupo, en la elegida", (await focusedLabel(page)) === "Standard");
   const stdFill = page.getByRole("radio", { name: "Standard" }).locator(".mochi-choice__fill");
   await page.keyboard.press("ArrowDown");
@@ -545,7 +559,7 @@ try {
   check("radio: las flechas se saltan la desactivada y dan la vuelta", (await focusedLabel(page)) === "Standard" && (await page.getByRole("radio", { name: "Standard" }).getAttribute("aria-checked")) === "true");
   await page.keyboard.press("ArrowUp");
   check("radio: hacia arriba, también", (await focusedLabel(page)) === "Express");
-  await page.keyboard.press("Tab");
+  await page.keyboard.press(TAB);
   check("radio: Tab sale del grupo al siguiente, en su elegida", (await focusedLabel(page)) === "Comfortable");
   await page.locator("label", { hasText: /^Spacious$/ }).click();
   check("radio: pulsar la etiqueta elige", (await page.getByRole("radio", { name: "Spacious" }).getAttribute("aria-checked")) === "true");
@@ -673,10 +687,22 @@ try {
   await page.keyboard.down("Space");
   await sleep(200);
   const heldScale = await scaleOf(page.locator("#c1"));
-  await page.keyboard.press("Tab");
+  await page.keyboard.press(TAB);
   await page.keyboard.up("Space");
   await sleep(500);
   check("casilla: con Espacio pulsado y el foco fuera, deja de estar hundida", heldScale < 0.95 && Math.abs((await scaleOf(page.locator("#c1"))) - 1) < 0.001, `${heldScale.toFixed(2)} → ${(await scaleOf(page.locator("#c1"))).toFixed(2)}`);
+  // lo mismo en un botón (MorphBox): la tecla se suelta ya en otro sitio
+  await page.goto(URL_ + "#/button");
+  await sleep(500);
+  const upgrade = page.getByRole("button", { name: "Upgrade" }).first();
+  await upgrade.focus();
+  await page.keyboard.down("Space");
+  await sleep(250);
+  const upHeld = await scaleOf(upgrade);
+  await page.keyboard.press(TAB);
+  await page.keyboard.up("Space");
+  await sleep(500);
+  check("botón: con Espacio pulsado y el foco fuera, deja de estar hundido", upHeld < 0.99 && Math.abs((await scaleOf(upgrade)) - 1) < 0.001, `${upHeld.toFixed(3)} → ${(await scaleOf(upgrade)).toFixed(3)}`);
 
   await page.goto(URL_ + "#/_cases/progress-edges");
   await sleep(500);
@@ -724,7 +750,7 @@ try {
   const pEnd = await box(page.getByRole("dialog", { name: "Show" }));
   check("panel flotante: el botón se transforma en el panel", pMid.width > fb.width + 2 && pMid.width < pEnd.width - 2 && (await filters.evaluate(e => getComputedStyle(e).opacity)) === "0", `${fb.width.toFixed(0)} → ${pMid.width.toFixed(0)} → ${pEnd.width.toFixed(0)}`);
   check("panel flotante: el foco entra en el primer control", (await focusedLabel(page)) === "Photos");
-  for (let i = 0; i < 4; i++) await page.keyboard.press("Tab");
+  for (let i = 0; i < 4; i++) await page.keyboard.press(TAB);
   await sleep(700);
   check("panel flotante: Tab al salir lo cierra y el foco sigue por la página", (await focusedName(page)) === "Ada Lovelace" && (await page.getByRole("dialog").count()) === 0);
   await page.keyboard.press("Enter");
@@ -753,7 +779,7 @@ try {
   await sleep(800);
   await page.keyboard.press("Escape");
   await sleep(40);
-  await page.keyboard.press("Tab");
+  await page.keyboard.press(TAB);
   await sleep(20);
   check("panel flotante: mientras se cierra, Tab no entra en él", await page.evaluate(() => !document.activeElement?.closest(".mochi-popover-root") && document.querySelector(".mochi-popover").inert === true));
   await sleep(800);
@@ -762,7 +788,7 @@ try {
   await page.goto(URL_ + "#/drawer");
   await sleep(500);
   const editDetails = page.getByRole("button", { name: "Edit details" });
-  await editDetails.click();
+  await focusClick(editDetails);
   await sleep(80);
   const drawer = page.getByRole("dialog", { name: "Project details" });
   const dwMid = await box(drawer);
@@ -770,13 +796,17 @@ try {
   const dwEnd = await box(drawer);
   check("panel lateral: entra deslizándose desde la derecha, de toda la altura", dwMid.x > dwEnd.x + 10 && Math.abs(dwEnd.x + dwEnd.width - 1272) < 1 && Math.abs(dwEnd.height - 1484) < 1, `x ${dwMid.x.toFixed(0)} → ${dwEnd.x.toFixed(0)}, alto ${dwEnd.height}`);
   check("panel lateral: el foco entra en el primer campo", (await page.evaluate(() => document.activeElement?.closest("label, .mochi-field")?.textContent ?? "")).includes("Name"));
-  for (let i = 0; i < 9; i++) await page.keyboard.press("Tab");
+  for (let i = 0; i < 9; i++) await page.keyboard.press(TAB);
   check("panel lateral: Tab no se sale del panel", await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]')));
   await page.screenshot({ path: `${OUT}/drawer.png` });
   const desc = await box(page.getByText("Changes are shared with everyone on the project."));
   await page.mouse.move(desc.x + 20, desc.y + desc.height / 2);
   await page.mouse.down();
-  await page.mouse.move(desc.x + 90, desc.y + desc.height / 2, { steps: 5 });
+  // a ritmo de dedo (deprisa sería lanzarlo y se cerraría)
+  for (let i = 1; i <= 7; i++) {
+    await page.mouse.move(desc.x + 20 + i * 10, desc.y + desc.height / 2);
+    await sleep(16);
+  }
   await sleep(30);
   const dwDrag = await box(drawer);
   await page.mouse.up();
@@ -817,7 +847,7 @@ try {
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await sleep(800);
   check("panel lateral: la X lo cierra", (await page.getByRole("dialog").count()) === 0);
-  await page.getByRole("button", { name: "Open menu" }).click();
+  await focusClick(page.getByRole("button", { name: "Open menu" }));
   await sleep(700);
   await page.keyboard.press("Escape");
   await sleep(800);
@@ -871,13 +901,11 @@ try {
   await sleep(700);
   check("reordenar: Esc la devuelve a su sitio", (await titles())[2] === "Night Drive" && (await reorderLive.textContent()) === "Cancelled. Night Drive is back at position 3 of 5.");
   // Afterglow pasa de la cuarta a la primera
-  const sm0 = await box(rowOf("Afterglow"));
+  // se mide en la página, fotograma a fotograma (leerlo desde fuera puede llegar tarde)
+  const smYs = sampleFrames(page, () => Math.round([...document.querySelectorAll(".mochi-reorder__item")].find(e => e.textContent.includes("Afterglow")).getBoundingClientRect().y), 700);
   await page.getByRole("button", { name: "Sort A–Z" }).click();
-  await sleep(90);
-  const smMid = await box(rowOf("Afterglow"));
-  await sleep(900);
-  const smEnd = await box(rowOf("Afterglow"));
-  check("reordenar: un cambio de orden desde fuera también se anima", Math.abs(smMid.y - sm0.y) > 4 && Math.abs(smMid.y - smEnd.y) > 4, `${sm0.y.toFixed(0)} → ${smMid.y.toFixed(0)} → ${smEnd.y.toFixed(0)}`);
+  const smY = await smYs;
+  check("reordenar: un cambio de orden desde fuera también se anima", new Set(smY).size > 4 && smY[smY.length - 1] !== smY[0], `${new Set(smY).size} posiciones, ${smY[0]} → ${smY[smY.length - 1]}`);
 
   // la lista cambia desde fuera a mitad de un arrastre
   const rl = await open({ viewport: { width: 1000, height: 600 } });
@@ -991,7 +1019,7 @@ try {
     const f = document.querySelector('[role="dialog"]')?.style.filter ?? "";
     return f ? parseFloat(f.slice(5)) : 0;
   }, 900);
-  await page.getByRole("button", { name: "New project" }).first().click();
+  await focusClick(page.getByRole("button", { name: "New project" }).first());
   const gb = await growBlurs;
   check("demo: «New project» crece desde el botón negro con los bordes desenfocados y acaba nítido", Math.max(...gb) > 3 && gb[gb.length - 1] === 0, `máx ${Math.max(...gb).toFixed(1)}px, final ${gb[gb.length - 1]}`);
   await page.keyboard.press("Escape");
@@ -1073,7 +1101,9 @@ try {
   // abrir una sección de los ajustes dentro de las pestañas: las pestañas siguen su alto sin
   // recortar la tarjeta (esquinas y sombra enteras)
   await page.getByRole("tab", { name: "Settings" }).click();
-  await sleep(900);
+  // que acabe antes el cambio de pestaña (también anima el alto)
+  await page.waitForFunction(() => document.querySelector(".studio .mochi-tabs__panels").style.overflow !== "hidden");
+  await sleep(300);
   const tabClip = sampleFrames(page, () => {
     const item = [...document.querySelectorAll(".studio .mochi-accordion__item")].find(e => e.textContent.startsWith("Delete project"));
     return [document.querySelector(".studio .mochi-tabs__panels").style.overflow, item.querySelector(".mochi-accordion__region").offsetHeight];
@@ -1129,7 +1159,7 @@ try {
   await sleep(800);
   await page.click("#open-b");
   await sleep(800);
-  await page.keyboard.press("Tab");
+  await page.keyboard.press(TAB);
   check("diálogo anidado: Tab recorre el de dentro", await page.evaluate(() => document.activeElement?.closest('[role="dialog"]')?.querySelector(".mochi-dialog__title")?.textContent === "B"));
   await page.goto(URL_ + "#/_cases/nested-locked");
   await sleep(600);
@@ -1142,11 +1172,11 @@ try {
   check("diálogo anidado: Esc no cierra el de fuera si el de dentro no se deja cerrar", (await page.locator('.mochi-dialog-root[data-state="open"]').count()) === 2);
   await page.goto(URL_ + "#/_cases/two-openers");
   await sleep(600);
-  await page.click("#btn-a");
+  await focusClick(page.locator("#btn-a"));
   await sleep(800);
   await page.keyboard.press("Escape");
   await sleep(120);
-  await page.click("#btn-b", { force: true });
+  await focusClick(page.locator("#btn-b"));
   await sleep(800);
   await page.keyboard.press("Escape");
   await sleep(900);
@@ -1241,6 +1271,7 @@ try {
   await rm.context().close();
 
   // --- alto contraste (colores forzados): el estado se sigue viendo
+  if (CHROMIUM) {
   const fc = await open({ forcedColors: "active" });
   await fc.goto(URL_ + "#/checkbox");
   await sleep(500);
@@ -1254,15 +1285,31 @@ try {
     await fc.goto(URL_ + hash);
     await sleep(400);
     await fc.locator(sel).first().focus();
-    await fc.keyboard.press("Shift+Tab");
-    await fc.keyboard.press("Tab");
+    await fc.keyboard.press(SHIFT_TAB);
+    await fc.keyboard.press(TAB);
     return fc.evaluate(() => getComputedStyle(document.activeElement).outlineStyle);
   };
   const fcAcc = await fcFocus("#/accordion", ".mochi-accordion__trigger");
   const fcSel = await fcFocus("#/select", ".mochi-select__trigger");
+  // interruptor encendido, pestaña elegida, bordes de botón y ventana, y el reproductor (que solo
+  // era fondo): con los colores del sistema
+  await fc.goto(URL_ + "#/");
+  await sleep(800);
+  const fcOn = await fc.evaluate(() => {
+    const bg = e => getComputedStyle(document.querySelector(e)).backgroundColor;
+    const page = getComputedStyle(document.body).backgroundColor;
+    return {
+      on: bg('.mochi-switch[data-state="on"] .mochi-switch__track') !== page,
+      tab: bg(".mochi-seg__indicator") !== page,
+      button: getComputedStyle(document.querySelector("button.mochi-morph")).outlineStyle === "solid",
+      disc: bg(".mochi-player__disc") !== page,
+    };
+  });
+  check("alto contraste: interruptor, pestaña elegida, bordes y reproductor se ven", Object.values(fcOn).every(Boolean), JSON.stringify(fcOn));
   check("alto contraste: el foco del acordeón y del selector se ve", fcAcc === "solid" && fcSel === "solid", `${fcAcc} · ${fcSel}`);
   check("alto contraste: la opción elegida, el filo y la barra se ven", fcFill !== "rgba(0, 0, 0, 0)" && /^solid (1|1\.5)px$/.test(fcRing) && fcBar !== fcTrack, `${fcFill} · ${fcRing} · ${fcBar} sobre ${fcTrack}`);
   await fc.context().close();
+  }
 
   // --- la parte visible de la pantalla (en Safari de iOS, la que deja el teclado): se simula
   // sustituyendo window.visualViewport, porque el teclado no se puede simular
@@ -1416,6 +1463,7 @@ try {
 
   // con viewport-fit=cover (zonas seguras emuladas: muesca a los lados en horizontal, barra de
   // estado arriba en vertical), el contenido de los paneles y de la hoja queda fuera de ellas
+  if (CHROMIUM) {
   const safeAt = async (viewport, insets, hash) => {
     const pg = await open({ viewport, hasTouch: true, isMobile: true });
     const cdp = await pg.context().newCDPSession(pg);
@@ -1447,6 +1495,7 @@ try {
   const spClose = await box(sp.getByRole("button", { name: "Close", exact: true }));
   check("zonas seguras en vertical: la X del panel lateral queda bajo la barra de estado", spClose.y >= 47, `y ${spClose.y.toFixed(0)}`);
   await sp.context().close();
+  }
 
   // --- tableta en vertical (iPad, 820 puntos): columna lateral como en escritorio
   const tab = await open({ viewport: { width: 820, height: 1180 }, hasTouch: true });
@@ -1690,5 +1739,5 @@ for (const r of results) {
   if (!r.ok) fails++;
   console.log(`${r.ok ? "✓" : "✗"} ${r.name}${r.ok || !r.detail ? "" : `  →  ${r.detail}`}`);
 }
-console.log(`\n${results.length - fails}/${results.length} comprobaciones correctas; capturas en ${OUT}/`);
+console.log(`\n${results.length - fails}/${results.length} comprobaciones correctas en ${ENGINE}; capturas en ${OUT}/`);
 process.exitCode = fails ? 1 : 0;
