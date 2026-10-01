@@ -221,6 +221,13 @@ interacción en verde y su ficha publicada en el sistema de diseño.
   en Astro un `LinkButton` puede ir sin isla. En la 0.3.1, sin JavaScript (sin `data-measured`)
   la pulsación se imita con CSS (`press` al hundirse, `snappy` al volver; nada con «reducir
   movimiento»): el usuario eligió para `ph-sport-web` React solo al construir, sin islas.
+- **ph-sport-web adopta Mochi (2026-10-01, en otra sesión, rama `feat/rediseno-mochi`):** v0.3.1
+  desde GitHub, React solo al construir y sin islas (decisión del usuario, que se registra en el
+  `DECISIONS.md` de ese repo). De Mochi usa lo que funciona sin JavaScript (`LinkButton`, valores
+  y estilos); lo interactivo de la web (selector de idioma, acordeón, pestañas, menú móvil,
+  tooltip, raíl arrastrable, botón que se transforma al copiar) lo hace con código propio
+  ligero y las curvas `--mochi-ease-*`. Primer hueco que devolvió: la guía de Astro no decía qué
+  pasa sin isla (corregida en el README).
 - **Versión 0.2.0 (2026-10-01):** etiqueta `v0.2.0` en GitHub. Instalada desde GitHub en un
   proyecto vacío con React 18.3 (`npm install github:RodzCantCode/mochi#v0.2.0`): npm la compila
   al instalarla y el botón se renderiza en el servidor. Los proyectos instalan una versión fija
@@ -466,6 +473,10 @@ componentes nuevos.
 ## Bloqueos
 
 Esperan decisión del usuario:
+- **Mochi sin React para webs estáticas.** Propuesta de la sesión de `ph-sport-web`: exponer
+  los estilos y estados de los componentes interactivos como clases, para moverlos con
+  JavaScript propio sin cargar React. Hoy esa web rehace a mano esas piezas con las curvas de
+  Mochi (dos sitios donde mantener lo mismo).
 - Publicar el sistema de diseño con las seis fichas nuevas (está generado en
   `design-system/project/`, sin publicar). Hay un icono nuevo, `GripIcon`: al publicar hay que
   subirlo y apuntar su id en `design-system-src/uploads.json`.

@@ -93,14 +93,20 @@ import "mochi-ui/styles.css";
 </html>
 ```
 
-Los componentes interactivos van como islas, con una directiva de cliente:
+Hay dos formas de usarlos, y la diferencia es si React llega al navegador:
+
+- **Sin isla (sin `client:`)**: Astro dibuja el componente al construir la página y no envía nada de React. Funciona entero lo que no necesita JavaScript: `LinkButton` (forma, tamaño y pulsación, imitada con CSS) y el aspecto de todo. Lo que responde a lo que haces (`Button` con sus estados, `Switch`, `Select`, `Menu`, `Accordion`, `Tabs`, `Tooltip`, `Dialog`…) se ve, pero no responde.
+- **Como isla (`client:load`, `client:visible`…)**: funciona entero, pero cada página que lo use carga React en el navegador.
 
 ```astro
 ---
-import { Switch } from "mochi-ui";
+import { LinkButton, Switch } from "mochi-ui";
 ---
+<LinkButton href="/plans">See plans</LinkButton>
 <Switch client:load aria-label="Notifications" />
 ```
+
+Para animar con tu propio JavaScript o CSS lo que no sea de Mochi, usa sus curvas y duraciones (`--mochi-ease-*`, `--mochi-duration-*`, ver «Valores del sistema»): así se mueve igual que los componentes.
 
 ## Uso
 
